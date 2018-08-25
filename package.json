@@ -1,0 +1,40 @@
+{
+  "name": "liora",
+  "version": "1.0.0",
+  "description": "Modular and extensible Node.js discord-bot",
+  "homepage": "https://github.com/jackw01/liora#readme",
+  "author": "jackw01",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackw01/liora.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jackw01/liora/issues"
+  },
+  "keywords": [
+    "discord"
+  ],
+  "preferGlobal": true,
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32",
+    "freebsd",
+    "openbsd",
+    "sunos"
+  ],
+  "dependencies": {
+    "command-line-args": "^5.0.2",
+    "discord.js": "^11.4.2",
+    "jsonfile": "^4.0.0",
+    "mkdirp": "^0.5.1"
+  }
+}
