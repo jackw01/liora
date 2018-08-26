@@ -16,7 +16,7 @@
     "discord"
   ],
   "preferGlobal": true,
-  "main": "src/main.js",
+  "main": "src/liora-core.js",
   "scripts": {
     "start": "node ."
   },
@@ -35,6 +35,7 @@
     "command-line-args": "^5.0.2",
     "discord.js": "^11.4.2",
     "jsonfile": "^4.0.0",
-    "mkdirp": "^0.5.1"
+    "mkdirp": "^0.5.1",
+    "winston": "^3.0.0"
   }
 }

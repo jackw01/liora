@@ -2,11 +2,15 @@
 Modular and extensible Node.js discord-bot with lots of built-in functionality
 
 ## Todo
-- [ ] config schema
-- [ ] module loading
-- [ ] logging
+- [x] login to discord
+- [x] config loader
+- [x] config schema
+- [x] logging
 - [ ] run commands
+- [ ] module loading
+- [ ] sample bot with custom modules
 - [ ] error recovery
+- [ ] fancy colored logging
 - [ ] permissions by user
 - [ ] permissions by role
 - [ ] load modules with commands
@@ -22,4 +26,4 @@ Modular and extensible Node.js discord-bot with lots of built-in functionality
 - [ ] automatic responses
 - [ ] weather
 - [ ] urban dictionary
-- [ ] xkcd 
+- [ ] xkcd
