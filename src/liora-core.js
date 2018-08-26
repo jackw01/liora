@@ -48,7 +48,6 @@ const configSchema = {
         type: "string",
         default: "$info for help"
     },
-
     prefix: {
         type: "string",
         default: "$"
@@ -79,6 +78,10 @@ const configSchema = {
             }
         }
     },
+    settings: {
+        type: "object",
+        default: {}
+    },
     permissions: {
         type: "object",
         default: {}
@@ -92,7 +95,7 @@ const configSchema = {
 // Bot
 const bot = {client: new discord.Client(), log: logger, firstLoadTime: Date.now()};
 
-// Config management
+// Save config to file
 bot.saveConfig = function(callback) {
     jsonfile.writeFile(this.configFile, bot.config, {spaces: 4, EOL: "\n"}, (err) => {
         if (err) {
@@ -105,8 +108,8 @@ bot.saveConfig = function(callback) {
     });
 }
 
+// Load config file
 bot.loadConfig = function(callback) {
-
     if (!fs.existsSync(this.configFile)) {
         try {
             mkdirp.sync(path.dirname(this.configFile));
@@ -127,15 +130,17 @@ bot.loadConfig = function(callback) {
     function configIterator(startPoint, startPointInSchema) {
         for (var property in startPointInSchema) {
             if (startPointInSchema.hasOwnProperty(property) && !startPoint.hasOwnProperty(property)) {
-                if (startPointInSchema[property].type != "object")
+                if (startPointInSchema[property].type != "object") {
                     startPoint[property] = startPointInSchema[property].default;
-                else
+                } else
                     startPoint[property] = {};
+                }
             }
             if (startPointInSchema[property].type == "object") {
                 configIterator(startPoint[property], startPointInSchema[property].default);
             }
-            if (!Array.isArray(startPoint[property]) && typeof startPoint[property] != startPointInSchema[property].type) {
+            if (!Array.isArray(startPoint[property]) &&
+                typeof startPoint[property] != startPointInSchema[property].type) {
                 startPoint[property] = startPointInSchema[property].default;
             }
         }
@@ -155,6 +160,23 @@ bot.loadConfig = function(callback) {
     });
 }
 
+// Return the correct command prefix for the context of a message
+bot.prefixForMessageContext = function(msg) {
+    if (msg.guild && _.has(this.config.settings, `[${msg.guild.id}].prefix`)) {
+        return this.config.settings[msg.guild.id].prefix;
+    } else {
+        return this.config.prefix;
+    }
+}
+
+// Returns the command object
+bot.getCommandNamed = function(command, callback) {
+    if (command in this.config.commandAliases) command = this.config.commandAliases[command];
+
+    callback();
+}
+
+// Initialize and load the bot
 bot.load = function(configDir) {
     this.lastLoadTime = Date.now();
     this.configDir = configDir;
@@ -167,22 +189,40 @@ bot.load = function(configDir) {
     });
 }
 
+// Called when client logs in
 bot.client.on("ready", () => {
     bot.log.info(`Logged in as: ${bot.client.user.username} (id: ${bot.client.user.id})`);
     bot.client.user.setActivity(bot.config.defaultGame);
 });
 
+// Message dispatching
+bot.client.on("message", async msg => {
+    if (!msg.author.bot) { // Prevent infinite loops
+        var executed = false;
+        if (msg.content.indexOf(bot.prefixForMessageContext(msg)) === 0) { // Check if command
+            const args = msg.content.slice(bot.prefixForMessageContext(msg).length).trim().split(/ +/g);
+            const command = args.shift().toLowerCase();
+            bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
+
+            bot.getCommandNamed(command, cmd => {
+                if (cmd) {
+
+                    executed = true;
+                }
+            });
+        }
+        if (!executed) {
+            // run listeners
+        }
+    }
+});
+
 // Run the bot automatically if module is run instead of imported
 if (!module.parent) {
-
-    const options = commandLineArgs([{ name: "configDir", defaultValue: "" }]);
-
-    var configDir;
-    if (options.configDir == "") configDir = path.join(os.homedir(), ".liora-bot");
-    else configDir = options.configDir;
-
     bot.log.info("Liora is running in standalone mode");
-    bot.load(configDir);
+    const options = commandLineArgs([{ name: "configDir", defaultValue: "" }]);
+    if (options.configDir == "") bot.load(path.join(os.homedir(), ".liora-bot"));
+    else bot.load(options.configDir);
 }
 
 module.exports = bot;

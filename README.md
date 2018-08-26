@@ -6,7 +6,7 @@ Modular and extensible Node.js discord-bot with lots of built-in functionality
 - [x] config loader
 - [x] config schema
 - [x] logging
-- [ ] run commands
+- [x] run commands
 - [ ] module loading
 - [ ] sample bot with custom modules
 - [ ] error recovery
