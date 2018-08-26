@@ -4,8 +4,12 @@ const fs = require("fs");
 const commandLineArgs = require("command-line-args");
 const mkdirp = require("mkdirp");
 const jsonfile = require("jsonfile");
+const _ = require("lodash");
 const winston = require("winston");
+const chalk = require("chalk");
 const discord = require("discord.js");
+
+const localModuleDirectory = "../modules";
 
 // Logger
 const logLevels = {error: 0, warn: 1, info: 2, modules: 3, modwarn: 4, modinfo: 5, debug: 6};
@@ -132,7 +136,7 @@ bot.loadConfig = function(callback) {
             if (startPointInSchema.hasOwnProperty(property) && !startPoint.hasOwnProperty(property)) {
                 if (startPointInSchema[property].type != "object") {
                     startPoint[property] = startPointInSchema[property].default;
-                } else
+                } else {
                     startPoint[property] = {};
                 }
             }
@@ -160,6 +164,60 @@ bot.loadConfig = function(callback) {
     });
 }
 
+// Load module
+bot.loadModule = function(name, callback) {
+    bot.log.modules(`Attempting to load module ${name}...`);
+    fs.exists(`./src/${localModuleDirectory}/${name}.js`, (exists) => {
+        if (exists && !(name in this.modules)) {
+            let newModule;
+            try {
+                newModule = require(`./${localModuleDirectory}/${name}.js`);
+            } catch (err) {
+                bot.log.warn(`Unable to load module ${name}: ${err.message}`);
+                bot.log.warn(`> ${err.stack}`);
+                callback(err);
+                return;
+            }
+            this.modules[name] = newModule;
+            bot.log.modules(`Loaded module ${name}`);
+            callback();
+        } else {
+            bot.log.warn(`Module ${name} not found or already loaded`);
+            callback(new Error(`Module ${name} not found or already loaded`));
+        }
+    });
+}
+
+// Unload module
+bot.unloadModule = function(name, callback) {
+    bot.log.modules(`Attempting to unload module ${name}...`);
+    if (name in this.modules) {
+        delete require.cache[require.resolve(`./${localModuleDirectory}/${name}.js`)];
+        delete this.modules[name];
+        bot.log.modules(`Unloaded module ${name}`);
+        callback();
+    } else {
+        bot.log.warn(`Module ${name} not currently loaded`);
+        callback(new Error(`Module ${name} not currently loaded`));
+    }
+}
+
+// Initialize module
+bot.initModule = function(name, callback) {
+    if (name in this.modules) {
+        this.modules[name].init(this).then(() => {
+            bot.log.modules(`Initialized module ${name}`);
+            callback();
+        }).catch(err => {
+            bot.log.warn(`Failed to initialize module ${name}: ${err.message}`);
+            callback(err);
+        });
+    } else {
+        bot.log.warn(`Module ${name} not currently loaded`);
+        callback(new Error(`Module ${name} not currently loaded`));
+    }
+}
+
 // Return the correct command prefix for the context of a message
 bot.prefixForMessageContext = function(msg) {
     if (msg.guild && _.has(this.config.settings, `[${msg.guild.id}].prefix`)) {
@@ -182,9 +240,14 @@ bot.load = function(configDir) {
     this.configDir = configDir;
     this.configFile = path.join(configDir, "config.json");
     this.config = {};
+    this.modules = {};
 
     this.loadConfig(() => {
-        bot.log.info("Connecting...");
+        this.log.info("Loading modules...");
+        for (let i = 0; i < this.config.activeModules.length; i++)
+            this.loadModule(this.config.activeModules[i], err => {});
+
+        this.log.info("Connecting...");
         this.client.login(this.config.discordToken);
     });
 }
@@ -193,6 +256,15 @@ bot.load = function(configDir) {
 bot.client.on("ready", () => {
     bot.log.info(`Logged in as: ${bot.client.user.username} (id: ${bot.client.user.id})`);
     bot.client.user.setActivity(bot.config.defaultGame);
+
+    // Init modules
+    const moduleNames = Object.getOwnPropertyNames(bot.modules);
+    var moduleCount = 0;
+    for (let i = 0; i < moduleNames.length; i++) {
+        bot.initModule(moduleNames[i], err => {
+            if (!err && ++moduleCount >= moduleNames.length) bot.lastLoadDuration = Date.now() - bot.lastLoadTime;
+        });
+    }
 });
 
 // Message dispatching

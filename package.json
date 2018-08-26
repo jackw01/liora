@@ -32,9 +32,11 @@
     "sunos"
   ],
   "dependencies": {
+    "chalk": "^2.4.1",
     "command-line-args": "^5.0.2",
     "discord.js": "^11.4.2",
     "jsonfile": "^4.0.0",
+    "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "winston": "^3.0.0"
   }
