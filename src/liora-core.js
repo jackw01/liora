@@ -105,7 +105,12 @@ const configSchema = {
 };
 
 // Bot
-const bot = {client: new discord.Client(), log: logger, firstLoadTime: Date.now()};
+const bot = {
+    client: new discord.Client(),
+    log: logger,
+    moduleSources: [`${localModuleDirectory}`],
+    firstLoadTime: Date.now()
+};
 
 // Set the config directory to use
 bot.setConfigDirectory = function(configDir) {
@@ -178,28 +183,47 @@ bot.loadConfig = function(callback) {
     });
 }
 
+// Add source folder to search in when loading modules
+bot.addModuleSource = function(directory) {
+    if (fs.existsSync(directory)) this.moduleSources.push(directory);
+    else bot.log.warn(`Module source ${directory} does not exist`);
+}
+
 // Load module
 bot.loadModule = function(name, callback) {
     bot.log.modules(`Attempting to load module ${name}...`);
-    fs.exists(`./src/${localModuleDirectory}/${name}.js`, (exists) => {
-        if (exists && !(name in this.modules)) {
-            let newModule;
-            try {
-                newModule = require(`./${localModuleDirectory}/${name}.js`);
-            } catch (err) {
-                bot.log.warn(`Unable to load module ${name}: ${err.message}`);
-                bot.log.warn(`> ${err.stack}`);
-                callback(err);
-                return;
+    if (!(name in this.modules)) {
+        this.moduleSources.forEach(directory => {
+            let absolutePath, requirePath;
+            if (directory == localModuleDirectory) {
+                requirePath = path.join(directory, `${name}.js`);
+                absolutePath = path.join(__dirname, directory, `${name}.js`)
+            } else {
+                
             }
-            this.modules[name] = newModule;
-            bot.log.modules(`Loaded module ${name}`);
-            callback();
-        } else {
-            bot.log.warn(`Module ${name} not found or already loaded`);
-            callback(new Error(`Module ${name} not found or already loaded`));
-        }
-    });
+
+            if (fs.existsSync(absolutePath)) {
+                let newModule;
+                try {
+                    newModule = require(requirePath);
+                } catch (err) {
+                    bot.log.warn(`Unable to load module ${name}: ${err.message}`);
+                    bot.log.warn(`> ${err.stack}`);
+                    callback(err);
+                    return;
+                }
+                this.modules[name] = newModule;
+                bot.log.modules(`Loaded module ${name}`);
+                callback();
+            } else {
+                bot.log.warn(`Module ${name} not found`);
+                callback(new Error(`Module ${name} not found`));
+            }
+        });
+    } else {
+        bot.log.warn(`Module ${name} already loaded`);
+        callback(new Error(`Module ${name} already loaded`));
+    }
 }
 
 // Unload module
