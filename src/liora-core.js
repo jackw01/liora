@@ -86,7 +86,7 @@ const configSchema = {
         type: "object",
         default: {}
     },
-    permissionGroups: {
+    groups: {
         type: "object",
         default: {}
     },
@@ -250,7 +250,7 @@ bot.prefixForMessageContext = function(msg) {
 bot.hasPermission = function(server, member, user, group, role) {
     if (user.id == this.config.owner) return true;
     if (group == "all") return true;
-    if (Object.keys(this.config.permissions[server.id].groups).includes(group) &&  this.config.permissions[server.id].groups[group].includes(user.id)) return true;
+    if (Object.keys(this.config.groups).includes(group) &&  this.config.groups[group].includes(user.id)) return true;
     if (member && member.roles.has(role)) return true;
     return false;
 }
@@ -258,7 +258,7 @@ bot.hasPermission = function(server, member, user, group, role) {
 // Returns the command object for a command name
 bot.getCommandNamed = function(command, callback) {
     if (command in this.config.commandAliases) command = this.config.commandAliases[command];
-    const moduleNames = Object.getOwnPropertyNames(this.modules);
+    const moduleNames = Object.keys(this.modules);
     for (let i = 0; i < moduleNames.length; i++) {
         if (command in this.modules[moduleNames[i]].commands) {
             callback(this.modules[moduleNames[i]].commands[command]);
@@ -299,7 +299,7 @@ bot.client.on("ready", () => {
     }
 
     // Init modules
-    const moduleNames = Object.getOwnPropertyNames(bot.modules);
+    const moduleNames = Object.keys(bot.modules);
     var moduleCount = 0;
     for (let i = 0; i < moduleNames.length; i++) {
         bot.initModule(moduleNames[i], err => {
@@ -334,7 +334,7 @@ bot.client.on("message", async msg => {
                         msg.channel.send("🔒 You do not have permission to use this command.");
                     }
                 } else {
-                    msg.channel.send(`❌ Not enough arguments. Use \`${bot.currentPrefix(msg)}${command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
+                    msg.channel.send(`❌ Not enough arguments. Use \`${bot.prefixForMessageContext(msg)}${command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
                 }
             }
         });
