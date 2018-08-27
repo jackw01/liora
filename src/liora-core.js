@@ -193,19 +193,14 @@ bot.addModuleSource = function(directory) {
 bot.loadModule = function(name, callback) {
     bot.log.modules(`Attempting to load module ${name}...`);
     if (!(name in this.modules)) {
+        let found = false;
         this.moduleSources.forEach(directory => {
-            let absolutePath, requirePath;
-            if (directory == localModuleDirectory) {
-                requirePath = path.join(directory, `${name}.js`);
-                absolutePath = path.join(__dirname, directory, `${name}.js`)
-            } else {
-                
-            }
-
+            let absolutePath = path.join(directory, `${name}.js`);
+            if (directory == localModuleDirectory) absolutePath = path.join(__dirname, absolutePath);
             if (fs.existsSync(absolutePath)) {
                 let newModule;
                 try {
-                    newModule = require(requirePath);
+                    newModule = require(absolutePath);
                 } catch (err) {
                     bot.log.warn(`Unable to load module ${name}: ${err.message}`);
                     bot.log.warn(`> ${err.stack}`);
@@ -214,12 +209,14 @@ bot.loadModule = function(name, callback) {
                 }
                 this.modules[name] = newModule;
                 bot.log.modules(`Loaded module ${name}`);
+                found = true;
                 callback();
-            } else {
-                bot.log.warn(`Module ${name} not found`);
-                callback(new Error(`Module ${name} not found`));
             }
         });
+        if (!found) {
+            bot.log.warn(`Module ${name} not found`);
+            callback(new Error(`Module ${name} not found`));
+        }
     } else {
         bot.log.warn(`Module ${name} already loaded`);
         callback(new Error(`Module ${name} already loaded`));

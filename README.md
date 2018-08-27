@@ -8,8 +8,8 @@ Modular and extensible Node.js discord-bot with lots of built-in functionality
 - [x] logging
 - [x] run commands
 - [x] internal module loading
-- [ ] external module loading
-- [ ] sample bot with custom modules
+- [x] external module loading
+- [x] sample bot with custom modules
 - [ ] fancy colored logging
 - [x] permissions by user
 - [x] permissions by role
