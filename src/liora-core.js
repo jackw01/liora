@@ -86,7 +86,15 @@ const configSchema = {
         type: "object",
         default: {}
     },
-    permissions: {
+    permissionGroups: {
+        type: "object",
+        default: {}
+    },
+    commandPermissions: {
+        type: "object",
+        default: {}
+    },
+    serverPermissions: {
         type: "object",
         default: {}
     },
@@ -98,6 +106,12 @@ const configSchema = {
 
 // Bot
 const bot = {client: new discord.Client(), log: logger, firstLoadTime: Date.now()};
+
+// Set the config directory to use
+bot.setConfigDirectory = function(configDir) {
+    this.configDir = configDir;
+    this.configFile = path.join(configDir, "config.json");
+}
 
 // Save config to file
 bot.saveConfig = function(callback) {
@@ -227,18 +241,36 @@ bot.prefixForMessageContext = function(msg) {
     }
 }
 
-// Returns the command object
+// Does this user have group/role permission on this server?
+// Returns true in these cases:
+//   If the user is the bot owner
+//   If the permission group is all users
+//   If the user is in the global permission group
+//   If the user is in the permission role on this server
+bot.hasPermission = function(server, member, user, group, role) {
+    if (user.id == this.config.owner) return true;
+    if (group == "all") return true;
+    if (Object.keys(this.config.permissions[server.id].groups).includes(group) &&  this.config.permissions[server.id].groups[group].includes(user.id)) return true;
+    if (member && member.roles.has(role)) return true;
+    return false;
+}
+
+// Returns the command object for a command name
 bot.getCommandNamed = function(command, callback) {
     if (command in this.config.commandAliases) command = this.config.commandAliases[command];
-
+    const moduleNames = Object.getOwnPropertyNames(this.modules);
+    for (let i = 0; i < moduleNames.length; i++) {
+        if (command in this.modules[moduleNames[i]].commands) {
+            callback(this.modules[moduleNames[i]].commands[command]);
+            return;
+        }
+    }
     callback();
 }
 
 // Initialize and load the bot
-bot.load = function(configDir) {
+bot.load = function() {
     this.lastLoadTime = Date.now();
-    this.configDir = configDir;
-    this.configFile = path.join(configDir, "config.json");
     this.config = {};
     this.modules = {};
 
@@ -257,6 +289,15 @@ bot.client.on("ready", () => {
     bot.log.info(`Logged in as: ${bot.client.user.username} (id: ${bot.client.user.id})`);
     bot.client.user.setActivity(bot.config.defaultGame);
 
+    // Update permissions config for servers
+    const servers = bot.client.guilds.array();
+    for (let i = 0; i < servers.length; i++) {
+        if (!_.has(bot.config, `serverPermissions[${servers[i].id}]`)) {
+            _.set(bot.config, `serverPermissions[${servers[i].id}]`, {});
+            bot.saveConfig(err => {});
+        }
+    }
+
     // Init modules
     const moduleNames = Object.getOwnPropertyNames(bot.modules);
     var moduleCount = 0;
@@ -269,32 +310,49 @@ bot.client.on("ready", () => {
 
 // Message dispatching
 bot.client.on("message", async msg => {
-    if (!msg.author.bot) { // Prevent infinite loops
-        var executed = false;
-        if (msg.content.indexOf(bot.prefixForMessageContext(msg)) === 0) { // Check if command
-            const args = msg.content.slice(bot.prefixForMessageContext(msg).length).trim().split(/ +/g);
-            const command = args.shift().toLowerCase();
-            bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
+    var executed = false;
+    // Check if message is command and do not respond to other bots
+    if (!msg.author.bot && msg.content.indexOf(bot.prefixForMessageContext(msg)) === 0) {
+        const args = msg.content.slice(bot.prefixForMessageContext(msg).length).trim().split(/ +/g);
+        const command = args.shift().toLowerCase();
+        bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
 
-            bot.getCommandNamed(command, cmd => {
-                if (cmd) {
+        bot.getCommandNamed(command, cmd => {
+            if (cmd) {
+                if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
+                    // Determine permission level for the message context
+                    // Use the global group override and the role override if they exist
+                    const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
+                    const roleOverride = msg.guild ? bot.config.serverPermissions[msg.guild.id][command] || "" : "";
 
-                    executed = true;
+                    if (bot.hasPermission(msg.guild, msg.member, msg.author, permissionLevel, roleOverride)) {
+                        cmd.execute(args, msg, bot).catch(err => {
+                            msg.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
+                        });
+                        executed = true;
+                    } else {
+                        msg.channel.send("🔒 You do not have permission to use this command.");
+                    }
+                } else {
+                    msg.channel.send(`❌ Not enough arguments. Use \`${bot.currentPrefix(msg)}${command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
                 }
-            });
-        }
-        if (!executed) {
-            // run listeners
-        }
+            }
+        });
+    }
+    if (!executed) {
+        // run listeners
     }
 });
+
+// Set default config directory
+bot.setConfigDirectory(path.join(os.homedir(), ".liora-bot"));
 
 // Run the bot automatically if module is run instead of imported
 if (!module.parent) {
     bot.log.info("Liora is running in standalone mode");
     const options = commandLineArgs([{ name: "configDir", defaultValue: "" }]);
-    if (options.configDir == "") bot.load(path.join(os.homedir(), ".liora-bot"));
-    else bot.load(options.configDir);
+    if (options.configDir != "") bot.setConfigDirectory(options.configDir);
+    bot.load();
 }
 
 module.exports = bot;

@@ -7,12 +7,13 @@ Modular and extensible Node.js discord-bot with lots of built-in functionality
 - [x] config schema
 - [x] logging
 - [x] run commands
-- [ ] module loading
+- [x] internal module loading
+- [ ] external module loading
 - [ ] sample bot with custom modules
-- [ ] error recovery
 - [ ] fancy colored logging
-- [ ] permissions by user
-- [ ] permissions by role
+- [x] permissions by user
+- [x] permissions by role
+- [ ] set permission commands
 - [ ] load modules with commands
 - [ ] command list
 - [ ] set config commands
@@ -27,3 +28,5 @@ Modular and extensible Node.js discord-bot with lots of built-in functionality
 - [ ] weather
 - [ ] urban dictionary
 - [ ] xkcd
+- [ ] error recovery
+- [ ] full reload and restart command

@@ -1,3 +1,7 @@
-const bot = require("./src/bot.js");
+const commandLineArgs = require("command-line-args");
+const liora = require("./src/liora-core.js");
 
-bot.load();
+const options = commandLineArgs([{ name: "configDir", defaultValue: "" }]);
+if (options.configDir != "") liora.setConfigDirectory(options.configDir);
+
+liora.load();
