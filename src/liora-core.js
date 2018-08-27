@@ -133,6 +133,7 @@ bot.saveConfig = function(callback) {
 
 // Load config file
 bot.loadConfig = function(callback) {
+    // If file does not exist, create it
     if (!fs.existsSync(this.configFile)) {
         try {
             mkdirp.sync(path.dirname(this.configFile));
@@ -143,6 +144,7 @@ bot.loadConfig = function(callback) {
         }
     }
 
+    // Load the created file, even if it is empty
     bot.log.info("Loading config...");
     try {
         bot.config = JSON.parse(fs.readFileSync(this.configFile));
@@ -150,6 +152,7 @@ bot.loadConfig = function(callback) {
         bot.config = {};
     }
 
+    // Recursively iterate over the config to check types and reset properties to default if they are the wrong type
     function configIterator(startPoint, startPointInSchema) {
         for (var property in startPointInSchema) {
             if (startPointInSchema.hasOwnProperty(property) && !startPoint.hasOwnProperty(property)) {
@@ -168,10 +171,10 @@ bot.loadConfig = function(callback) {
             }
         }
     }
-
     configIterator(bot.config, configSchema);
-    fs.writeFileSync(this.configFile, JSON.stringify(bot.config, null, 4));
 
+    // Write the checked config data and open it again
+    fs.writeFileSync(this.configFile, JSON.stringify(bot.config, null, 4));
     jsonfile.readFile(this.configFile, (err, obj) => {
         if (err) {
             bot.log.error(`Unable to load config.json: ${err.message}`);
@@ -280,26 +283,26 @@ bot.hasPermission = function(server, member, user, group, role) {
 bot.getCommandNamed = function(command, callback) {
     if (command in this.config.commandAliases) command = this.config.commandAliases[command];
     const moduleNames = Object.keys(this.modules);
-    for (let i = 0; i < moduleNames.length; i++) {
-        if (command in this.modules[moduleNames[i]].commands) {
-            callback(this.modules[moduleNames[i]].commands[command]);
+    moduleNames.forEach(name => {
+        if (command in this.modules[name].commands) {
+            callback(this.modules[name].commands[command]);
             return;
         }
-    }
+    });
     callback();
 }
 
 // Initialize and load the bot
 bot.load = function() {
+    // Set up some properties
     this.lastLoadTime = Date.now();
     this.config = {};
     this.modules = {};
 
+    // Load config, load modules, and login
     this.loadConfig(() => {
         this.log.info("Loading modules...");
-        for (let i = 0; i < this.config.activeModules.length; i++)
-            this.loadModule(this.config.activeModules[i], err => {});
-
+        this.config.activeModules.forEach(module => { this.loadModule(module, err => {}) });
         this.log.info("Connecting...");
         this.client.login(this.config.discordToken);
     });
@@ -312,40 +315,40 @@ bot.client.on("ready", () => {
 
     // Update permissions config for servers
     const servers = bot.client.guilds.array();
-    for (let i = 0; i < servers.length; i++) {
-        if (!_.has(bot.config, `serverPermissions[${servers[i].id}]`)) {
-            _.set(bot.config, `serverPermissions[${servers[i].id}]`, {});
+    servers.forEach(server => {
+        if (!_.has(bot.config, `serverPermissions[${server.id}]`)) {
+            _.set(bot.config, `serverPermissions[${server.id}]`, {});
             bot.saveConfig(err => {});
         }
-    }
+    });
 
     // Init modules
     const moduleNames = Object.keys(bot.modules);
     var moduleCount = 0;
-    for (let i = 0; i < moduleNames.length; i++) {
-        bot.initModule(moduleNames[i], err => {
+    moduleNames.forEach(name => {
+        bot.initModule(name, err => {
             if (!err && ++moduleCount >= moduleNames.length) bot.lastLoadDuration = Date.now() - bot.lastLoadTime;
         });
-    }
+    });
 });
 
 // Message dispatching
 bot.client.on("message", async msg => {
     var executed = false;
+
     // Check if message is command and do not respond to other bots
     if (!msg.author.bot && msg.content.indexOf(bot.prefixForMessageContext(msg)) === 0) {
         const args = msg.content.slice(bot.prefixForMessageContext(msg).length).trim().split(/ +/g);
         const command = args.shift().toLowerCase();
         bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
-
         bot.getCommandNamed(command, cmd => {
             if (cmd) {
                 if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
+
                     // Determine permission level for the message context
                     // Use the global group override and the role override if they exist
                     const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
                     const roleOverride = msg.guild ? bot.config.serverPermissions[msg.guild.id][command] || "" : "";
-
                     if (bot.hasPermission(msg.guild, msg.member, msg.author, permissionLevel, roleOverride)) {
                         cmd.execute(args, msg, bot).catch(err => {
                             msg.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
