@@ -198,9 +198,12 @@ bot.loadModule = function(name, callback) {
     if (!(name in this.modules)) {
         let found = false;
         this.moduleSources.forEach(directory => {
-            let absolutePath = path.join(directory, `${name}.js`);
+            let absolutePath = path.join(directory, `${name}`);
             if (directory == localModuleDirectory) absolutePath = path.join(__dirname, absolutePath);
             if (fs.existsSync(absolutePath)) {
+                if (!fs.existsSync(path.join(absolutePath, "package.json"))) {
+                    absolutePath = path.join(absolutePath, "main.js")
+                }
                 let newModule;
                 try {
                     newModule = require(absolutePath);
@@ -271,7 +274,7 @@ bot.prefixForMessageContext = function(msg) {
 //   If the permission group is all users
 //   If the user is in the global permission group
 //   If the user is in the permission role on this server
-bot.hasPermission = function(server, member, user, group, role) {
+bot.hasPermission = function(member, user, group, role) {
     if (user.id == this.config.owner) return true;
     if (group == "all") return true;
     if (Object.keys(this.config.groups).includes(group) &&  this.config.groups[group].includes(user.id)) return true;
@@ -344,12 +347,12 @@ bot.client.on("message", async msg => {
         bot.getCommandNamed(command, cmd => {
             if (cmd) {
                 if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
-                    
+
                     // Determine permission level for the message context
                     // Use the global group override and the role override if they exist
                     const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
                     const roleOverride = msg.guild ? bot.config.serverPermissions[msg.guild.id][command] || "" : "";
-                    if (bot.hasPermission(msg.guild, msg.member, msg.author, permissionLevel, roleOverride)) {
+                    if (bot.hasPermission(msg.member, msg.author, permissionLevel, roleOverride)) {
                         cmd.execute(args, msg, bot).catch(err => {
                             msg.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
                         });
