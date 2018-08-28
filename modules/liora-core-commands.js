@@ -1,8 +1,29 @@
 const _ = require("lodash");
 
+// Module init function - called after bot is connected and in servers
+// Use for initializing per-server module state information or similar things
 module.exports.init = async function(bot) {
 }
 
+// Module commands object - all commands should be defined here
+//
+// Format:
+// commandname is how the users will run a command and MUST be all lowercase
+// "commandname": {
+//     // Description of the command (not arguments) that will be displayed in the help text
+//     description: "description",
+//     // Array of argument names: follow the provided format
+//     argumentNames: ["<requiredArgument>", "<optionalArgument>?"],
+//     // Permission level: "all" for all users, "owner" for owner, "manager" or anything else for a group
+//     permissionLevel: "all",
+//     // Function that performs the command: must accept three arguments
+//     //   args: array of arguments that the user executed the command with
+//     //   msg: Discord.js message object that the command was found in
+//     //   bot: the Liora instance calling this function
+//     execute: async function(args, msg, bot) {
+//         // Do the command here
+//     }
+// },
 module.exports.commands = {
 
     "own": {

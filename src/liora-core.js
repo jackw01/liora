@@ -344,7 +344,7 @@ bot.client.on("message", async msg => {
         bot.getCommandNamed(command, cmd => {
             if (cmd) {
                 if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
-
+                    
                     // Determine permission level for the message context
                     // Use the global group override and the role override if they exist
                     const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
