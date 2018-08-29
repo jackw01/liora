@@ -47,6 +47,31 @@ module.exports.commands = {
         }
     },
 
+    "list": {
+        description: "List commands.",
+        argumentNames: ["<module>?"],
+        permissionLevel: "all",
+        execute: async function(args, msg, bot) {
+            if (args.length == 0) {
+                msg.channel.send(`Active modules: \`${Object.getOwnPropertyNames(bot.modules).join("\`, \`")}\`\nUse \`${bot.prefixForMessageContext(msg)}list <moduleName>\` to list commands in a module.`);
+            } else {
+                if (Object.getOwnPropertyNames(bot.modules).indexOf(args[0]) != -1) {
+                    const arr = Object.getOwnPropertyNames(bot.modules[args[0]].commands);
+                    const embed = new discord.RichEmbed()
+                        .setTitle(`Commands in module \`${args[0]}\``)
+                        .setColor(bot.config.defaultColors.neutral);
+                    arr.forEach(name => {
+                        const cmd = bot.modules[args[0]].commands[name];
+                        embed.addField(`\`${bot.prefixForMessageContext(msg)}${name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
+                    })
+                    msg.channel.send({embed});
+                } else {
+                    msg.channel.send(`❌ Module \`${args[0]}\` not found.`);
+                }
+            }
+        }
+    },
+
     "own": {
         description: "Become the bot owner. This command can only be used once.",
         argumentNames: [],

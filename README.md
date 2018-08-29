@@ -159,7 +159,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] set permission role commands
 - [ ] load modules with commands
 - [x] help command
-- [ ] command list
+- [x] command list
 - [ ] set config commands
 - [ ] message listeners
 - [ ] per-server settings

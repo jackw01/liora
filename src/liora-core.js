@@ -50,7 +50,7 @@ const configSchema = {
     },
     defaultGame: {
         type: "string",
-        default: "$info for help"
+        default: "$help for help"
     },
     prefix: {
         type: "string",
