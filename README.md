@@ -165,10 +165,11 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] per-server settings
 - [ ] reload module command
 - [ ] reload all modules command
-- [ ] set nick command
+- [x] set nick command
 - [ ] set command group permission commands
 - [ ] set command role permission commands
-- [ ] role/nick utility commands
+- [ ] nick utility commands
+- [x] role utility commands
 - [ ] use username instead of id
 - [ ] use role instead of id
 - [ ] command aliases

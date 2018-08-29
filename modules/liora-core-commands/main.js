@@ -53,7 +53,15 @@ module.exports.commands = {
         permissionLevel: "all",
         execute: async function(args, msg, bot) {
             if (args.length == 0) {
-                msg.channel.send(`Active modules: \`${Object.getOwnPropertyNames(bot.modules).join("\`, \`")}\`\nUse \`${bot.prefixForMessageContext(msg)}list <moduleName>\` to list commands in a module.`);
+                const embed = new discord.RichEmbed()
+                    .setTitle("Active modules:")
+                    .setColor(bot.config.defaultColors.neutral);
+                const modules = Object.getOwnPropertyNames(bot.modules);
+                modules.forEach(mod => {
+                    const arr = Object.getOwnPropertyNames(bot.modules[mod].commands);
+                    embed.addField(`\`${mod}\``, `\`${arr.join("\`, \`")}\``);
+                });
+                msg.channel.send({embed});
             } else {
                 if (Object.getOwnPropertyNames(bot.modules).indexOf(args[0]) != -1) {
                     const arr = Object.getOwnPropertyNames(bot.modules[args[0]].commands);
@@ -126,6 +134,32 @@ module.exports.commands = {
             const group = bot.config.groups[args[0]] || [];
             if (group.length > 0) msg.channel.send(`Users: \`${group.join("\`, \`")}\``);
             else msg.channel.send("❌ Group does not exist or is empty.");
+        }
+    },
+
+    "roleid": {
+        description: "Get the ID for a role.",
+        argumentNames: ["<role>"],
+        permissionLevel: "all",
+        execute: async function(args, msg, bot) {
+            if (msg.guild) {
+                var result = msg.guild.roles.find(r => {
+                    return r.name.toLowerCase() === args.join(" ").toLowerCase()
+                });
+                if (result) msg.channel.send(`✅ Role id: \`${result.id}\`.`);
+                else msg.channel.send(`❌ Role not found.`);
+            } else {
+                msg.channel.send(`❌ Must be in a server to use this command.`);
+            }
+        }
+    },
+
+    "setnick": {
+        description: "Set nickname.",
+        argumentNames: ["<newNickname>"],
+        permissionLevel: "manager",
+        execute: async function(args, msg, bot) {
+            msg.guild.members.get(bot.client.user.id).setNickname(args.join(" "));
         }
     },
 
