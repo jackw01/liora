@@ -90,6 +90,31 @@ module.exports.commands = {
         }
     },
 
+    "getconfig": {
+        description: "Get a configuration item.",
+        argumentNames: ["<itemPath>"],
+        permissionLevel: "owner",
+        execute: async function(args, msg, bot) {
+            msg.channel.send(`ℹ️ Value for key ${args[0]}: ${_.get(bot.config, args[0], "undefined")}`);
+        }
+    },
+
+    "setconfig": {
+        description: "Set a configuration item.",
+        argumentNames: ["<itemPath>", "<value>"],
+        permissionLevel: "owner",
+        execute: async function(args, msg, bot) {
+            // Cannot change permissions using this command
+            if (args[0] == "owner" || args[0].includes("groups") || args[0].includes("Permissions")) {
+                msg.channel.send("❌ This configuration item cannot be edited.");
+            } else {
+                _.set(bot.config, args[0], args.splice(1).join(" "));
+                saveConfigAndAck(msg, bot);
+                if (args[0] == "defaultGame") bot.client.user.setActivity(bot.config.defaultGame);
+            }
+        }
+    },
+
     "permadd": {
         description: "Add a user by ID to a permission group.",
         argumentNames: ["<userID> <group>"],

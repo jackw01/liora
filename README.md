@@ -160,7 +160,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] load modules with commands
 - [x] help command
 - [x] command list
-- [ ] set config commands
+- [x] set config commands
 - [ ] message listeners
 - [ ] per-server settings
 - [ ] reload module command
