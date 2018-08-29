@@ -97,32 +97,49 @@ See `liora-core-commands` in the modules folder for an example module.
 ##### Properties
 ###### `bot.client`
 The currently in-use [Discord.js `client` instance](https://discord.js.org/#/docs/main/stable/class/Client)
+
 ###### `bot.log`
 [Winston logger](https://github.com/winstonjs/winston) instance that can be used for logging to the console.
+
 ###### `bot.firstLoadTime`
 `Date` object representing the time when the bot first loaded.
+
 ###### `bot.lastLoadTime`
 `Date` object representing the time when the bot last loaded.
+
+###### `bot.lastLoadDuration`
+Number representing the time it took for the bot to load in milliseconds.
 
 ##### Methods
 ###### `bot.setConfigDirectory(configDir)`
 Sets the configuration folder used by the bot.
+
 ###### `bot.addModuleSource(directory)`
 Adds a folder by absolute path as a source for modules.
+
 ###### `bot.load()`
 Initializes the bot and connects to Discord. This function should only be called once.
+
 ###### `bot.saveConfig(callback)`
 Saves the current configuration data object to the config file. `callback` will be called with an error object if saving fails.
+
 ###### `bot.loadModule(name, callback)`
 Loads a module by name from any module source. `callback` will be called with an error object if loading fails.
+
 ###### `bot.unloadModule(name, callback)`
 Unloads a module by name and clears the `require` cache. `callback` will be called with an error object if unloading fails.
+
 ###### `bot.initModule(name, callback)`
 Calls the init function on a module by name. `callback` will be called with an error object if initialization fails.
+
 ###### `bot.prefixForMessageContext(msg)`
 Returns the bot's command prefix for the context of a Discord.js message object.
+
 ###### `bot.hasPermission(member, user, group, role)`
-Returns `true` if a user meets the criteria for the specified permission `group` or `role`. Requires a Discord.js `GuildMember` object (or `null` if not in a server), a Discord.js `user` object, a group name, and a Discord.js `Snowflake` with the role ID. Either `group` or `role` may be empty strings. If both are specified, any this function will return `true` if the user matches **either** `group` or `role`.
+Returns `true` if a user meets the criteria for the specified permission `group` or `role`. Requires a Discord.js `GuildMember` object (or `null` if not in a server), a Discord.js `User` object, a group name, and a Discord.js `Snowflake` with the role ID.
+
+Either `group` or `role` may be empty strings. If both are specified, any this function will return `true` if the user matches **either** `group` or `role`.
+
 ###### `bot.getCommandNamed(name, callback)`
 Searches all loaded modules for a command with the specified name. `callback` will be called with either no arguments or the requested command object.
 
@@ -141,18 +158,25 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] set permission group commands
 - [ ] set permission role commands
 - [ ] load modules with commands
+- [x] help command
 - [ ] command list
 - [ ] set config commands
 - [ ] message listeners
 - [ ] per-server settings
-- [ ] restart/reload commands
-- [ ] permission editing commands
+- [ ] reload module command
+- [ ] reload all modules command
+- [ ] set nick command
+- [ ] set command group permission commands
+- [ ] set command role permission commands
 - [ ] role/nick utility commands
 - [ ] use username instead of id
 - [ ] use role instead of id
 - [ ] command aliases
 - [ ] youtube player
+- [ ] youtube player on multiple servers
+- [ ] youtube player queue and shuffle
 - [ ] automatic responses
+- [ ] automatic responses regex and random choice
 - [ ] weather
 - [ ] urban dictionary
 - [ ] xkcd

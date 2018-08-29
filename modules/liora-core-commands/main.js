@@ -1,4 +1,6 @@
+const discord = require("discord.js");
 const _ = require("lodash");
+const prettyMs = require("pretty-ms");
 
 // Module init function - called after bot is connected and in servers
 // Use for initializing per-server module state information or similar things
@@ -25,6 +27,25 @@ module.exports.init = async function(bot) {
 //     }
 // },
 module.exports.commands = {
+
+    "help": {
+        description: "Get help and info on the bot.",
+        argumentNames: [],
+        permissionLevel: "all",
+        execute: async function(args, msg, bot) {
+            const embed = new discord.RichEmbed()
+                .setTitle("Liora v1.0.0")
+                .setDescription(`Use \`${bot.prefixForMessageContext(msg)}list\` to list commands.\nLiora is built with ❤️ by jackw01 and released under the MIT license.\n[https://github.com/jackw01/liora](https://github.com/jackw01/liora)`)
+                .setColor(bot.config.defaultColors.neutral)
+                .addField("Bot ID", bot.client.user.id, true)
+                .addField("Owner ID", bot.config.owner, true)
+                .addField("Channels", bot.client.channels.array().length, true)
+                .addField("Client Uptime", prettyMs(bot.client.uptime), true)
+                .addField("Bot Uptime", prettyMs(Date.now() - bot.firstLoadTime), true)
+                .addField("Last Startup Time", prettyMs(bot.lastLoadDuration), true);
+            msg.channel.send({embed});
+        }
+    },
 
     "own": {
         description: "Become the bot owner. This command can only be used once.",
