@@ -59,11 +59,12 @@ module.exports.init = async function(bot) {
 }
 ```
 
-Module commands object - all commands should be defined here.
+Module commands array - all commands should be defined here.
 Format:
 ```javascript
-// commandname is how the users will run a command and MUST be all lowercase
-"commandname": {
+{
+    // Name of the command (what users will type to run it) - must be lowercase
+    name: "command",
 
     // Description of the command (not arguments) that will be displayed in the help text
     description: "description",
@@ -73,6 +74,9 @@ Format:
 
     // Permission level: "all" for all users, "owner" for owner, "manager" or anything else for a group
     permissionLevel: "all",
+
+    // Array of default aliases (alternate ways of running this command)
+    aliases: ["alternate1", "alternate2"],
 
     // Function that performs the command: must accept three arguments
     //   args: array of arguments that the user executed the command with
@@ -89,9 +93,9 @@ Example:
 module.exports.init = async function(bot) {
 }
 
-module.exports.commands = {
-
-    "ping": {
+module.exports.commands = [
+    {
+        name: "ping",
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
@@ -99,7 +103,7 @@ module.exports.commands = {
             msg.channel.send("pong");
         }
     }
-}
+]
 ```
 
 See `liora-core-commands` in the modules folder for an example module.

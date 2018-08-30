@@ -1,9 +1,10 @@
 module.exports.init = async function(bot) {
 }
 
-module.exports.commands = {
+module.exports.commands = [
 
-    "potato": {
+    {
+        name: "potato"
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
@@ -12,4 +13,4 @@ module.exports.commands = {
             msg.channel.send("potato.");
         }
     }
-}
+]

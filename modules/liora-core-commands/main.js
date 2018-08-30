@@ -10,14 +10,17 @@ module.exports.init = async function(bot) {
 // Module commands object - all commands should be defined here
 //
 // Format:
-// commandname is how the users will run a command and MUST be all lowercase
-// "commandname": {
+// {
+//     // Name of the command (what users will type to run it) - must be lowercase
+//     name: "command",
 //     // Description of the command (not arguments) that will be displayed in the help text
 //     description: "description",
 //     // Array of argument names: follow the provided format
 //     argumentNames: ["<requiredArgument>", "<optionalArgument>?"],
 //     // Permission level: "all" for all users, "owner" for owner, "manager" or anything else for a group
 //     permissionLevel: "all",
+//     // Array of default aliases (alternate ways of running this command)
+//     aliases: ["alternate1", "alternate2"],
 //     // Function that performs the command: must accept three arguments
 //     //   args: array of arguments that the user executed the command with
 //     //   msg: Discord.js message object that the command was found in
@@ -26,9 +29,9 @@ module.exports.init = async function(bot) {
 //         // Do the command here
 //     }
 // },
-module.exports.commands = {
-
-    "help": {
+module.exports.commands = [
+    {
+        name: "help",
         description: "Get help and info on the bot.",
         argumentNames: [],
         permissionLevel: "all",
@@ -47,8 +50,8 @@ module.exports.commands = {
             msg.channel.send({embed});
         }
     },
-
-    "list": {
+    {
+        name: "list",
         description: "List commands.",
         argumentNames: ["<module>?"],
         permissionLevel: "all",
@@ -60,20 +63,18 @@ module.exports.commands = {
                     .setColor(bot.config.defaultColors.neutral);
                 const modules = Object.getOwnPropertyNames(bot.modules);
                 modules.forEach(mod => {
-                    const arr = Object.getOwnPropertyNames(bot.modules[mod].commands);
+                    const arr = bot.modules[mod].commands.map(cmd => cmd.name);
                     embed.addField(`\`${mod}\``, `\`${arr.join("\`, \`")}\``);
                 });
                 msg.channel.send({embed});
             } else {
                 if (Object.getOwnPropertyNames(bot.modules).indexOf(args[0]) != -1) {
-                    const arr = Object.getOwnPropertyNames(bot.modules[args[0]].commands);
                     const embed = new discord.RichEmbed()
                         .setTitle(`Commands in module \`${args[0]}\``)
                         .setColor(bot.config.defaultColors.neutral);
-                    arr.forEach(name => {
-                        const cmd = bot.modules[args[0]].commands[name];
-                        embed.addField(`\`${bot.prefixForMessageContext(msg)}${name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
-                    })
+                    bot.modules[args[0]].commands.forEach(cmd => {
+                        embed.addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
+                    });
                     msg.channel.send({embed});
                 } else {
                     msg.channel.send(`❌ Module \`${args[0]}\` not found.`);
@@ -81,8 +82,8 @@ module.exports.commands = {
             }
         }
     },
-
-    "own": {
+    {
+        name: "own",
         description: "Become the bot owner. This command can only be used once.",
         argumentNames: [],
         permissionLevel: "all",
@@ -92,8 +93,8 @@ module.exports.commands = {
             saveConfigAndAck(msg, bot);
         }
     },
-
-    "getconfig": {
+    {
+        name: "getconfig",
         description: "Get a configuration item.",
         argumentNames: ["<itemPath>"],
         permissionLevel: "owner",
@@ -102,8 +103,8 @@ module.exports.commands = {
             msg.channel.send(`ℹ️ Value for key ${args[0]}: ${_.get(bot.config, args[0], "undefined")}`);
         }
     },
-
-    "setconfig": {
+    {
+        name: "setconfig",
         description: "Set a configuration item.",
         argumentNames: ["<itemPath>", "<value>"],
         permissionLevel: "owner",
@@ -119,8 +120,8 @@ module.exports.commands = {
             }
         }
     },
-
-    "kill": {
+    {
+        name: "kill",
         description: "Shutdown the bot.",
         argumentNames: [],
         permissionLevel: "owner",
@@ -130,8 +131,8 @@ module.exports.commands = {
             bot.shutdown();
         }
     },
-
-    "restart": {
+    {
+        name: "restart",
         description: "Completely restart the bot.",
         argumentNames: [],
         permissionLevel: "owner",
@@ -141,8 +142,8 @@ module.exports.commands = {
             bot.restart();
         }
     },
-
-    "reload": {
+    {
+        name: "reload",
         description: "Reload all modules.",
         argumentNames: [],
         permissionLevel: "owner",
@@ -171,8 +172,8 @@ module.exports.commands = {
             }
         }
     },
-
-    "loadmodule": {
+    {
+        name: "loadmodule",
         description: "Load a module.",
         argumentNames: ["<moduleName>"],
         permissionLevel: "owner",
@@ -202,8 +203,8 @@ module.exports.commands = {
             });
         }
     },
-
-    "reloadmodule": {
+    {
+        name: "reloadmodule",
         description: "Reload a module.",
         argumentNames: ["<moduleName>"],
         permissionLevel: "owner",
@@ -232,8 +233,8 @@ module.exports.commands = {
             });
         }
     },
-
-    "unloadmodule": {
+    {
+        name: "unloadmodule",
         description: "Unload a module.",
         argumentNames: ["<moduleName>"],
         permissionLevel: "owner",
@@ -257,8 +258,8 @@ module.exports.commands = {
             });
         }
     },
-
-    "permadd": {
+    {
+        name: "permadd",
         description: "Add a user by ID to a permission group.",
         argumentNames: ["<userID> <group>"],
         permissionLevel: "owner",
@@ -269,8 +270,8 @@ module.exports.commands = {
             saveConfigAndAck(msg, bot);
         }
     },
-
-    "permremove": {
+    {
+        name: "permremove",
         description: "Remove a user by ID from a permission group.",
         argumentNames: ["<userID> <group>"],
         permissionLevel: "owner",
@@ -284,8 +285,8 @@ module.exports.commands = {
             }
         }
     },
-
-    "permgroups": {
+    {
+        name: "permgroups",
         description: "List permission groups",
         argumentNames: [],
         permissionLevel: "owner",
@@ -296,8 +297,8 @@ module.exports.commands = {
             else msg.channel.send("❌ No groups configured.");
         }
     },
-
-    "permlist": {
+    {
+        name: "permlist",
         description: "List users in a permission group.",
         argumentNames: ["<group>"],
         permissionLevel: "owner",
@@ -308,8 +309,8 @@ module.exports.commands = {
             else msg.channel.send("❌ Group does not exist or is empty.");
         }
     },
-
-    "roleid": {
+    {
+        name: "roleid",
         description: "Get the ID for a role.",
         argumentNames: ["<role>"],
         permissionLevel: "all",
@@ -326,8 +327,8 @@ module.exports.commands = {
             }
         }
     },
-
-    "setnick": {
+    {
+        name: "setnick",
         description: "Set nickname.",
         argumentNames: ["<newNickname>"],
         permissionLevel: "manager",
@@ -336,8 +337,8 @@ module.exports.commands = {
             msg.guild.members.get(bot.client.user.id).setNickname(args.join(" "));
         }
     },
-
-    "ping": {
+    {
+        name: "ping",
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
@@ -348,8 +349,8 @@ module.exports.commands = {
             m.delete();
         }
     },
-
-    "alias": {
+    {
+        name: "alias",
         description: "Define an alias for a command.",
         argumentNames: ["<alias>", "<command>"],
         permissionLevel: "manager",
@@ -359,8 +360,8 @@ module.exports.commands = {
             saveConfigAndAck(msg, bot);
         }
     },
-
-    "removealias": {
+    {
+        name: "removealias",
         description: "Remove an alias for a command.",
         argumentNames: ["<alias>"],
         permissionLevel: "manager",
@@ -370,8 +371,8 @@ module.exports.commands = {
             saveConfigAndAck(msg, bot);
         }
     },
-
-    "aliases": {
+    {
+        name: "aliases",
         description: "List aliases.",
         argumentNames: [],
         permissionLevel: "all",
@@ -396,7 +397,13 @@ module.exports.commands = {
             msg.channel.send({embed});
         }
     }
-}
+]
+
+// Module responders array - all commands should be defined here
+//
+
+module.exports.responders = [
+]
 
 function saveConfigAndAck(msg, bot) {
     bot.saveConfig(err => {

@@ -209,9 +209,8 @@ bot.loadModule = function(name, callback) {
                     newModule = require(absolutePath);
                     newModule.path = absolutePath; // Set path property of module so we know the path to unload
                     newModule.defaultAliases = {};
-                    const commands = Object.keys(newModule.commands)
-                    commands.forEach(cmd => {
-                        newModule.commands[cmd].aliases.forEach(a => { newModule.defaultAliases[a] = cmd });
+                    newModule.commands.forEach(cmd => {
+                        cmd.aliases.forEach(a => { newModule.defaultAliases[a] = cmd.name });
                     });
                 } catch (err) {
                     bot.log.warn(chalk.red(`Unable to load module ${name}: ${err.message}`));
@@ -295,8 +294,9 @@ bot.getCommandNamed = function(command, callback) {
     if (command in this.config.commandAliases) command = this.config.commandAliases[command];
     else moduleNames.forEach(name => { command = this.modules[name].defaultAliases[command] || command });
     moduleNames.forEach(name => {
-        if (command in this.modules[name].commands) {
-            callback(this.modules[name].commands[command]);
+        const found = this.modules[name].commands.find(cmd => cmd.name == command);
+        if (found) {
+            callback(found);
             return;
         }
     });
@@ -368,7 +368,7 @@ bot.client.on("message", async msg => {
         bot.getCommandNamed(command, cmd => {
             if (cmd) {
                 if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
-                    
+
                     // Determine permission level for the message context
                     // Use the global group override and the role override if they exist
                     const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
