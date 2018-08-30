@@ -1,13 +1,25 @@
 # Liora
 Modular and extensible Node.js discord-bot with lots of built-in functionality
 
+## Is It a Bot or a Framework?
+Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for fast and easy development of custom bot functionality with Node.js.
+
 ## User Guide
 This guide assumes that you have created an application for your bot at https://discordapp.com/developers/applications/ and obtained a bot token.
 
 ### Standalone Usage
-With Liora globally installed, run `liora` to run using the default config folder at `~/.liora-bot/`. An optional config directory can be specified with the `--configDir` option. The first time Liora is run, it will create a blank config file. The `discordToken` property will need to be filled in with your bot token before the bot can connect to Discord. In standalone mode, only built-in modules will be accessible.
+1. Install Node.js 8.0.0 or higher on your system: https://nodejs.org/en/download/
+2. Install Liora globally: `npm install -g git+https://github.com/jackw01/liora.git`
+3. Run `liora` to run using the default configuration folder at `~/.liora-bot/`.
+4. Stop Liora once it has initialized.
+5. Open `config.json` inside the config folder and paste your bot token into the `discordToken` property.
+6. Run `liora` again to connect to Discord.
+7. Add the bot to your server(s).
+
+An optional config directory can be specified with the `--configDir` option. The first time Liora is run, it will create a blank config file. In standalone mode, only built-in modules will be accessible.
 
 ### Customizable Usage
+For developers who want to add their own functionality to their bot.
 
 #### Loader script
 To add your own functionality, just create an empty Node.js project and install and require Liora. Set a custom config folder if you want to and add a folder as a module source.
@@ -144,6 +156,7 @@ Either `group` or `role` may be empty strings. If both are specified, any this f
 Searches all loaded modules for a command with the specified name. `callback` will be called with either no arguments or the requested command object.
 
 ## Todo
+### Core
 - [x] login to discord
 - [x] config loader
 - [x] config schema
@@ -155,34 +168,52 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] fancy colored logging
 - [x] permissions by user
 - [x] permissions by role
-- [x] set permission group commands
-- [ ] set permission role commands
-- [ ] load modules with commands
-- [x] help command
-- [x] command list
-- [x] set config commands
 - [ ] message listeners
 - [ ] per-server settings
-- [ ] reload module command
-- [ ] reload all modules command
 - [x] set nick command
-- [ ] set command group permission commands
-- [ ] set command role permission commands
-- [ ] nick utility commands
-- [x] role utility commands
 - [ ] use username instead of id
 - [ ] use role instead of id
 - [ ] command aliases
+- [ ] automatic responses
+- [ ] automatic responses regex and random choice
+- [ ] error recovery
+- [ ] command cooldown
+- [ ] default aliases
+
+### Commands for builtin modules
+- [x] set permission group
+- [ ] set permission role
+- [x] load modules
+- [x] reload module
+- [ ] reload all modules
+- [ ] full reload and restart
+- [x] help
+- [x] list
+- [x] set config
+- [ ] set command group permission
+- [ ] set command role permission
+- [ ] nick utility
+- [x] role utility
+- [ ] youtube search
 - [ ] youtube player
 - [ ] youtube player on multiple servers
 - [ ] youtube player queue and shuffle
-- [ ] automatic responses
-- [ ] automatic responses regex and random choice
+- [ ] server info
+- [ ] channel info
+- [ ] user info
 - [ ] weather
+- [ ] linux fortune command
 - [ ] urban dictionary
 - [ ] xkcd
-- [ ] error recovery
-- [ ] full reload and restart command
+- [ ] get profile picture
+- [ ] reddit image search
+- [ ] dice
+- [ ] wikipedia
+- [ ] 8 ball
+- [ ] cowsay
+- [ ] figlet/toilet
+- [ ] poll
+- [ ] remindme
 
 ### Minor issues
 - [ ] prevent config dir being changed when bot is loaded

@@ -42,7 +42,7 @@ winston.addColors({
 const configSchema = {
     discordToken: {
         type: "string",
-        default: ""
+        default: "Paste your bot token here."
     },
     owner: {
         type: "string",
@@ -207,6 +207,7 @@ bot.loadModule = function(name, callback) {
                 let newModule;
                 try {
                     newModule = require(absolutePath);
+                    newModule.path = absolutePath;
                 } catch (err) {
                     bot.log.warn(`Unable to load module ${name}: ${err.message}`);
                     bot.log.warn(`> ${err.stack}`);
@@ -233,7 +234,7 @@ bot.loadModule = function(name, callback) {
 bot.unloadModule = function(name, callback) {
     bot.log.modules(`Attempting to unload module ${name}...`);
     if (name in this.modules) {
-        delete require.cache[require.resolve(`./${localModuleDirectory}/${name}.js`)];
+        delete require.cache[require.resolve(this.modules[name].path)];
         delete this.modules[name];
         bot.log.modules(`Unloaded module ${name}`);
         callback();

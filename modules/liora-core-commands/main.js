@@ -115,6 +115,89 @@ module.exports.commands = {
         }
     },
 
+    "loadmodule": {
+        description: "Load a module.",
+        argumentNames: ["<moduleName>"],
+        permissionLevel: "owner",
+        execute: async function(args, msg, bot) {
+            var startTime = Date.now();
+            bot.loadModule(args.join(""), err => {
+                if (err) {
+                    msg.channel.send(`❌ Error: ${err.message}`);
+                } else {
+                    bot.initModule(args.join(""), err => {
+                        if (err) {
+                            msg.channel.send(`❌ Error initializing \`${args.join("")}\`: ${err.message}`);
+                        } else {
+                            let value = _.get(bot.config, "activeModules");
+                            if (value.indexOf(args.join("")) == -1) {
+                                value.push(args.join(""))
+                                _.set(bot.config, "activeModules", value);
+                                bot.saveConfig(err => {
+                                    if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
+                                    else msg.channel.send(`✅ Module loaded in ${prettyMs(Date.now() - startTime)}`);
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    },
+
+    "reloadmodule": {
+        description: "Reload a module.",
+        argumentNames: ["<moduleName>"],
+        permissionLevel: "owner",
+        execute: async function(args, msg, bot) {
+            var startTime = Date.now();
+            bot.unloadModule(args.join(""), err => {
+                if (err) {
+                    msg.channel.send(`❌ Error: ${err.message}`);
+                } else {
+                    bot.loadModule(args.join(""), err => {
+                        if (err) {
+                            msg.channel.send(`❌ Error: ${err.message}`);
+                        } else {
+                            bot.modules[args.join("")].init(bot);
+                            bot.initModule(args.join(""), err => {
+                                if (err) {
+                                    msg.channel.send(`❌ Error initializing \`${args.join("")}\`: ${err.message}`);
+                                } else {
+                                    msg.channel.send(`✅ Module reloaded in ${prettyMs(Date.now() - startTime)}`);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    },
+
+    "unloadmodule": {
+        description: "Unload a module.",
+        argumentNames: ["<moduleName>"],
+        permissionLevel: "owner",
+        execute: async function(args, msg, bot) {
+            var startTime = Date.now();
+            bot.unloadModule(args.join(""), err => {
+                if (err) {
+                    msg.channel.send(`❌ Error: ${err.message}`);
+                } else {
+                    let value = _.get(bot.config, "activeModules");
+                    if (value.indexOf(args.join("")) != -1) {
+                        value.splice(value.indexOf(args.join("")), 1);
+                        _.set(bot.config, "activeModules", value);
+                        bot.saveConfig(err => {
+                            if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
+                            else msg.channel.send(`✅ Module unloaded in ${prettyMs(Date.now() - startTime)}`);
+                        });
+                    }
+                }
+            });
+        }
+    },
+
     "permadd": {
         description: "Add a user by ID to a permission group.",
         argumentNames: ["<userID> <group>"],
