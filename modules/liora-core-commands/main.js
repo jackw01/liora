@@ -120,6 +120,58 @@ module.exports.commands = {
         }
     },
 
+    "kill": {
+        description: "Shutdown the bot.",
+        argumentNames: [],
+        permissionLevel: "owner",
+        aliases: ["shutdown"],
+        execute: async function(args, msg, bot) {
+            msg.react("✅");
+            bot.shutdown();
+        }
+    },
+
+    "restart": {
+        description: "Completely restart the bot.",
+        argumentNames: [],
+        permissionLevel: "owner",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            msg.react("🔄");
+            bot.restart();
+        }
+    },
+
+    "reload": {
+        description: "Reload all modules.",
+        argumentNames: [],
+        permissionLevel: "owner",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            var moduleCount = 0;
+            var startTime = Date.now();
+            for (let i = 0; i < bot.config.activeModules.length; i++) {
+                const module = bot.config.activeModules[i];
+                bot.unloadModule(module, err => {
+                    if (err) msg.channel.send(`❌ Error unloading \`${module}\`: ${err.message}`);
+                    bot.loadModule(bot.config.activeModules[i], err => {
+                        if (err) {
+                            msg.channel.send(`❌ Error loading \`${module}\`: ${err.message}`);
+                        } else {
+                            bot.initModule(module, err => {
+                                if (err) {
+                                    msg.channel.send(`❌ Error initializing \`${module}\`: ${err.message}`);
+                                } else if (++moduleCount >= bot.config.activeModules.length) {
+                                    msg.channel.send(`✅ Reloaded all modules in ${prettyMs(Date.now() - startTime)}`);
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+        }
+    },
+
     "loadmodule": {
         description: "Load a module.",
         argumentNames: ["<moduleName>"],

@@ -165,12 +165,11 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] internal module loading
 - [x] external module loading
 - [x] sample bot with custom modules
-- [ ] fancy colored logging
+- [x] colored logging
 - [x] permissions by user
 - [x] permissions by role
-- [ ] message listeners
+- [ ] message responders
 - [ ] per-server settings
-- [x] set nick command
 - [ ] use username instead of id
 - [ ] use role instead of id
 - [x] command aliases
@@ -185,15 +184,16 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] set permission role
 - [x] load modules
 - [x] reload module
-- [ ] reload all modules
-- [ ] full reload and restart
+- [x] reload all modules
+- [x] full reload and restart
 - [x] help
 - [x] list
-- [x] set config
+- [x] get/set config
 - [ ] set command group permission
 - [ ] set command role permission
 - [ ] nick utility
 - [x] role utility
+- [x] set nick
 - [ ] youtube search
 - [ ] youtube player
 - [ ] youtube player on multiple servers

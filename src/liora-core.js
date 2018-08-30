@@ -122,7 +122,7 @@ bot.setConfigDirectory = function(configDir) {
 bot.saveConfig = function(callback) {
     jsonfile.writeFile(this.configFile, bot.config, {spaces: 4, EOL: "\n"}, (err) => {
         if (err) {
-            bot.log.error(`Unable to save config.json: ${err.message}`);
+            bot.log.error(chalk.red.bold(`Unable to save config.json: ${err.message}`));
             bot.log.info(`Config data: ${JSON.stringify(bot.config, null, 4)}`);
             callback(err);
         } else {
@@ -139,7 +139,7 @@ bot.loadConfig = function(callback) {
             mkdirp.sync(path.dirname(this.configFile));
             fs.writeFileSync(this.configFile, JSON.stringify({}, null, 4));
         } catch (err) {
-            bot.log.error(`Unable to create config.json: ${err.message}`);
+            bot.log.error(chalk.red.bold(`Unable to create config.json: ${err.message}`));
             throw err;
         }
     }
@@ -177,7 +177,7 @@ bot.loadConfig = function(callback) {
     fs.writeFileSync(this.configFile, JSON.stringify(bot.config, null, 4));
     jsonfile.readFile(this.configFile, (err, obj) => {
         if (err) {
-            bot.log.error(`Unable to load config.json: ${err.message}`);
+            bot.log.error(chalk.red.bold(`Unable to load config.json: ${err.message}`));
             throw err;
         } else {
             bot.config = obj;
@@ -189,7 +189,7 @@ bot.loadConfig = function(callback) {
 // Add source folder to search in when loading modules
 bot.addModuleSource = function(directory) {
     if (fs.existsSync(directory)) this.moduleSources.push(directory);
-    else bot.log.warn(`Module source ${directory} does not exist`);
+    else bot.log.warn(chalk.yellow(`Module source ${directory} does not exist`));
 }
 
 // Load module
@@ -214,13 +214,13 @@ bot.loadModule = function(name, callback) {
                         newModule.commands[cmd].aliases.forEach(a => { newModule.defaultAliases[a] = cmd });
                     });
                 } catch (err) {
-                    bot.log.warn(`Unable to load module ${name}: ${err.message}`);
+                    bot.log.warn(chalk.red(`Unable to load module ${name}: ${err.message}`));
                     bot.log.warn(`> ${err.stack}`);
                     callback(err);
                     return;
                 }
                 this.modules[name] = newModule;
-                bot.log.modules(`Loaded module ${name}`);
+                bot.log.modules(chalk.green(`Loaded module ${name}`));
                 found = true;
                 callback();
             }
@@ -241,7 +241,7 @@ bot.unloadModule = function(name, callback) {
     if (name in this.modules) {
         delete require.cache[require.resolve(this.modules[name].path)];
         delete this.modules[name];
-        bot.log.modules(`Unloaded module ${name}`);
+        bot.log.modules(chalk.green(`Unloaded module ${name}`));
         callback();
     } else {
         bot.log.warn(`Module ${name} not currently loaded`);
@@ -253,10 +253,10 @@ bot.unloadModule = function(name, callback) {
 bot.initModule = function(name, callback) {
     if (name in this.modules) {
         this.modules[name].init(this).then(() => {
-            bot.log.modules(`Initialized module ${name}`);
+            bot.log.modules(chalk.green(`Initialized module ${name}`));
             callback();
         }).catch(err => {
-            bot.log.warn(`Failed to initialize module ${name}: ${err.message}`);
+            bot.log.warn(chalk.red(`Failed to initialize module ${name}: ${err.message}`));
             callback(err);
         });
     } else {
@@ -319,9 +319,24 @@ bot.load = function() {
     });
 }
 
+// Disconnect and end the process
+bot.shutdown = function() {
+    bot.log.info("Shutting down...");
+    this.client.destroy().then(() => {});
+}
+
+// Disconnect, unload all modules, and reconnect
+bot.restart = function() {
+    bot.log.info("Restarting: resetting client...");
+    this.client.destroy().then(() => {
+        this.config.activeModules.forEach(module => { bot.unloadModule(module, err => {}) });
+        this.load();
+    });
+}
+
 // Called when client logs in
 bot.client.on("ready", () => {
-    bot.log.info(`Logged in as: ${bot.client.user.username} (id: ${bot.client.user.id})`);
+    bot.log.info(chalk.cyan(`Logged in as: ${bot.client.user.username} (id: ${bot.client.user.id})`));
     bot.client.user.setActivity(bot.config.defaultGame);
 
     // Update permissions config for servers
@@ -345,8 +360,6 @@ bot.client.on("ready", () => {
 
 // Message dispatching
 bot.client.on("message", async msg => {
-    var executed = false;
-
     // Check if message is command and do not respond to other bots
     if (!msg.author.bot && msg.content.indexOf(bot.prefixForMessageContext(msg)) === 0) {
         const args = msg.content.slice(bot.prefixForMessageContext(msg).length).trim().split(/ +/g);
@@ -355,16 +368,17 @@ bot.client.on("message", async msg => {
         bot.getCommandNamed(command, cmd => {
             if (cmd) {
                 if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
-
+                    
                     // Determine permission level for the message context
                     // Use the global group override and the role override if they exist
                     const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
                     const roleOverride = msg.guild ? bot.config.serverPermissions[msg.guild.id][command] || "" : "";
                     if (bot.hasPermission(msg.member, msg.author, permissionLevel, roleOverride)) {
+
+                        // Execute the command with args, message object, and bot object
                         cmd.execute(args, msg, bot).catch(err => {
                             msg.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
                         });
-                        executed = true;
                     } else {
                         msg.channel.send("🔒 You do not have permission to use this command.");
                     }
@@ -374,9 +388,7 @@ bot.client.on("message", async msg => {
             }
         });
     }
-    if (!executed) {
-        // run listeners
-    }
+    // run listeners
 });
 
 // Set default config directory
@@ -384,7 +396,7 @@ bot.setConfigDirectory(path.join(os.homedir(), ".liora-bot"));
 
 // Run the bot automatically if module is run instead of imported
 if (!module.parent) {
-    bot.log.info("Liora is running in standalone mode");
+    bot.log.info(chalk.cyan("Liora is running in standalone mode"));
     const options = commandLineArgs([{ name: "configDir", defaultValue: "" }]);
     if (options.configDir != "") bot.setConfigDirectory(options.configDir);
     bot.load();
