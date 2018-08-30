@@ -207,7 +207,12 @@ bot.loadModule = function(name, callback) {
                 let newModule;
                 try {
                     newModule = require(absolutePath);
-                    newModule.path = absolutePath;
+                    newModule.path = absolutePath; // Set path property of module so we know the path to unload
+                    newModule.defaultAliases = {};
+                    const commands = Object.keys(newModule.commands)
+                    commands.forEach(cmd => {
+                        newModule.commands[cmd].aliases.forEach(a => { newModule.defaultAliases[a] = cmd });
+                    });
                 } catch (err) {
                     bot.log.warn(`Unable to load module ${name}: ${err.message}`);
                     bot.log.warn(`> ${err.stack}`);
@@ -285,8 +290,10 @@ bot.hasPermission = function(member, user, group, role) {
 
 // Returns the command object for a command name
 bot.getCommandNamed = function(command, callback) {
-    if (command in this.config.commandAliases) command = this.config.commandAliases[command];
     const moduleNames = Object.keys(this.modules);
+    // Search for configured and default aliases
+    if (command in this.config.commandAliases) command = this.config.commandAliases[command];
+    else moduleNames.forEach(name => { command = this.modules[name].defaultAliases[command] || command });
     moduleNames.forEach(name => {
         if (command in this.modules[name].commands) {
             callback(this.modules[name].commands[command]);

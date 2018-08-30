@@ -7,6 +7,7 @@ module.exports.commands = {
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
+        aliases: [],
         execute: async function(args, msg, bot) {
             msg.channel.send("potato.");
         }

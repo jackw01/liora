@@ -32,6 +32,7 @@ module.exports.commands = {
         description: "Get help and info on the bot.",
         argumentNames: [],
         permissionLevel: "all",
+        aliases: ["info"],
         execute: async function(args, msg, bot) {
             const embed = new discord.RichEmbed()
                 .setTitle("Liora v1.0.0")
@@ -51,6 +52,7 @@ module.exports.commands = {
         description: "List commands.",
         argumentNames: ["<module>?"],
         permissionLevel: "all",
+        aliases: [],
         execute: async function(args, msg, bot) {
             if (args.length == 0) {
                 const embed = new discord.RichEmbed()
@@ -84,6 +86,7 @@ module.exports.commands = {
         description: "Become the bot owner. This command can only be used once.",
         argumentNames: [],
         permissionLevel: "all",
+        aliases: [],
         execute: async function(args, msg, bot) {
             bot.config.owner = bot.config.owner || msg.author.id;
             saveConfigAndAck(msg, bot);
@@ -94,6 +97,7 @@ module.exports.commands = {
         description: "Get a configuration item.",
         argumentNames: ["<itemPath>"],
         permissionLevel: "owner",
+        aliases: ["cget"],
         execute: async function(args, msg, bot) {
             msg.channel.send(`ℹ️ Value for key ${args[0]}: ${_.get(bot.config, args[0], "undefined")}`);
         }
@@ -103,6 +107,7 @@ module.exports.commands = {
         description: "Set a configuration item.",
         argumentNames: ["<itemPath>", "<value>"],
         permissionLevel: "owner",
+        aliases: ["cset"],
         execute: async function(args, msg, bot) {
             // Cannot change permissions using this command
             if (args[0] == "owner" || args[0].includes("groups") || args[0].includes("Permissions")) {
@@ -119,6 +124,7 @@ module.exports.commands = {
         description: "Load a module.",
         argumentNames: ["<moduleName>"],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             var startTime = Date.now();
             bot.loadModule(args.join(""), err => {
@@ -149,6 +155,7 @@ module.exports.commands = {
         description: "Reload a module.",
         argumentNames: ["<moduleName>"],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             var startTime = Date.now();
             bot.unloadModule(args.join(""), err => {
@@ -178,6 +185,7 @@ module.exports.commands = {
         description: "Unload a module.",
         argumentNames: ["<moduleName>"],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             var startTime = Date.now();
             bot.unloadModule(args.join(""), err => {
@@ -202,6 +210,7 @@ module.exports.commands = {
         description: "Add a user by ID to a permission group.",
         argumentNames: ["<userID> <group>"],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             if (!bot.config.groups[args[1]]) bot.config.groups[args[1]] = [];
             if (!bot.config.groups[args[1]].includes(args[0])) bot.config.groups[args[1]].push(args[0]);
@@ -213,6 +222,7 @@ module.exports.commands = {
         description: "Remove a user by ID from a permission group.",
         argumentNames: ["<userID> <group>"],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             if (bot.config.groups[args[1]]) {
                 _.remove(bot.config.groups[args[1]], i => {return i == args[0]});
@@ -227,6 +237,7 @@ module.exports.commands = {
         description: "List permission groups",
         argumentNames: [],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             const groups = Object.keys(bot.config.groups);
             if (groups.length > 0) msg.channel.send(`Groups: \`${groups.join("\`, \`")}\``);
@@ -238,6 +249,7 @@ module.exports.commands = {
         description: "List users in a permission group.",
         argumentNames: ["<group>"],
         permissionLevel: "owner",
+        aliases: [],
         execute: async function(args, msg, bot) {
             const group = bot.config.groups[args[0]] || [];
             if (group.length > 0) msg.channel.send(`Users: \`${group.join("\`, \`")}\``);
@@ -249,6 +261,7 @@ module.exports.commands = {
         description: "Get the ID for a role.",
         argumentNames: ["<role>"],
         permissionLevel: "all",
+        aliases: [],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
                 var result = msg.guild.roles.find(r => {
@@ -266,6 +279,7 @@ module.exports.commands = {
         description: "Set nickname.",
         argumentNames: ["<newNickname>"],
         permissionLevel: "manager",
+        aliases: [],
         execute: async function(args, msg, bot) {
             msg.guild.members.get(bot.client.user.id).setNickname(args.join(" "));
         }
@@ -275,10 +289,59 @@ module.exports.commands = {
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
+        aliases: [],
         execute: async function(args, msg, bot) {
             const m = await msg.channel.send("pong");
             msg.channel.send(`ℹ️ Socket heartbeat ping is ${Math.round(bot.client.ping)}ms. Message RTT is ${m.createdTimestamp - msg.createdTimestamp}ms.`);
             m.delete();
+        }
+    },
+
+    "alias": {
+        description: "Define an alias for a command.",
+        argumentNames: ["<alias>", "<command>"],
+        permissionLevel: "manager",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            bot.config.commandAliases[args[0]] = args[1];
+            saveConfigAndAck(msg, bot);
+        }
+    },
+
+    "removealias": {
+        description: "Remove an alias for a command.",
+        argumentNames: ["<alias>"],
+        permissionLevel: "manager",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            delete bot.config.commandAliases[args[0]];
+            saveConfigAndAck(msg, bot);
+        }
+    },
+
+    "aliases": {
+        description: "List aliases.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            const embed = new discord.RichEmbed()
+                .setTitle("Aliases")
+                .setColor(bot.config.defaultColors.neutral);
+            let text = "";
+            const aliases = Object.keys(bot.config.commandAliases);
+            aliases.forEach(alias => {
+                text += `**\`${alias}\`**: \`${bot.config.commandAliases[alias]}\`\n`;
+            });
+            const moduleNames = Object.keys(bot.modules);
+            moduleNames.forEach(name => {
+                const aliases = Object.keys(bot.modules[name].defaultAliases);
+                aliases.forEach(alias => {
+                    text += `**\`${alias}\`**: \`${bot.modules[name].defaultAliases[alias]}\`\n`;
+                });
+            });
+            embed.setDescription(text);
+            msg.channel.send({embed});
         }
     }
 }

@@ -173,12 +173,12 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] set nick command
 - [ ] use username instead of id
 - [ ] use role instead of id
-- [ ] command aliases
+- [x] command aliases
 - [ ] automatic responses
 - [ ] automatic responses regex and random choice
 - [ ] error recovery
 - [ ] command cooldown
-- [ ] default aliases
+- [x] default aliases
 
 ### Commands for builtin modules
 - [x] set permission group
@@ -214,6 +214,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] figlet/toilet
 - [ ] poll
 - [ ] remindme
+- [ ] translate last message
 
 ### Minor issues
 - [ ] prevent config dir being changed when bot is loaded
