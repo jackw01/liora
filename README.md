@@ -172,16 +172,17 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] colored logging
 - [x] permissions by user
 - [x] permissions by role
-- [ ] message responders
-- [ ] per-server settings
+- [x] middleware support
+- [x] per-server settings
 - [ ] use username instead of id
 - [ ] use role instead of id
 - [x] command aliases
 - [ ] automatic responses
 - [ ] automatic responses regex and random choice
 - [ ] error recovery
-- [ ] command cooldown
+- [x] rate limit
 - [x] default aliases
+- [ ] command substitution
 
 ### Commands for builtin modules
 - [x] set permission group

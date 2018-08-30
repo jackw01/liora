@@ -69,13 +69,18 @@ module.exports.commands = [
                 msg.channel.send({embed});
             } else {
                 if (Object.getOwnPropertyNames(bot.modules).indexOf(args[0]) != -1) {
-                    const embed = new discord.RichEmbed()
+                    let embed = new discord.RichEmbed()
                         .setTitle(`Commands in module \`${args[0]}\``)
                         .setColor(bot.config.defaultColors.neutral);
-                    bot.modules[args[0]].commands.forEach(cmd => {
-                        embed.addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
-                    });
-                    msg.channel.send({embed});
+                    const modules = _.chunk(bot.modules[args[0]].commands, 25);
+                    modules.forEach(chunk => {
+                        chunk.forEach(cmd => {
+                            embed.addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
+                        });
+                        msg.channel.send({embed});
+                        embed = new discord.RichEmbed()
+                            .setColor(bot.config.defaultColors.neutral);
+                    })
                 } else {
                     msg.channel.send(`❌ Module \`${args[0]}\` not found.`);
                 }

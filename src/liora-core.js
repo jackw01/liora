@@ -7,6 +7,8 @@ const jsonfile = require("jsonfile");
 const _ = require("lodash");
 const winston = require("winston");
 const chalk = require("chalk");
+const compose = require("koa-compose");
+const prettyMs = require("pretty-ms");
 const discord = require("discord.js");
 
 const localModuleDirectory = "../modules";
@@ -59,7 +61,7 @@ const configSchema = {
     activeModules: {
         type: "array",
         itemType: "string",
-        default: ["core"]
+        default: ["liora-core"]
     },
     commandAliases: {
         type: "object",
@@ -79,6 +81,23 @@ const configSchema = {
             success: {
                 type: "string",
                 default: "#41b95f"
+            }
+        }
+    },
+    defaultUserCooldown: {
+        type: "object",
+        default: {
+            intervalMs: {
+                type: "number",
+                default: 10000
+            },
+            messageCount: {
+                type: "number",
+                default: 5
+            },
+            blockDurationMs: {
+                type: "number",
+                default: 60000
             }
         }
     },
@@ -109,6 +128,8 @@ const bot = {
     client: new discord.Client(),
     log: logger,
     moduleSources: [`${localModuleDirectory}`],
+    userCooldowns: new Set(),
+    userMessageCounters: {},
     firstLoadTime: Date.now()
 };
 
@@ -303,6 +324,89 @@ bot.getCommandNamed = function(command, callback) {
     callback();
 }
 
+// Middleware that discards messages if they are sent by another bot
+const checkMessageAuthor = function(c, next) {
+    if (!c.message.author.bot) next();
+}
+
+// Middleware that detects if messages are being sent too fast and blocks users who exceed the limit
+const rateLimiter = function(c, next) {
+    if (!bot.userCooldowns.has(c.message.author.id)) {
+        bot.userCooldowns.add(c.message.author.id);
+        setTimeout(() => {
+            bot.userCooldowns.delete(c.message.author.id);
+            bot.userMessageCounters[c.message.author.id] = 0;
+        }, bot.config.defaultUserCooldown.intervalMs);
+    }
+    bot.userMessageCounters[c.message.author.id] = bot.userMessageCounters[c.message.author.id] || 0;
+    if (++bot.userMessageCounters[c.message.author.id] < bot.config.defaultUserCooldown.messageCount) {
+        next();
+    } else if (bot.userMessageCounters[c.message.author.id] == bot.config.defaultUserCooldown.messageCount) {
+        const embed = new discord.RichEmbed()
+            .setTitle("⌛ Rate limit exceeded")
+            .setDescription(`User ${c.message.author.username} blocked for ${prettyMs(bot.config.defaultUserCooldown.blockDurationMs)}`)
+            .setColor(bot.config.defaultColors.error);
+        c.message.channel.send({embed});
+    }
+}
+
+// Middleware that discards messages from blocked users
+const blockHandler = function(c, next) {
+    next();
+}
+
+// Middleware that detects commands in messages and parses arguments
+const commandDetector = function(c, next) {
+    next();
+}
+
+// Final middleware that executes commands
+const commandDispatcher = function(c, next) {
+    // Check if message is command
+    if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
+        const args = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim().split(/ +/g);
+        const command = args.shift().toLowerCase();
+        bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
+        bot.getCommandNamed(command, cmd => {
+            if (cmd) {
+                if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
+
+                    // Determine permission level for the message context
+                    // Use the global group override and the role override if they exist
+                    const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
+                    const roleOverride = c.message.guild ? bot.config.serverPermissions[c.message.guild.id][command] || "" : "";
+                    if (bot.hasPermission(c.message.member, c.message.author, permissionLevel, roleOverride)) {
+
+                        // Execute the command with args, message object, and bot object
+                        cmd.execute(args, c.message, bot).catch(err => {
+                            c.message.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
+                        });
+                    } else {
+                        c.message.channel.send("🔒 You do not have permission to use this command.");
+                    }
+                } else {
+                    c.message.channel.send(`❌ Not enough arguments. Use \`${bot.prefixForMessageContext(c.message)}${command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
+                }
+            }
+        });
+    }
+}
+
+// Handle a message by running all of the bot's middleware
+bot.onMessage = async function(msg) {
+    let container = {message: msg};
+    // Load author check middleware first, then modules, then rate limiter and other command-related things
+    let middleware = [checkMessageAuthor];
+    const moduleNames = Object.keys(this.modules);
+    moduleNames.forEach(name => {
+        if (this.modules[name].middleware && this.modules[name].middleware.length > 0) {
+            middleware = _.concat(middleware, this.modules[name].middleware);
+        }
+    });
+    middleware = _.concat(middleware, [rateLimiter, blockHandler, commandDetector, commandDispatcher]);
+    compose(middleware)(container);
+}
+
 // Initialize and load the bot
 bot.load = function() {
     // Set up some properties
@@ -316,6 +420,31 @@ bot.load = function() {
         this.config.activeModules.forEach(module => { this.loadModule(module, err => {}) });
         this.log.info("Connecting...");
         this.client.login(this.config.discordToken);
+    });
+}
+
+// Called when client logs in
+bot.onConnect = async function() {
+    this.log.info(chalk.cyan(`Logged in as: ${this.client.user.username} (id: ${this.client.user.id})`));
+    this.client.user.setActivity(this.config.defaultGame);
+
+    // Update permissions config for servers
+    const servers = this.client.guilds.array();
+    servers.forEach(server => {
+        if (!_.has(this.config, `serverPermissions[${server.id}]`))
+            _.set(this.config, `serverPermissions[${server.id}]`, {});
+        if (!_.has(this.config, `settings[${server.id}]`))
+            _.set(this.config, `settings[${server.id}]`, {});
+        this.saveConfig(err => {});
+    });
+
+    // Init modules
+    const moduleNames = Object.keys(this.modules);
+    var moduleCount = 0;
+    moduleNames.forEach(name => {
+        this.initModule(name, err => {
+            if (!err && ++moduleCount >= moduleNames.length) this.lastLoadDuration = Date.now() - this.lastLoadTime;
+        });
     });
 }
 
@@ -334,62 +463,9 @@ bot.restart = function() {
     });
 }
 
-// Called when client logs in
-bot.client.on("ready", () => {
-    bot.log.info(chalk.cyan(`Logged in as: ${bot.client.user.username} (id: ${bot.client.user.id})`));
-    bot.client.user.setActivity(bot.config.defaultGame);
-
-    // Update permissions config for servers
-    const servers = bot.client.guilds.array();
-    servers.forEach(server => {
-        if (!_.has(bot.config, `serverPermissions[${server.id}]`)) {
-            _.set(bot.config, `serverPermissions[${server.id}]`, {});
-            bot.saveConfig(err => {});
-        }
-    });
-
-    // Init modules
-    const moduleNames = Object.keys(bot.modules);
-    var moduleCount = 0;
-    moduleNames.forEach(name => {
-        bot.initModule(name, err => {
-            if (!err && ++moduleCount >= moduleNames.length) bot.lastLoadDuration = Date.now() - bot.lastLoadTime;
-        });
-    });
-});
-
-// Message dispatching
-bot.client.on("message", async msg => {
-    // Check if message is command and do not respond to other bots
-    if (!msg.author.bot && msg.content.indexOf(bot.prefixForMessageContext(msg)) === 0) {
-        const args = msg.content.slice(bot.prefixForMessageContext(msg).length).trim().split(/ +/g);
-        const command = args.shift().toLowerCase();
-        bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
-        bot.getCommandNamed(command, cmd => {
-            if (cmd) {
-                if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
-
-                    // Determine permission level for the message context
-                    // Use the global group override and the role override if they exist
-                    const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
-                    const roleOverride = msg.guild ? bot.config.serverPermissions[msg.guild.id][command] || "" : "";
-                    if (bot.hasPermission(msg.member, msg.author, permissionLevel, roleOverride)) {
-
-                        // Execute the command with args, message object, and bot object
-                        cmd.execute(args, msg, bot).catch(err => {
-                            msg.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
-                        });
-                    } else {
-                        msg.channel.send("🔒 You do not have permission to use this command.");
-                    }
-                } else {
-                    msg.channel.send(`❌ Not enough arguments. Use \`${bot.prefixForMessageContext(msg)}${command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
-                }
-            }
-        });
-    }
-    // run listeners
-});
+// Register event listeners
+bot.client.on("ready", bot.onConnect.bind(bot));
+bot.client.on("message", bot.onMessage.bind(bot));
 
 // Set default config directory
 bot.setConfigDirectory(path.join(os.homedir(), ".liora-bot"));
