@@ -357,39 +357,38 @@ const blockHandler = function(c, next) {
 
 // Middleware that detects commands in messages and parses arguments
 const commandDetector = function(c, next) {
-    next();
+    if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
+        c.args = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim().split(/ +/g);
+        c.command = c.args.shift().toLowerCase();
+        bot.log.debug(`Detected command ${c.command} with args ${c.args.join(" ")}`);
+        next();
+    }
 }
 
-// Final middleware that executes commands
+// Final middleware that finds and executes commands
 const commandDispatcher = function(c, next) {
-    // Check if message is command
-    if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
-        const args = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim().split(/ +/g);
-        const command = args.shift().toLowerCase();
-        bot.log.debug(`Detected command ${command} with args ${args.join(" ")}`);
-        bot.getCommandNamed(command, cmd => {
-            if (cmd) {
-                if (args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
+    bot.getCommandNamed(c.command, cmd => {
+        if (cmd) {
+            if (c.args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
 
-                    // Determine permission level for the message context
-                    // Use the global group override and the role override if they exist
-                    const permissionLevel = bot.config.commandPermissions[command] || cmd.permissionLevel;
-                    const roleOverride = c.message.guild ? bot.config.serverPermissions[c.message.guild.id][command] || "" : "";
-                    if (bot.hasPermission(c.message.member, c.message.author, permissionLevel, roleOverride)) {
+                // Determine permission level for the message context
+                // Use the global group override and the role override if they exist
+                const permissionLevel = bot.config.commandPermissions[c.command] || cmd.permissionLevel;
+                const roleOverride = c.message.guild ? bot.config.serverPermissions[c.message.guild.id][c.command] || "" : "";
+                if (bot.hasPermission(c.message.member, c.message.author, permissionLevel, roleOverride)) {
 
-                        // Execute the command with args, message object, and bot object
-                        cmd.execute(args, c.message, bot).catch(err => {
-                            c.message.channel.send(`❌ Error executing command \`${command}\`: ${err.message}`);
-                        });
-                    } else {
-                        c.message.channel.send("🔒 You do not have permission to use this command.");
-                    }
+                    // Execute the command with args, message object, and bot object
+                    cmd.execute(c.args, c.message, bot).catch(err => {
+                        c.message.channel.send(`❌ Error executing command \`${c.command}\`: ${err.message}`);
+                    });
                 } else {
-                    c.message.channel.send(`❌ Not enough arguments. Use \`${bot.prefixForMessageContext(c.message)}${command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
+                    c.message.channel.send("🔒 You do not have permission to use this command.");
                 }
+            } else {
+                c.message.channel.send(`❌ Not enough arguments. Use \`${bot.prefixForMessageContext(c.message)}${c.command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
             }
-        });
-    }
+        }
+    });
 }
 
 // Handle a message by running all of the bot's middleware

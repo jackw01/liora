@@ -185,8 +185,6 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] command substitution
 
 ### Commands for builtin modules
-- [x] set permission group
-- [ ] set permission role
 - [x] load modules
 - [x] reload module
 - [x] reload all modules
@@ -194,8 +192,9 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] help
 - [x] list
 - [x] get/set config
-- [ ] set command group permission
-- [ ] set command role permission
+- [x] set permission group
+- [x] set command group permission
+- [x] set command role permission
 - [ ] nick utility
 - [x] role utility
 - [x] set nick

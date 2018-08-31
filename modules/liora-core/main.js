@@ -315,6 +315,65 @@ module.exports.commands = [
         }
     },
     {
+        name: "addgroupoverride",
+        description: "Add a group override for a command.",
+        argumentNames: ["<command> <group>"],
+        permissionLevel: "owner",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            bot.config.commandPermissions[args[0]] = args[1];
+            saveConfigAndAck(msg, bot);
+        }
+    },
+    {
+        name: "removegroupoverride",
+        description: "Remove a group override for a command.",
+        argumentNames: ["<command>"],
+        permissionLevel: "owner",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            delete bot.config.commandPermissions[args[0]];
+            saveConfigAndAck(msg, bot);
+        }
+    },
+    {
+        name: "addroleoverride",
+        description: "Add a role override for a command.",
+        argumentNames: ["<command> <role>"],
+        permissionLevel: "owner",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            bot.config.serverPermissions[msg.guild.id][args[0]] = args[1];
+            saveConfigAndAck(msg, bot);
+        }
+    },
+    {
+        name: "removeroleoverride",
+        description: "Remove a role override for a command.",
+        argumentNames: ["<command>"],
+        permissionLevel: "owner",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            delete bot.config.serverPermissions[msg.guild.id][args[0]];
+            saveConfigAndAck(msg, bot);
+        }
+    },
+    {
+        name: "listoverrides",
+        description: "List overrides.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            const embed = new discord.RichEmbed()
+                .setTitle("Overrides")
+                .setColor(bot.config.defaultColors.neutral);
+            embed.addField("Group overrides", `\`${JSON.stringify(bot.config.commandPermissions, null, 4)}\``);
+            embed.addField("Role overrides", `\`${JSON.stringify(bot.config.serverPermissions, null, 4)}\``);
+            msg.channel.send({embed});
+        }
+    },
+    {
         name: "roleid",
         description: "Get the ID for a role.",
         argumentNames: ["<role>"],
