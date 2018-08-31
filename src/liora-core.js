@@ -101,6 +101,11 @@ const configSchema = {
             }
         }
     },
+    blockedUsers: {
+        type: "array",
+        itemType: "string",
+        default: []
+    },
     settings: {
         type: "object",
         default: {}
@@ -130,8 +135,11 @@ const bot = {
     moduleSources: [`${localModuleDirectory}`],
     userCooldowns: new Set(),
     userMessageCounters: {},
-    firstLoadTime: Date.now()
+    firstLoadTime: Date.now(),
+    util: {}
 };
+
+// Section: Config and module management
 
 // Set the config directory to use
 bot.setConfigDirectory = function(configDir) {
@@ -285,6 +293,8 @@ bot.initModule = function(name, callback) {
     }
 }
 
+// Section: Bot utility functions
+
 // Return the correct command prefix for the context of a message
 bot.prefixForMessageContext = function(msg) {
     if (msg.guild && _.has(this.config.settings, `[${msg.guild.id}].prefix`)) {
@@ -324,9 +334,16 @@ bot.getCommandNamed = function(command, callback) {
     callback();
 }
 
+// Section: Message handling middleware pipeline
+
 // Middleware that discards messages if they are sent by another bot
 const checkMessageAuthor = function(c, next) {
     if (!c.message.author.bot) next();
+}
+
+// Middleware that discards messages from blocked users
+const blockHandler = function(c, next) {
+    if (!bot.config.blockedUsers.includes(c.message.author.id)) next();
 }
 
 // Middleware that detects if messages are being sent too fast and blocks users who exceed the limit
@@ -344,15 +361,14 @@ const rateLimiter = function(c, next) {
     } else if (bot.userMessageCounters[c.message.author.id] == bot.config.defaultUserCooldown.messageCount) {
         const embed = new discord.RichEmbed()
             .setTitle("⌛ Rate limit exceeded")
-            .setDescription(`User ${c.message.author.username} blocked for ${prettyMs(bot.config.defaultUserCooldown.blockDurationMs)}`)
+            .setDescription(`User ${bot.util.username(c.message.author)} blocked for ${prettyMs(bot.config.defaultUserCooldown.blockDurationMs)}`)
             .setColor(bot.config.defaultColors.error);
         c.message.channel.send({embed});
+        bot.config.blockedUsers.push(c.message.author.id);
+        setTimeout(() => {
+            _.remove(bot.config.blockedUsers, i => {return i == c.message.author.id});
+        }, bot.config.defaultUserCooldown.blockDurationMs);
     }
-}
-
-// Middleware that discards messages from blocked users
-const blockHandler = function(c, next) {
-    next();
 }
 
 // Middleware that detects commands in messages and parses arguments
@@ -402,9 +418,11 @@ bot.onMessage = async function(msg) {
             middleware = _.concat(middleware, this.modules[name].middleware);
         }
     });
-    middleware = _.concat(middleware, [rateLimiter, blockHandler, commandDetector, commandDispatcher]);
+    middleware = _.concat(middleware, [blockHandler, rateLimiter, commandDetector, commandDispatcher]);
     compose(middleware)(container);
 }
+
+// Section: Bot load and connect event handlers
 
 // Initialize and load the bot
 bot.load = function() {
@@ -461,6 +479,25 @@ bot.restart = function() {
         this.load();
     });
 }
+
+// Section: Discord utility functions
+
+// Return a user's full username with discriminator
+bot.util.username = function(user) {
+    return `${user.username}#${user.discriminator}`;
+}
+
+// Return a role object from text containing a role mention, name, or id
+bot.util.roleToId = function(roleString, server) {
+    const query = roleString.toLowerCase();
+    let roleId = query.match(/^<@&(\d{17,18})>$/); // Is it a role mention?
+    var result = server.roles.find(r => {
+        return r.name.toLowerCase() === roleString.toLowerCase()
+    });
+    if (result) result.id
+}
+
+// Section: Code starts running here
 
 // Register event listeners
 bot.client.on("ready", bot.onConnect.bind(bot));
