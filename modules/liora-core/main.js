@@ -428,8 +428,54 @@ module.exports.commands = [
         }
     },
     {
+        name: "serverinfo",
+        description: "Get info for the current server.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (msg.guild) {
+                const roles = msg.guild.roles.array();
+                const embed = new discord.RichEmbed()
+                    .setTitle(`Server info for ${msg.guild.name}`)
+                    .setColor(bot.config.defaultColors.neutral)
+                    .setThumbnail(msg.guild.iconURL)
+                    .addField("ID", `\`${msg.guild.id}\``, true)
+                    .addField("Owner", bot.util.username(msg.guild.owner.user), true)
+                    .addField("Channels", msg.guild.channels.array().length, true)
+                    .addField("Verified", msg.guild.verified, true)
+                    .addField("Custom Emojis", `${msg.guild.emojis.array().length}`, true)
+                    .addField("Roles", `${roles.length}: ${roles.map(r => r.name).join(", ")}`)
+                    .addField("Joined", msg.guild.joinedAt)
+                    .addField("Created", msg.guild.createdAt);
+                msg.channel.send({embed});
+            } else {
+                msg.channel.send(`❌ Must be in a server to use this command.`);
+            }
+        }
+    },
+    {
+        name: "servericon",
+        description: "Get the icon for the current server.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (msg.guild) {
+                const embed = new discord.RichEmbed()
+                    .setTitle(`Server icon for ${msg.guild.name}`)
+                    .setColor(bot.config.defaultColors.success)
+                    .setImage(msg.guild.iconURL)
+                    .setURL(msg.guild.iconURL);
+                msg.channel.send({embed});
+            } else {
+                msg.channel.send(`❌ Must be in a server to use this command.`);
+            }
+        }
+    },
+    {
         name: "userinfo",
-        description: "Get info for a user mention, username, or nickname'.",
+        description: "Get info for a user mention, username, or nickname.",
         argumentNames: ["<user>"],
         permissionLevel: "all",
         aliases: ["userid"],
@@ -440,11 +486,13 @@ module.exports.commands = [
                     const user = result[0];
                     const member = msg.guild.members.get(user.id);
                     const embed = new discord.RichEmbed()
-                        .setTitle(bot.util.username(user))
+                        .setTitle(`User info for ${bot.util.username(user)}`)
                         .setColor(bot.config.defaultColors.success)
                         .setThumbnail(user.avatarURL)
                         .addField("ID", `\`${user.id}\``, true)
-                        .addField("Nickname", member.nickname, true)
+                        .addField("Nickname", member.nickname || "None", true)
+                        .addField("Status", user.presence.status, true)
+                        .addField("Playing", user.presence.game || "N/A", true)
                         .addField("Roles", member.roles.map(r => r.name).join(", "))
                         .addField("Joined", member.joinedAt)
                         .addField("Created", user.createdAt);
@@ -458,7 +506,7 @@ module.exports.commands = [
     },
     {
         name: "profilepic",
-        description: "Get a profile picture for a user mention, username, or nickname'.",
+        description: "Get a profile picture for a user mention, username, or nickname.",
         argumentNames: ["<user>"],
         permissionLevel: "all",
         aliases: ["avatar", "pfp"],
@@ -468,7 +516,7 @@ module.exports.commands = [
                 if (result) {
                     const user = result[0];
                     const embed = new discord.RichEmbed()
-                        .setTitle(bot.util.username(user))
+                        .setTitle(`Profile picture for ${bot.util.username(user)}`)
                         .setColor(bot.config.defaultColors.success)
                         .setImage(user.avatarURL)
                         .setURL(user.avatarURL);
@@ -482,7 +530,7 @@ module.exports.commands = [
     },
     {
         name: "roleinfo",
-        description: "Get the ID for a role mention or name'",
+        description: "Get the ID for a role mention or name",
         argumentNames: ["<role>"],
         permissionLevel: "all",
         aliases: ["roleid"],
@@ -493,15 +541,17 @@ module.exports.commands = [
                     const role = result[0];
                     const members = role.members.array();
                     let membersString;
-                    if (members.length > 4) membersString = `${members.length} users in this role. Use \`${bot.prefixForMessageContext(msg)}inrole ${role.name}\` to see all users.`;
+                    if (members.length > 10) membersString = `${members.length} users in this role.`;
                     else membersString = members.map(m => bot.util.username(m.user)).join(", ");
                     const embed = new discord.RichEmbed()
-                        .setTitle(role.name)
+                        .setTitle(`Role info for ${role.name}`)
                         .setColor(bot.config.defaultColors.success)
                         .addField("ID", `\`${role.id}\``, true)
                         .addField("Color", `\`${role.hexColor}\``, true)
                         .addField("Position", role.calculatedPosition, true)
                         .addField("Mentionable", role.mentionable, true)
+                        .addField("Hoisted", role.hoist, true)
+                        .addField("Managed", role.managed, true)
                         .addField("Members", membersString)
                         .addField("Created", role.createdAt);
                     msg.channel.send({embed});

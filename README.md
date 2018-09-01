@@ -203,16 +203,17 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] youtube player
 - [ ] youtube player on multiple servers
 - [ ] youtube player queue and shuffle
-- [ ] server info
+- [x] server info
 - [ ] channel info
+- [ ] role list
 - [x] user info
 - [x] role info
-- [ ] role list
 - [ ] weather
 - [ ] linux fortune command
 - [ ] urban dictionary
 - [ ] xkcd
 - [x] get profile picture
+- [x] get server icon
 - [ ] reddit image search
 - [ ] dice
 - [ ] wikipedia
