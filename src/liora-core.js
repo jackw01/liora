@@ -42,90 +42,34 @@ winston.addColors({
 
 // Config
 const configSchema = {
-    discordToken: {
-        type: "string",
-        default: "Paste your bot token here."
-    },
-    owner: {
-        type: "string",
-        default: ""
-    },
-    defaultGame: {
-        type: "string",
-        default: "$help for help"
-    },
-    prefix: {
-        type: "string",
-        default: "$"
-    },
-    activeModules: {
-        type: "array",
-        itemType: "string",
-        default: ["liora-core"]
-    },
-    commandAliases: {
-        type: "object",
-        default: {}
-    },
+    discordToken: { type: "string", default: "Paste your bot token here." },
+    owner: { type: "string", default: "" },
+    defaultGame: { type: "string", default: "$help for help" },
+    prefix: { type: "string", default: "$" },
+    activeModules: { type: "array", itemType: "string", default: ["liora-core"] },
+    commandAliases: { type: "object", default: {} },
     defaultColors: {
         type: "object",
         default: {
-            neutral: {
-                type: "string",
-                default: "#287db4"
-            },
-            error: {
-                type: "string",
-                default: "#c63737"
-            },
-            success: {
-                type: "string",
-                default: "#41b95f"
-            }
+            neutral: { type: "string", default: "#287db4" },
+            error: { type: "string", default: "#c63737" },
+            success: { type: "string", default: "#41b95f" }
         }
     },
     defaultUserCooldown: {
         type: "object",
         default: {
-            intervalMs: {
-                type: "number",
-                default: 10000
-            },
-            messageCount: {
-                type: "number",
-                default: 5
-            },
-            blockDurationMs: {
-                type: "number",
-                default: 60000
-            }
+            intervalMs: { type: "number", default: 10000 },
+            messageCount: { type: "number", default: 5 },
+            blockDurationMs: { type: "number", default: 60000 }
         }
     },
-    blockedUsers: {
-        type: "array",
-        itemType: "string",
-        default: []
-    },
-    settings: {
-        type: "object",
-        default: {}
-    },
-    groups: {
-        type: "object",
-        default: {}
-    },
-    commandPermissions: {
-        type: "object",
-        default: {}
-    },
-    serverPermissions: {
-        type: "object",
-        default: {}
-    },
-    modules: {
-        type: "object",
-        default: {}
-    }
+    blockedUsers: { type: "array", itemType: "string", default: [] },
+    settings: { type: "object", default: {} },
+    groups: { type: "object", default: {} },
+    commandPermissions: { type: "object", default: {} },
+    serverPermissions: { type: "object", default: {} },
+    modules: { type: "object", default: {} }
 };
 
 // Bot
@@ -524,6 +468,9 @@ bot.util.parseRole = function(roleString, server) {
 
 // Register event listeners
 bot.client.on("ready", bot.onConnect.bind(bot));
+bot.client.on("error", err => { bot.log.error(`Client error: ${err.message}`); });
+bot.client.on("reconnecting", () => { bot.log.info(`Reconnecting...`); });
+bot.client.on("disconnect", evt => { bot.log.warn(`Disconnected: ${evt.reason} (${ evt.code})`); });
 bot.client.on("message", bot.onMessage.bind(bot));
 
 // Set default config directory
