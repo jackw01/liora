@@ -432,7 +432,7 @@ module.exports.commands = [
         description: "Get info for a user mention, username, or nickname'.",
         argumentNames: ["<user>"],
         permissionLevel: "all",
-        aliases: [],
+        aliases: ["userid"],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
                 var result = bot.util.parseUsername(args.join(" "), msg.guild);
@@ -481,16 +481,31 @@ module.exports.commands = [
         }
     },
     {
-        name: "roleid",
+        name: "roleinfo",
         description: "Get the ID for a role mention or name'",
         argumentNames: ["<role>"],
         permissionLevel: "all",
-        aliases: [],
+        aliases: ["roleid"],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
                 var result = bot.util.parseRole(args.join(" "), msg.guild);
-                if (result) msg.channel.send(`✅ Role id for ${result[0].name}: \`${result[0].id}\`.`);
-                else msg.channel.send(`❌ Role not found.`);
+                if (result) {
+                    const role = result[0];
+                    const members = role.members.array();
+                    let membersString;
+                    if (members.length > 4) membersString = `${members.length} users in this role. Use \`${bot.prefixForMessageContext(msg)}inrole ${role.name}\` to see all users.`;
+                    else membersString = members.map(m => bot.util.username(m.user)).join(", ");
+                    const embed = new discord.RichEmbed()
+                        .setTitle(role.name)
+                        .setColor(bot.config.defaultColors.success)
+                        .addField("ID", `\`${role.id}\``, true)
+                        .addField("Color", `\`${role.hexColor}\``, true)
+                        .addField("Position", role.calculatedPosition, true)
+                        .addField("Mentionable", role.mentionable, true)
+                        .addField("Members", membersString)
+                        .addField("Created", role.createdAt);
+                    msg.channel.send({embed});
+                } else msg.channel.send(`❌ Role not found.`);
             } else {
                 msg.channel.send(`❌ Must be in a server to use this command.`);
             }

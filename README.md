@@ -205,7 +205,9 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] youtube player queue and shuffle
 - [ ] server info
 - [ ] channel info
-- [ ] user info
+- [x] user info
+- [x] role info
+- [ ] role list
 - [ ] weather
 - [ ] linux fortune command
 - [ ] urban dictionary
