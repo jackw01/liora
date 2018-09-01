@@ -265,28 +265,64 @@ module.exports.commands = [
     },
     {
         name: "permadd",
-        description: "Add a user by ID to a permission group.",
-        argumentNames: ["<userID> <group>"],
+        description: "Add a user (mention or name) to a permission group.",
+        argumentNames: ["<user> <group>"],
         permissionLevel: "owner",
         aliases: [],
         execute: async function(args, msg, bot) {
-            if (!bot.config.groups[args[1]]) bot.config.groups[args[1]] = [];
-            if (!bot.config.groups[args[1]].includes(args[0])) bot.config.groups[args[1]].push(args[0]);
-            saveConfigAndAck(msg, bot);
+            if (args.length <= 2) {
+                let id;
+                if (msg.guild) {
+                    var result = bot.util.parseUsername(args[0], msg.guild);
+                    if (result) {
+                        if (result.length == 1) id = result[0].id;
+                        else msg.channel.send(`❌ Multiple users matching user string found. Please @mention or be more specific.`);
+                    }
+                    else msg.channel.send(`❌ User not found.`);
+                } else {
+                    if (bot.util.isUserId(args[0])) id = args[0];
+                    else msg.channel.send(`❌ User string does not appear to be a valid user id.`);
+                }
+                if (id) {
+                    if (!bot.config.groups[args[1]]) bot.config.groups[args[1]] = [];
+                    if (!bot.config.groups[args[1]].includes(id)) bot.config.groups[args[1]].push(id);
+                    saveConfigAndAck(msg, bot);
+                }
+            } else {
+                msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
+            }
         }
     },
     {
         name: "permremove",
-        description: "Remove a user by ID from a permission group.",
-        argumentNames: ["<userID> <group>"],
+        description: "Remove a user (mention or name) from a permission group.",
+        argumentNames: ["<user> <group>"],
         permissionLevel: "owner",
         aliases: [],
         execute: async function(args, msg, bot) {
-            if (bot.config.groups[args[1]]) {
-                _.remove(bot.config.groups[args[1]], i => {return i == args[0]});
-                saveConfigAndAck(msg, bot);
+            if (args.length <= 2) {
+                let id;
+                if (msg.guild) {
+                    var result = bot.util.parseUsername(args[0], msg.guild);
+                    if (result) {
+                        if (result.length == 1) id = result[0].id;
+                        else msg.channel.send(`❌ Multiple users matching user string found. Please @mention or be more specific.`);
+                    }
+                    else msg.channel.send(`❌ User not found.`);
+                } else {
+                    if (bot.util.isUserId(args[0])) id = args[0];
+                    else msg.channel.send(`❌ User string does not appear to be a valid user id.`);
+                }
+                if (id) {
+                    if (bot.config.groups[args[1]]) {
+                        _.remove(bot.config.groups[args[1]], i => {return i == id});
+                        saveConfigAndAck(msg, bot);
+                    } else {
+                        msg.channel.send("❌ Group does not exist.");
+                    }
+                }
             } else {
-                msg.channel.send("❌ Group does not exist.");
+                msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
             }
         }
     },
@@ -338,7 +374,7 @@ module.exports.commands = [
     },
     {
         name: "addroleoverride",
-        description: "Add a role override for a command.",
+        description: "Add a role (mention or name) override for a command.",
         argumentNames: ["<command> <role>"],
         permissionLevel: "owner",
         aliases: [],
@@ -382,7 +418,7 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             if (msg.guild) {
                 var result = bot.util.parseUsername(args.join(" "), msg.guild);
-                if (result) msg.channel.send(`✅ User id for ${result[0].username}#${result[0].discriminator}: \`${result[0].id}\`.`);
+                if (result) msg.channel.send(`✅ User id for ${bot.util.username(result[0])}: \`${result[0].id}\`.`);
                 else msg.channel.send(`❌ User not found.`);
             } else {
                 msg.channel.send(`❌ Must be in a server to use this command.`);

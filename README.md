@@ -174,12 +174,12 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] permissions by role
 - [x] middleware support
 - [x] per-server settings
-- [ ] use username instead of id
+- [x] use username instead of id
 - [ ] use role instead of id
 - [x] command aliases
 - [ ] automatic responses
 - [ ] automatic responses regex and random choice
-- [ ] error recovery
+- [x] error logging
 - [x] rate limit
 - [x] default aliases
 - [ ] command substitution

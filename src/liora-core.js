@@ -287,7 +287,6 @@ const checkMessageAuthor = function(c, next) {
 
 // Middleware that discards messages from blocked users
 const blockHandler = function(c, next) {
-    console.log(c.message.content);
     if (!bot.config.blockedUsers.includes(c.message.author.id)) next();
 }
 
@@ -432,11 +431,15 @@ bot.util.username = function(user) {
     return `${user.username}#${user.discriminator}`;
 }
 
+// Is a string a user id?
+bot.util.isUserId = function(string) {
+    return /^\d{17,19}$/.test(string);
+}
+
 // Return  an array of member objects from text containing a user mention, name, or id
 bot.util.parseUsername = function(userString, server) {
-    console.log(userString);
     const query = userString.toLowerCase();
-    let userIds = query.match(/^<@!?(\d{10,})>$/); // Is it a user mention?
+    let userIds = query.match(/^<@!?(\d{17,19})>$/); // Is it a user mention?
     if (!userIds) {
         const matchingMembers = server.members.filter(m => {
             const name = m.user.username.toLowerCase();
@@ -454,7 +457,7 @@ bot.util.parseUsername = function(userString, server) {
 // Return an array of role objects from text containing a role mention or name
 bot.util.parseRole = function(roleString, server) {
     const query = roleString.toLowerCase();
-    let roleIds = query.match(/^<@&(\d{10,})>$/); // Is it a role mention?
+    let roleIds = query.match(/^<@&(\d{17,19})>$/); // Is it a role mention?
     if (!roleIds) {
         const matchingRoles = server.roles.filter(r => { return r.name.toLowerCase().includes(query) }).array();
         return matchingRoles.length ? matchingRoles : null;
@@ -468,9 +471,9 @@ bot.util.parseRole = function(roleString, server) {
 
 // Register event listeners
 bot.client.on("ready", bot.onConnect.bind(bot));
-bot.client.on("error", err => { bot.log.error(`Client error: ${err.message}`); });
+bot.client.on("error", err => { bot.log.error(chalk.red(`Client error: ${err.message}`)); });
 bot.client.on("reconnecting", () => { bot.log.info(`Reconnecting...`); });
-bot.client.on("disconnect", evt => { bot.log.warn(`Disconnected: ${evt.reason} (${ evt.code})`); });
+bot.client.on("disconnect", evt => { bot.log.warn(chalk.red(`Disconnected: ${evt.reason} (${ evt.code})`)); });
 bot.client.on("message", bot.onMessage.bind(bot));
 
 // Set default config directory
