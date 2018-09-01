@@ -177,12 +177,13 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] use username instead of id
 - [x] use role instead of id
 - [x] command aliases
-- [ ] automatic responses
-- [ ] automatic responses regex and random choice
+- [x] automatic responses
+- [x] automatic responses regex and random choice
 - [x] error logging
 - [x] rate limit
 - [x] default aliases
 - [ ] command substitution
+- [ ] use setter/getter methods for module config
 
 ### Commands for builtin modules
 - [x] load modules
@@ -219,8 +220,3 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] poll
 - [ ] remindme
 - [ ] translate last message
-
-### Minor issues
-- [ ] prevent config dir being changed when bot is loaded
-- [ ] use setter/getter methods for module config
-- [ ] fix load/unload module

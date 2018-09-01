@@ -104,6 +104,13 @@ bot.saveConfig = function(callback) {
     });
 }
 
+bot.saveConfigAndAck = function(msg) {
+    this.saveConfig(err => {
+        if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
+        else msg.react("✅");
+    });
+}
+
 // Load config file
 bot.loadConfig = function(callback) {
     // If file does not exist, create it
@@ -353,7 +360,7 @@ const commandDispatcher = function(c, next) {
 
 // Handle a message by running all of the bot's middleware
 bot.onMessage = async function(msg) {
-    let container = {message: msg};
+    let container = {message: msg, bot: bot};
     // Load author check middleware first, then modules, then rate limiter and other command-related things
     let middleware = [checkMessageAuthor];
     const moduleNames = Object.keys(this.modules);

@@ -31,11 +31,11 @@ module.exports.init = async function(bot) {
 // },
 module.exports.commands = [
     {
-        name: "help",
-        description: "Get help and info on the bot.",
+        name: "info",
+        description: "Get info on the bot.",
         argumentNames: [],
         permissionLevel: "all",
-        aliases: ["info"],
+        aliases: [],
         execute: async function(args, msg, bot) {
             const embed = new discord.RichEmbed()
                 .setTitle("Liora v1.0.0")
@@ -95,7 +95,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             bot.config.owner = bot.config.owner || msg.author.id;
-            saveConfigAndAck(msg, bot);
+            bot.bot.saveConfigAndAck(msg);
         }
     },
     {
@@ -120,7 +120,7 @@ module.exports.commands = [
                 msg.channel.send("❌ This configuration item cannot be edited.");
             } else {
                 _.set(bot.config, args[0], args.splice(1).join(" "));
-                saveConfigAndAck(msg, bot);
+                bot.saveConfigAndAck(msg);
                 if (args[0] == "defaultGame") bot.client.user.setActivity(bot.config.defaultGame);
             }
         }
@@ -286,7 +286,7 @@ module.exports.commands = [
                 if (id) {
                     if (!bot.config.groups[args[1]]) bot.config.groups[args[1]] = [];
                     if (!bot.config.groups[args[1]].includes(id)) bot.config.groups[args[1]].push(id);
-                    saveConfigAndAck(msg, bot);
+                    bot.saveConfigAndAck(msg);
                 }
             } else {
                 msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
@@ -316,7 +316,7 @@ module.exports.commands = [
                 if (id) {
                     if (bot.config.groups[args[1]]) {
                         _.remove(bot.config.groups[args[1]], i => {return i == id});
-                        saveConfigAndAck(msg, bot);
+                        bot.saveConfigAndAck(msg);
                     } else {
                         msg.channel.send("❌ Group does not exist.");
                     }
@@ -358,7 +358,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             bot.config.commandPermissions[args[0]] = args[1];
-            saveConfigAndAck(msg, bot);
+            bot.saveConfigAndAck(msg);
         }
     },
     {
@@ -369,7 +369,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             delete bot.config.commandPermissions[args[0]];
-            saveConfigAndAck(msg, bot);
+            bot.saveConfigAndAck(msg);
         }
     },
     {
@@ -394,7 +394,7 @@ module.exports.commands = [
                 }
                 if (id) {
                     bot.config.serverPermissions[msg.guild.id][args[0]] = id;
-                    saveConfigAndAck(msg, bot);
+                    bot.saveConfigAndAck(msg);
                 }
             } else {
                 msg.channel.send(`❌ Spaces are not allowed in rolestrings or command names.`);
@@ -409,7 +409,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             delete bot.config.serverPermissions[msg.guild.id][args[0]];
-            saveConfigAndAck(msg, bot);
+            bot.saveConfigAndAck(msg);
         }
     },
     {
@@ -489,7 +489,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             bot.config.commandAliases[args[0]] = args[1];
-            saveConfigAndAck(msg, bot);
+            bot.saveConfigAndAck(msg);
         }
     },
     {
@@ -500,7 +500,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             delete bot.config.commandAliases[args[0]];
-            saveConfigAndAck(msg, bot);
+            bot.saveConfigAndAck(msg);
         }
     },
     {
@@ -530,16 +530,3 @@ module.exports.commands = [
         }
     }
 ]
-
-// Module responders array - all commands should be defined here
-//
-
-module.exports.responders = [
-]
-
-function saveConfigAndAck(msg, bot) {
-    bot.saveConfig(err => {
-        if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
-        else msg.react("✅");
-    });
-}
