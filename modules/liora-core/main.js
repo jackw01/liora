@@ -374,8 +374,24 @@ module.exports.commands = [
         }
     },
     {
+        name: "userid",
+        description: "Get the ID for a user mention, username, or nickname'.",
+        argumentNames: ["<user>"],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (msg.guild) {
+                var result = bot.util.parseUsername(args.join(" "), msg.guild);
+                if (result) msg.channel.send(`✅ User id for ${result[0].username}#${result[0].discriminator}: \`${result[0].id}\`.`);
+                else msg.channel.send(`❌ User not found.`);
+            } else {
+                msg.channel.send(`❌ Must be in a server to use this command.`);
+            }
+        }
+    },
+    {
         name: "roleid",
-        description: "Get the ID for a role.",
+        description: "Get the ID for a role mention or name'",
         argumentNames: ["<role>"],
         permissionLevel: "all",
         aliases: [],

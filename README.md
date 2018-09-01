@@ -195,7 +195,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] set permission group
 - [x] set command group permission
 - [x] set command role permission
-- [ ] nick utility
+- [x] nick utility
 - [x] role utility
 - [x] set nick
 - [ ] youtube search

@@ -343,6 +343,7 @@ const checkMessageAuthor = function(c, next) {
 
 // Middleware that discards messages from blocked users
 const blockHandler = function(c, next) {
+    console.log(c.message.content);
     if (!bot.config.blockedUsers.includes(c.message.author.id)) next();
 }
 
@@ -487,16 +488,35 @@ bot.util.username = function(user) {
     return `${user.username}#${user.discriminator}`;
 }
 
-// Return a role object from text containing a role mention, name, or id
+// Return  an array of member objects from text containing a user mention, name, or id
+bot.util.parseUsername = function(userString, server) {
+    console.log(userString);
+    const query = userString.toLowerCase();
+    let userIds = query.match(/^<@!?(\d{10,})>$/); // Is it a user mention?
+    if (!userIds) {
+        const matchingMembers = server.members.filter(m => {
+            const name = m.user.username.toLowerCase();
+            const nick = m.nickname ? m.nickname.toLowerCase() : name;
+            const discrim = m.user.discriminator;
+            return name.includes(query) || nick.includes(query) || `${name}#${discrim}` === query || m.id === query;
+        }).array();
+        return matchingMembers.length ? matchingMembers.map(m => { return m.user }) : null;
+    } else {
+        const u = server.members.get(userIds[1]);
+        return u ? [u.user] : null;
+    }
+}
+
+// Return an array of role objects from text containing a role mention or name
 bot.util.parseRole = function(roleString, server) {
     const query = roleString.toLowerCase();
-    let roleIds = query.match(/^<@&(\d{17,18})>$/); // Is it a role mention?
+    let roleIds = query.match(/^<@&(\d{10,})>$/); // Is it a role mention?
     if (!roleIds) {
         const matchingRoles = server.roles.filter(r => { return r.name.toLowerCase().includes(query) }).array();
         return matchingRoles.length ? matchingRoles : null;
     } else {
-        const id = server.roles.get(roleIds[1]);
-        return id ? [id] : null;
+        const r = server.roles.get(roleIds[1]);
+        return r ? [r] : null;
     }
 }
 
