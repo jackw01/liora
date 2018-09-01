@@ -280,7 +280,7 @@ module.exports.commands = [
                     }
                     else msg.channel.send(`❌ User not found.`);
                 } else {
-                    if (bot.util.isUserId(args[0])) id = args[0];
+                    if (bot.util.isSnowflake(args[0])) id = args[0];
                     else msg.channel.send(`❌ User string does not appear to be a valid user id.`);
                 }
                 if (id) {
@@ -310,7 +310,7 @@ module.exports.commands = [
                     }
                     else msg.channel.send(`❌ User not found.`);
                 } else {
-                    if (bot.util.isUserId(args[0])) id = args[0];
+                    if (bot.util.isSnowflake(args[0])) id = args[0];
                     else msg.channel.send(`❌ User string does not appear to be a valid user id.`);
                 }
                 if (id) {
@@ -379,8 +379,26 @@ module.exports.commands = [
         permissionLevel: "owner",
         aliases: [],
         execute: async function(args, msg, bot) {
-            bot.config.serverPermissions[msg.guild.id][args[0]] = args[1];
-            saveConfigAndAck(msg, bot);
+            if (args.length <= 2) {
+                let id;
+                if (msg.guild) {
+                    var result = bot.util.parseRole(args[1], msg.guild);
+                    if (result) {
+                        if (result.length == 1) id = result[0].id;
+                        else msg.channel.send(`❌ Multiple roles matching role string found. Please @mention or be more specific.`);
+                    }
+                    else msg.channel.send(`❌ Role not found.`);
+                } else {
+                    if (bot.util.isSnowflake(args[1])) id = args[1];
+                    else msg.channel.send(`❌ Role string does not appear to be a valid role id.`);
+                }
+                if (id) {
+                    bot.config.serverPermissions[msg.guild.id][args[0]] = id;
+                    saveConfigAndAck(msg, bot);
+                }
+            } else {
+                msg.channel.send(`❌ Spaces are not allowed in rolestrings or command names.`);
+            }
         }
     },
     {

@@ -431,8 +431,8 @@ bot.util.username = function(user) {
     return `${user.username}#${user.discriminator}`;
 }
 
-// Is a string a user id?
-bot.util.isUserId = function(string) {
+// Is a string a snowflake id?
+bot.util.isSnowflake = function(string) {
     return /^\d{17,19}$/.test(string);
 }
 

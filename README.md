@@ -175,7 +175,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] middleware support
 - [x] per-server settings
 - [x] use username instead of id
-- [ ] use role instead of id
+- [x] use role instead of id
 - [x] command aliases
 - [ ] automatic responses
 - [ ] automatic responses regex and random choice
