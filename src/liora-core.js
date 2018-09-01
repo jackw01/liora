@@ -488,13 +488,16 @@ bot.util.username = function(user) {
 }
 
 // Return a role object from text containing a role mention, name, or id
-bot.util.roleToId = function(roleString, server) {
+bot.util.parseRole = function(roleString, server) {
     const query = roleString.toLowerCase();
-    let roleId = query.match(/^<@&(\d{17,18})>$/); // Is it a role mention?
-    var result = server.roles.find(r => {
-        return r.name.toLowerCase() === roleString.toLowerCase()
-    });
-    if (result) result.id
+    let roleIds = query.match(/^<@&(\d{17,18})>$/); // Is it a role mention?
+    if (!roleIds) {
+        const matchingRoles = server.roles.filter(r => { return r.name.toLowerCase().includes(query) }).array();
+        return matchingRoles.length ? matchingRoles : null;
+    } else {
+        const id = server.roles.get(roleIds[1]);
+        return id ? [id] : null;
+    }
 }
 
 // Section: Code starts running here

@@ -381,10 +381,8 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
-                var result = msg.guild.roles.find(r => {
-                    return r.name.toLowerCase() === args.join(" ").toLowerCase()
-                });
-                if (result) msg.channel.send(`✅ Role id: \`${result.id}\`.`);
+                var result = bot.util.parseRole(args.join(" "), msg.guild);
+                if (result) msg.channel.send(`✅ Role id for ${result[0].name}: \`${result[0].id}\`.`);
                 else msg.channel.send(`❌ Role not found.`);
             } else {
                 msg.channel.send(`❌ Must be in a server to use this command.`);
