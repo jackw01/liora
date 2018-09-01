@@ -210,7 +210,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] linux fortune command
 - [ ] urban dictionary
 - [ ] xkcd
-- [ ] get profile picture
+- [x] get profile picture
 - [ ] reddit image search
 - [ ] dice
 - [ ] wikipedia

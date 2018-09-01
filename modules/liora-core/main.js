@@ -428,15 +428,52 @@ module.exports.commands = [
         }
     },
     {
-        name: "userid",
-        description: "Get the ID for a user mention, username, or nickname'.",
+        name: "userinfo",
+        description: "Get info for a user mention, username, or nickname'.",
         argumentNames: ["<user>"],
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
                 var result = bot.util.parseUsername(args.join(" "), msg.guild);
-                if (result) msg.channel.send(`✅ User id for ${bot.util.username(result[0])}: \`${result[0].id}\`.`);
+                if (result) {
+                    const user = result[0];
+                    const member = msg.guild.members.get(user.id);
+                    const embed = new discord.RichEmbed()
+                        .setTitle(bot.util.username(user))
+                        .setColor(bot.config.defaultColors.success)
+                        .setThumbnail(user.avatarURL)
+                        .addField("ID", `\`${user.id}\``, true)
+                        .addField("Nickname", member.nickname, true)
+                        .addField("Roles", member.roles.map(r => r.name).join(", "))
+                        .addField("Joined", member.joinedAt)
+                        .addField("Created", user.createdAt);
+                    msg.channel.send({embed});
+                }
+                else msg.channel.send(`❌ User not found.`);
+            } else {
+                msg.channel.send(`❌ Must be in a server to use this command.`);
+            }
+        }
+    },
+    {
+        name: "profilepic",
+        description: "Get a profile picture for a user mention, username, or nickname'.",
+        argumentNames: ["<user>"],
+        permissionLevel: "all",
+        aliases: ["avatar", "pfp"],
+        execute: async function(args, msg, bot) {
+            if (msg.guild) {
+                var result = bot.util.parseUsername(args.join(" "), msg.guild);
+                if (result) {
+                    const user = result[0];
+                    const embed = new discord.RichEmbed()
+                        .setTitle(bot.util.username(user))
+                        .setColor(bot.config.defaultColors.success)
+                        .setImage(user.avatarURL)
+                        .setURL(user.avatarURL);
+                    msg.channel.send({embed});
+                }
                 else msg.channel.send(`❌ User not found.`);
             } else {
                 msg.channel.send(`❌ Must be in a server to use this command.`);
