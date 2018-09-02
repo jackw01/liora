@@ -183,7 +183,6 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] rate limit
 - [x] default aliases
 - [ ] command substitution
-- [ ] use setter/getter methods for module config
 
 ### Commands for builtin modules
 - [x] load modules
@@ -199,13 +198,13 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] nick utility
 - [x] role utility
 - [x] set nick
-- [ ] youtube search
+- [x] youtube search
 - [ ] youtube player
 - [ ] youtube player on multiple servers
 - [ ] youtube player queue and shuffle
 - [x] server info
 - [ ] channel info
-- [ ] role list
+- [x] role list
 - [x] user info
 - [x] role info
 - [ ] weather
