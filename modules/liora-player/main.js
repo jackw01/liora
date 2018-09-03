@@ -87,6 +87,62 @@ module.exports.commands = [
         }
     },
     {
+        name: "pause",
+        description: "Pause the currently playing stream.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (state[msg.guild.id].playing) {
+                state[msg.guild.id].paused = true;
+                state[msg.guild.id].stream.pause();
+                state[msg.guild.id].dispatcher.pause();
+                msg.react("⏸️");
+            }
+        }
+    },
+    {
+        name: "resume",
+        description: "Resume the currently playing stream.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (state[msg.guild.id].playing) {
+                state[msg.guild.id].paused = false;
+                state[msg.guild.id].stream.resume();
+                state[msg.guild.id].dispatcher.resume();
+                msg.react("▶️");
+            }
+        }
+    },
+    {
+        name: "stop",
+        description: "Stop playback and clear the queue.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            state[msg.guild.id].queue = [];
+            state[msg.guild.id].dispatcher.end();
+            state[msg.guild.id].voiceChannel.leave();
+            state[msg.guild.id].playing = false;
+            state[msg.guild.id].paused = false;
+            msg.react("🛑");
+        }
+    },
+    {
+        name: "skip",
+        description: "Skip the current stream in the queue.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            state[msg.guild.id].dispatcher.end();
+            msg.react("⏩");
+        }
+    },
+    {
         name: "nowplaying",
         description: "Display the currently playing video.",
         argumentNames: [],
