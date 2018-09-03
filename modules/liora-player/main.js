@@ -143,6 +143,32 @@ module.exports.commands = [
         }
     },
     {
+        name: "volume",
+        description: "Set the volume. Value should be between 0 and 1. If no value is specified, displays the current volume.",
+        argumentNames: ["<volume>?"],
+        permissionLevel: "all",
+        aliases: ["vol"],
+        execute: async function(args, msg, bot) {
+            if (args.length == 0) {
+                msg.channel.send(`🔊 Current volume: ${state[msg.guild.id].dispatcher.volumeLogarithmic.toFixed(2)}`);
+            } else {
+                state[msg.guild.id].dispatcher.setVolumeLogarithmic(_.clamp(args[0], 0, bot.config.modules.player.servers[msg.guild.id].volumeLimit));
+                msg.react("🔊");
+            }
+        }
+    },
+    {
+        name: "shuffle",
+        description: "Shuffle the queue.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            state[msg.guild.id].queue = _.shuffle(state[msg.guild.id].queue);
+            msg.react("🔀");
+        }
+    },
+    {
         name: "nowplaying",
         description: "Display the currently playing video.",
         argumentNames: [],
@@ -158,6 +184,30 @@ module.exports.commands = [
                 msg.channel.send({embed});
             } else {
                 msg.channel.send("❌ Nothing is playing.");
+            }
+        }
+    },
+    {
+        name: "queue",
+        description: "Display the queue.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (state[msg.guild.id].queue.length > 0) {
+                const embed = new discord.RichEmbed()
+                    .setTitle(`Queue for ${state[msg.guild.id].voiceChannel.name}`)
+                    .setColor(bot.config.defaultColors.neutral)
+                    .addField("Now Playing:", ` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\n(enqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)})`);
+                var totalDuration = state[msg.guild.id].nowPlaying.duration;
+                state[msg.guild.id].queue.forEach((item, i) => {
+                    if (i < 24) embed.addField(`${i + 1}. ${item.title}`, `${item.url} (enqueued by ${bot.util.username(item.user)})`);
+                    totalDuration += item.duration;
+                })
+                embed.setFooter(`${state[msg.guild.id].queue.length} in queue: total duration ${prettyMs(totalDuration * 1000)}`);
+                msg.channel.send({embed});
+            } else {
+                msg.channel.send("❌ Queue is empty.");
             }
         }
     }
