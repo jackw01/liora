@@ -189,7 +189,8 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] reload module
 - [x] reload all modules
 - [x] full reload and restart
-- [x] help
+- [x] info
+- [ ] help
 - [x] list
 - [x] get/set config
 - [x] set permission group

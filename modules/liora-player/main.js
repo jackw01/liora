@@ -84,6 +84,25 @@ module.exports.commands = [
             }
         }
     },
+    {
+        name: "nowplaying",
+        description: "Display the currently playing video.",
+        argumentNames: [],
+        permissionLevel: "all",
+        aliases: ["np"],
+        execute: async function(args, msg, bot) {
+            if (state[msg.guild.id].nowPlaying) {
+                const embed = new discord.RichEmbed()
+                    .setTitle(`Now Playing on ${state[msg.guild.id].voiceChannel.name}`)
+                    .setColor(bot.config.defaultColors.neutral)
+                    .setThumbnail(state[msg.guild.id].nowPlaying.thumbnail)
+                    .setDescription(` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})** (enqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)})\n`);
+                msg.channel.send({embed});
+            } else {
+                msg.channel.send("❌ Nothing is playing.");
+            }
+        }
+    }
 ]
 
 function enqueueVideo(id, msg, bot) {
@@ -95,8 +114,9 @@ function enqueueVideo(id, msg, bot) {
             state[msg.guild.id].queue.push({
                 title: info.title,
                 url: url,
+                thumbnail: info.thumbnail_url,
                 duration: parseFloat(info.length_seconds),
-                user: msg.author.username
+                user: msg.author
             });
             // Generate queueing message
             let message;
@@ -112,8 +132,33 @@ function enqueueVideo(id, msg, bot) {
                 .addField("Views", info.view_count, true)
                 .addField("Position in queue", `${state[msg.guild.id].queue.length}`, true);
             msg.channel.send({embed});
-
-            //if (!state[msg.guild.id].playing) playNextQueuedVideo(msg, bot);
+            if (!state[msg.guild.id].playing) playNextQueuedVideo(msg, bot);
         }
+    });
+}
+
+function playNextQueuedVideo(msg, bot) {
+    const id = msg.guild.id;
+    state[id].playing = true;
+    // Connect to voice
+    state[id].voiceChannel.join().then(connection => {
+        state[id].nowPlaying = state[id].queue[0];
+        state[id].queue.shift();
+        state[id].stream = ytdl(state[id].nowPlaying.url, { filter: "audioonly" });
+    	state[id].dispatcher = connection.playStream(state[id].stream);
+        state[id].dispatcher.setVolumeLogarithmic(bot.config.modules.player.servers[id].defaultVolume);
+        // Set stream end event
+        state[id].dispatcher.once("end", reason => {
+            if (state[id].queue.length > 0) {
+                playNextQueuedVideo(msg, bot);
+            } else {
+                delete state[id].nowPlaying;
+                state[id].playing = false;
+                state[id].paused = false;
+                state[id].voiceChannel.leave();
+            }
+    	});
+    }).catch(err => {
+        msg.channel.send(`❌ Error connecting to voice channel: ${err}`);
     });
 }
