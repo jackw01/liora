@@ -272,17 +272,18 @@ bot.hasPermission = function(member, user, group, role) {
 // Returns the command object for a command name
 bot.getCommandNamed = function(command, callback) {
     const moduleNames = Object.keys(this.modules);
+    let err = true;
     // Search for configured and default aliases
     if (command in this.config.commandAliases) command = this.config.commandAliases[command];
     else moduleNames.forEach(name => { command = this.modules[name].defaultAliases[command] || command });
     moduleNames.forEach(name => {
         const found = this.modules[name].commands.find(cmd => cmd.name == command);
-        if (found) {
+        if (found && err) {
+            err = false;
             callback(found);
-            return;
         }
     });
-    callback();
+    if (err) callback();
 }
 
 // Section: Message handling middleware pipeline
@@ -337,13 +338,11 @@ const commandDispatcher = function(c, next) {
     bot.getCommandNamed(c.command, cmd => {
         if (cmd) {
             if (c.args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, "?")).length) {
-
                 // Determine permission level for the message context
                 // Use the global group override and the role override if they exist
                 const permissionLevel = bot.config.commandPermissions[c.command] || cmd.permissionLevel;
                 const roleOverride = c.message.guild ? bot.config.serverPermissions[c.message.guild.id][c.command] || "" : "";
                 if (bot.hasPermission(c.message.member, c.message.author, permissionLevel, roleOverride)) {
-
                     // Execute the command with args, message object, and bot object
                     cmd.execute(c.args, c.message, bot).catch(err => {
                         c.message.channel.send(`❌ Error executing command \`${c.command}\`: ${err.message}`);

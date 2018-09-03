@@ -51,6 +51,30 @@ module.exports.commands = [
         }
     },
     {
+        name: "help",
+        description: "Get help on a command.",
+        argumentNames: ["<commandName>?"],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            if (args.length == 0) {
+                msg.channel.send(`Use \`${bot.prefixForMessageContext(msg)}help <command>\` to view help for a command. Use \`${bot.prefixForMessageContext(msg)}list\` to list commands.`);
+            } else {
+                bot.getCommandNamed(args[0], cmd => {
+                    if (cmd) {
+                        const embed = new discord.RichEmbed()
+                            .setTitle("Command Help")
+                            .setColor(bot.config.defaultColors.neutral)
+                            .addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description)
+                        msg.channel.send({embed});
+                    } else {
+                        msg.channel.send(`❌ Command \`${args[0]}\` not found.`);
+                    }
+                });
+            }
+        }
+    },
+    {
         name: "list",
         description: "List commands.",
         argumentNames: ["<module>?"],
