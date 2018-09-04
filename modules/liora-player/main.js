@@ -9,7 +9,7 @@ const state = {};
 
 module.exports.init = async function(bot) {
     if (!_.has(bot.config, "modules.player.youtubeKey")) {
-        _.set(bot.config, "modules.player.youtubeKey", "Replace with YouTube API Key");
+        _.set(bot.config, "modules.player.youtubeKey", "Replace with your YouTube API Key");
         bot.saveConfig(err => {});
         bot.log.modwarn("Player: YouTube API key not specified in config.json. YouTube search functionality will not work.");
     }
@@ -34,7 +34,7 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(args.join(" "))}&key=${bot.config.modules.player.youtubeKey}`, (error, response, body) => {
+            request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(args.join(" "))}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
                 const json = JSON.parse(body);
                 if ("error" in json) msg.channel.send(`❌ Error: ${json.error.errors[0].message}`);
                 else if (json.items.length == 0) msg.channel.send("❌ No videos found.");
@@ -71,7 +71,7 @@ module.exports.commands = [
                     if (matches) enqueueVideo(matches[1], msg, bot);
                     else msg.channel.send("❌ URL does not appear to be a YouTube URL.");
                 } else {
-                    request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(query)}&key=${bot.config.modules.player.youtubeKey}`, (error, response, body) => {
+                    request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(query)}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
                 		const json = JSON.parse(body);
                 		if ("error" in json) msg.channel.send(`❌ Error: ${json.error.errors[0].message}`);
                 		else if (json.items.length == 0) msg.channel.send("❌ No videos found.");

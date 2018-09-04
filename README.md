@@ -182,6 +182,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] error logging
 - [x] rate limit
 - [x] default aliases
+- [ ] display aliases in help
 
 ### Commands for builtin modules
 - [x] load modules
@@ -207,7 +208,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] role list
 - [x] user info
 - [x] role info
-- [ ] weather
+- [x] weather
 - [ ] linux fortune command
 - [x] urban dictionary
 - [ ] xkcd
