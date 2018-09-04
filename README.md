@@ -209,7 +209,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] role info
 - [ ] weather
 - [ ] linux fortune command
-- [ ] urban dictionary
+- [x] urban dictionary
 - [ ] xkcd
 - [x] get profile picture
 - [x] get server icon

@@ -46,7 +46,11 @@ const configSchema = {
     owner: { type: "string", default: "" },
     defaultGame: { type: "string", default: "$help for help" },
     prefix: { type: "string", default: "$" },
-    activeModules: { type: "array", itemType: "string", default: ["liora-core"] },
+    activeModules: {
+        type: "array",
+        itemType: "string",
+        default: ["liora-core", "liora-utils", "liora-autorespond", "liora-player"]
+    },
     commandAliases: { type: "object", default: {} },
     defaultColors: {
         type: "object",
