@@ -586,6 +586,30 @@ module.exports.commands = [
         }
     },
     {
+        name: "channelinfo",
+        description: "Get the ID for a channel mention or name",
+        argumentNames: ["<channel>"],
+        permissionLevel: "all",
+        aliases: ["channelid"],
+        execute: async function(args, msg, bot) {
+            if (msg.guild) {
+                var result = bot.util.parseChannel(args.join(" "), msg.guild);
+                if (result) {
+                    const channel = result[0];
+                    const embed = new discord.RichEmbed()
+                        .setTitle(`Channel info for ${channel.name}`)
+                        .setColor(bot.config.defaultColors.success)
+                        .addField("ID", `\`${channel.id}\``, true)
+                        .addField("Type", channel.type, true)
+                        .addField("Created", channel.createdAt);
+                    msg.channel.send({embed});
+                } else msg.channel.send(`❌ Channel not found.`);
+            } else {
+                msg.channel.send(`❌ Must be in a server to use this command.`);
+            }
+        }
+    },
+    {
         name: "setnick",
         description: "Set nickname.",
         argumentNames: ["<newNickname>"],

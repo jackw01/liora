@@ -203,7 +203,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] youtube player on multiple servers
 - [x] youtube player queue and shuffle
 - [x] server info
-- [ ] channel info
+- [x] channel info
 - [x] role list
 - [x] user info
 - [x] role info

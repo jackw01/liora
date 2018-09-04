@@ -473,6 +473,19 @@ bot.util.parseRole = function(roleString, server) {
     }
 }
 
+// Return an array of channel objects from text containing a channel mention or name
+bot.util.parseChannel = function(channelString, server) {
+    const query = channelString.toLowerCase();
+    let channelIds = query.match(/^<#(\d{17,19})>$/); // Is it a channel mention?
+    if (!channelIds) {
+        const matchingChannels = server.channels.filter(c => { return c.name.toLowerCase().includes(query) }).array();
+        return matchingChannels.length ? matchingChannels : null;
+    } else {
+        const c = server.channels.get(channelIds[1]);
+        return c ? [c] : null;
+    }
+}
+
 // Section: Code starts running here
 
 // Register event listeners
