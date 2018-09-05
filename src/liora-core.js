@@ -402,12 +402,13 @@ bot.onConnect = async function() {
     // Update permissions config for servers
     const servers = this.client.guilds.array();
     servers.forEach(server => {
+        this.log.info(`In server ${server.id}: ${server.name}`)
         if (!_.has(this.config, `serverPermissions[${server.id}]`))
             _.set(this.config, `serverPermissions[${server.id}]`, {});
         if (!_.has(this.config, `settings[${server.id}]`))
             _.set(this.config, `settings[${server.id}]`, {});
-        this.saveConfig(err => {});
     });
+    this.saveConfig(err => {});
 
     // Init modules
     const moduleNames = Object.keys(this.modules);

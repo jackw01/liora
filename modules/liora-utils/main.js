@@ -11,7 +11,6 @@ module.exports.init = async function(bot) {
         bot.saveConfig(err => {});
         bot.log.modwarn("Utils: OpenWeatherMap API key not specified in config.json. Weather command will not work.");
     }
-
     if (!_.has(bot.config, "modules.utils.weatherImperialUnits")) {
         _.set(bot.config, "modules.utils.weatherImperialUnits", false);
         bot.saveConfig(err => {});
