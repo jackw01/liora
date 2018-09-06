@@ -67,9 +67,7 @@ module.exports.commands = [
                             .setColor(bot.config.defaultColors.neutral)
                             .addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description)
                         msg.channel.send({embed});
-                    } else {
-                        msg.channel.send(`❌ Command \`${args[0]}\` not found.`);
-                    }
+                    } else msg.channel.send(`❌ Command \`${args[0]}\` not found.`);
                 });
             }
         }
@@ -105,9 +103,7 @@ module.exports.commands = [
                         embed = new discord.RichEmbed()
                             .setColor(bot.config.defaultColors.neutral);
                     })
-                } else {
-                    msg.channel.send(`❌ Module \`${args[0]}\` not found.`);
-                }
+                } else msg.channel.send(`❌ Module \`${args[0]}\` not found.`);
             }
         }
     },
@@ -312,9 +308,7 @@ module.exports.commands = [
                     if (!bot.config.groups[args[1]].includes(id)) bot.config.groups[args[1]].push(id);
                     bot.saveConfigAndAck(msg);
                 }
-            } else {
-                msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
-            }
+            } else msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
         }
     },
     {
@@ -345,9 +339,7 @@ module.exports.commands = [
                         msg.channel.send("❌ Group does not exist.");
                     }
                 }
-            } else {
-                msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
-            }
+            } else msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
         }
     },
     {
@@ -420,9 +412,7 @@ module.exports.commands = [
                     bot.config.serverPermissions[msg.guild.id][args[0]] = id;
                     bot.saveConfigAndAck(msg);
                 }
-            } else {
-                msg.channel.send(`❌ Spaces are not allowed in rolestrings or command names.`);
-            }
+            } else msg.channel.send(`❌ Spaces are not allowed in rolestrings or command names.`);
         }
     },
     {
@@ -473,9 +463,7 @@ module.exports.commands = [
                     .addField("Joined", msg.guild.joinedAt)
                     .addField("Created", msg.guild.createdAt);
                 msg.channel.send({embed});
-            } else {
-                msg.channel.send(`❌ Must be in a server to use this command.`);
-            }
+            } else msg.channel.send(`❌ Must be in a server to use this command.`);
         }
     },
     {
@@ -492,9 +480,7 @@ module.exports.commands = [
                     .setImage(msg.guild.iconURL)
                     .setURL(msg.guild.iconURL);
                 msg.channel.send({embed});
-            } else {
-                msg.channel.send(`❌ Must be in a server to use this command.`);
-            }
+            } else msg.channel.send(`❌ Must be in a server to use this command.`);
         }
     },
     {
@@ -521,11 +507,8 @@ module.exports.commands = [
                         .addField("Joined", member.joinedAt)
                         .addField("Created", user.createdAt);
                     msg.channel.send({embed});
-                }
-                else msg.channel.send(`❌ User not found.`);
-            } else {
-                msg.channel.send(`❌ Must be in a server to use this command.`);
-            }
+                } else msg.channel.send(`❌ User not found.`);
+            } else msg.channel.send(`❌ Must be in a server to use this command.`);
         }
     },
     {
@@ -545,11 +528,8 @@ module.exports.commands = [
                         .setImage(user.avatarURL)
                         .setURL(user.avatarURL);
                     msg.channel.send({embed});
-                }
-                else msg.channel.send(`❌ User not found.`);
-            } else {
-                msg.channel.send(`❌ Must be in a server to use this command.`);
-            }
+                } else msg.channel.send(`❌ User not found.`);
+            } else msg.channel.send(`❌ Must be in a server to use this command.`);
         }
     },
     {
@@ -565,7 +545,7 @@ module.exports.commands = [
                     const role = result[0];
                     const members = role.members.array();
                     let membersString;
-                    if (members.length > 10) membersString = `${members.length} users in this role.`;
+                    if (members.length > 25) membersString = `${members.length} users in this role.`;
                     else membersString = members.map(m => bot.util.username(m.user)).join(", ");
                     const embed = new discord.RichEmbed()
                         .setTitle(`Role info for ${role.name}`)
@@ -580,9 +560,7 @@ module.exports.commands = [
                         .addField("Created", role.createdAt);
                     msg.channel.send({embed});
                 } else msg.channel.send(`❌ Role not found.`);
-            } else {
-                msg.channel.send(`❌ Must be in a server to use this command.`);
-            }
+            } else msg.channel.send(`❌ Must be in a server to use this command.`);
         }
     },
     {
@@ -604,9 +582,7 @@ module.exports.commands = [
                         .addField("Created", channel.createdAt);
                     msg.channel.send({embed});
                 } else msg.channel.send(`❌ Channel not found.`);
-            } else {
-                msg.channel.send(`❌ Must be in a server to use this command.`);
-            }
+            } else msg.channel.send(`❌ Must be in a server to use this command.`);
         }
     },
     {

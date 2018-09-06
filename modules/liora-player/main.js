@@ -81,9 +81,7 @@ module.exports.commands = [
                         }
                 	});
                 }
-            } else {
-                msg.channel.send("❌ You must be in a voice channel to use this command.");
-            }
+            } else msg.channel.send("❌ You must be in a voice channel to use this command.");
         }
     },
     {
@@ -182,9 +180,7 @@ module.exports.commands = [
                     .setThumbnail(state[msg.guild.id].nowPlaying.thumbnail)
                     .setDescription(` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\nenqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)}\n`);
                 msg.channel.send({embed});
-            } else {
-                msg.channel.send("❌ Nothing is playing.");
-            }
+            } else msg.channel.send("❌ Nothing is playing.");
         }
     },
     {
@@ -206,9 +202,7 @@ module.exports.commands = [
                 })
                 embed.setFooter(`${state[msg.guild.id].queue.length} in queue: total duration ${prettyMs(totalDuration * 1000)}`);
                 msg.channel.send({embed});
-            } else {
-                msg.channel.send("❌ Queue is empty.");
-            }
+            } else msg.channel.send("❌ Queue is empty.");
         }
     }
 ]

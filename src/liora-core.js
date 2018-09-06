@@ -304,6 +304,17 @@ const blockHandler = function(c, next) {
     if (!bot.config.blockedUsers.includes(c.message.author.id)) next();
 }
 
+// Middleware that detects commands in messages and parses arguments
+const commandDetector = function(c, next) {
+    if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
+        const argString = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim();
+        c.args = argString.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g).map(a => a.replace(/^['"]+|['"]$/g, ""));
+        c.command = c.args.shift().toLowerCase();
+        bot.log.debug(`Detected command ${c.command} with args ${c.args.join(", ")}`);
+        next();
+    }
+}
+
 // Middleware that detects if messages are being sent too fast and blocks users who exceed the limit
 const rateLimiter = function(c, next) {
     if (!bot.userCooldowns.has(c.message.author.id)) {
@@ -326,16 +337,6 @@ const rateLimiter = function(c, next) {
         setTimeout(() => {
             _.remove(bot.config.blockedUsers, i => {return i == c.message.author.id});
         }, bot.config.defaultUserCooldown.blockDurationMs);
-    }
-}
-
-// Middleware that detects commands in messages and parses arguments
-const commandDetector = function(c, next) {
-    if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
-        c.args = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim().split(/ +/g);
-        c.command = c.args.shift().toLowerCase();
-        bot.log.debug(`Detected command ${c.command} with args ${c.args.join(" ")}`);
-        next();
     }
 }
 
@@ -374,7 +375,7 @@ bot.onMessage = async function(msg) {
             middleware = _.concat(middleware, this.modules[name].middleware);
         }
     });
-    middleware = _.concat(middleware, [blockHandler, rateLimiter, commandDetector, commandDispatcher]);
+    middleware = _.concat(middleware, [blockHandler, commandDetector, rateLimiter, commandDispatcher]);
     compose(middleware)(container);
 }
 

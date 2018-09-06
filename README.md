@@ -220,6 +220,6 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [ ] 8 ball
 - [ ] cowsay
 - [ ] figlet/toilet
-- [ ] poll
+- [x] poll
 - [ ] remindme
 - [ ] translate last message
