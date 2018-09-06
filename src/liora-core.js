@@ -133,7 +133,9 @@ bot.loadConfig = function(callback) {
     try {
         bot.config = JSON.parse(fs.readFileSync(this.configFile));
     } catch (err) {
-        bot.config = {};
+        bot.log.error(`Error reading config: ${err.message}`);
+        bot.log.error("Please fix the config error or delete config.json so it can be regenerated.");
+        process.exit(1);
     }
 
     // Recursively iterate over the config to check types and reset properties to default if they are the wrong type
@@ -390,6 +392,7 @@ bot.load = function() {
         this.log.info("Loading modules...");
         this.config.activeModules.forEach(module => { this.loadModule(module, err => {}) });
         this.log.info("Connecting...");
+        console.log(this.config.discordToken);
         this.client.login(this.config.discordToken);
     });
 }

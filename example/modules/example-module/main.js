@@ -4,7 +4,7 @@ module.exports.init = async function(bot) {
 module.exports.commands = [
 
     {
-        name: "potato"
+        name: "potato",
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
