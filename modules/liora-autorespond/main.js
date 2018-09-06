@@ -14,7 +14,7 @@ module.exports.init = async function(bot) {
 module.exports.commands = [
     {
         name: "addresponse",
-        description: "Add a response to the autoresponder. If multiple responses are added for one regex, one will be randomly selected. Use in a direct message with the bot to create a global response.",
+        description: "Add a regular expression and response to the autoresponder list. If multiple responses are added for one regex, one will be randomly selected. Use in a direct message with the bot to create a global response.",
         argumentNames: ["<regex>", "<response>"],
         permissionLevel: "manager",
         aliases: [],

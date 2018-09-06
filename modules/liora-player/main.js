@@ -28,11 +28,11 @@ module.exports.init = async function(bot) {
 
 module.exports.commands = [
     {
-        name: "youtube",
+        name: "ytsearch",
         description: "Display YouTube videos for a search query.",
         argumentNames: ["<query>"],
         permissionLevel: "all",
-        aliases: [],
+        aliases: ["youtube"],
         execute: async function(args, msg, bot) {
             request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(args.join(" "))}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
                 const json = JSON.parse(body);

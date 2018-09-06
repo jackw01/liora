@@ -82,7 +82,8 @@ module.exports.commands = [
             if (args.length == 0) {
                 const embed = new discord.RichEmbed()
                     .setTitle("Active modules:")
-                    .setColor(bot.config.defaultColors.neutral);
+                    .setColor(bot.config.defaultColors.neutral)
+                    .setDescription(`Use \`${bot.prefixForMessageContext(msg)}hlist <module>\` to view command usage and description for a module.`);
                 const modules = Object.getOwnPropertyNames(bot.modules);
                 modules.forEach(mod => {
                     const arr = bot.modules[mod].commands.map(cmd => cmd.name);
