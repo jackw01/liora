@@ -1,5 +1,11 @@
-# Liora
-Modular and extensible Node.js discord-bot with lots of built-in functionality
+<h1 align="center">
+	<br>
+	<img width="400" src="graphics/liora-logo-01.png" alt="Liora">
+	<br>
+	<br>
+</h1>
+
+ > Modular and extensible Node.js discord-bot with lots of built-in functionality
 
 ## Is It a Bot or a Framework?
 Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for fast and easy development of custom bot functionality with Node.js.
@@ -220,3 +226,6 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] poll
 - [ ] remindme
 - [ ] translate last message
+
+## License
+MIT
