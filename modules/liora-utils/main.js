@@ -3,7 +3,8 @@ const _ = require("lodash");
 const request = require("request");
 
 const urbanDictionaryURL = "https://api.urbandictionary.com/v0";
-const openWeatherMapURL = "http://api.openweathermap.org/data/2.5/";
+const openWeatherMapURL = "http://api.openweathermap.org/data/2.5";
+const xkcdURL = "https://xkcd.com";
 
 const pollState = {};
 
@@ -29,21 +30,25 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             request(`${urbanDictionaryURL}/define?page=${1}&term=${args.join("%20")}`, (err, response, body) => {
                 if (!err) {
-                    const json = JSON.parse(body);
-                    if (json.list && json.list.length > 0) {
-                        const result = json.list[0];
-                        let contents = result.definition.replace(/[\[\]]/ig, "") + "\n\n"
-                                       + result.example.replace(/[\[\]]/ig, "");
-                        if (contents.length > 1990) {
-                            contents = contents.substring(0, 1990) + "...\n\nDefinition too long to display here.";
-                        }
-                        const embed = new discord.RichEmbed()
-                            .setTitle(`Urban Dictionary: ${args.join(" ")}`)
-                            .setColor(bot.config.defaultColors.success)
-                            .setURL(result.permalink)
-                            .setDescription(contents);
-                        msg.channel.send({embed});
-                    } else msg.channel.send(`❌ Word not found.`);
+                    try {
+                        const json = JSON.parse(body);
+                        if (json.list && json.list.length > 0) {
+                            const result = json.list[0];
+                            let contents = result.definition.replace(/[\[\]]/ig, "") + "\n\n"
+                                           + result.example.replace(/[\[\]]/ig, "");
+                            if (contents.length > 1990) {
+                                contents = contents.substring(0, 1990) + "...\n\nDefinition too long to display here.";
+                            }
+                            const embed = new discord.RichEmbed()
+                                .setTitle(`Urban Dictionary: ${args.join(" ")}`)
+                                .setColor(bot.config.defaultColors.success)
+                                .setURL(result.permalink)
+                                .setDescription(contents);
+                            msg.channel.send({embed});
+                        } else msg.channel.send(`❌ Word not found.`);
+                    } catch {
+                        msg.channel.send(`❌ Error getting definiton.`);
+                    }
                 } else msg.channel.send(`❌ Error getting definiton.`);
             });
         }
@@ -59,21 +64,67 @@ module.exports.commands = [
             let units = imperial ? "imperial" : "metric";
             request(`${openWeatherMapURL}/weather?q=${args.join("%20")}&units=${units}&appid=${bot.config.modules.utils.openWeatherMapKey}`, (err, response, body) => {
                 if (!err) {
-                    const json = JSON.parse(body);
-                    if (json.cod == 200) {
-                        const embed = new discord.RichEmbed()
-                            .setTitle(`Weather in ${json.name}`)
-                            .setColor(bot.config.defaultColors.success)
-                            .addField("🌞 Conditions", json.weather[0].main, true)
-                            .addField("🌡️ Temperature", `${json.main.temp} ${imperial ? "°F" : "°C"}`, true)
-                            .addField("😓 Humidity", `${json.main.humidity} %`, true)
-                            .setFooter("Powered by OpenWeatherMap");
-                        if (json.wind) embed.addField("💨 Wind Speed", `${json.wind.speed} ${imperial ? "mph" : "m/s"}`, true);
-                        if (json.clouds) embed.addField("☁️ Clouds", `${json.clouds.all} %`, true);
-                        msg.channel.send({embed});
-                    } else if (json.cod == 404) msg.channel.send(`❌ Location not found.`);
-                    else msg.channel.send(`❌ Error getting weather.`);
+                    try {
+                        const json = JSON.parse(body);
+                        if (json.cod == 200) {
+                            const embed = new discord.RichEmbed()
+                                .setTitle(`Weather in ${json.name}`)
+                                .setColor(bot.config.defaultColors.success)
+                                .addField("🌞 Conditions", json.weather[0].main, true)
+                                .addField("🌡️ Temperature", `${json.main.temp} ${imperial ? "°F" : "°C"}`, true)
+                                .addField("😓 Humidity", `${json.main.humidity} %`, true)
+                                .setFooter("Powered by OpenWeatherMap");
+                            if (json.wind) embed.addField("💨 Wind Speed", `${json.wind.speed} ${imperial ? "mph" : "m/s"}`, true);
+                            if (json.clouds) embed.addField("☁️ Clouds", `${json.clouds.all} %`, true);
+                            msg.channel.send({embed});
+                        } else if (json.cod == 404) msg.channel.send(`❌ Location not found.`);
+                        else msg.channel.send(`❌ Error getting weather.`);
+                    } catch {
+                        msg.channel.send(`❌ Error getting weather.`);
+                    }
                 } else msg.channel.send(`❌ Error getting weather.`);
+            });
+        }
+    },
+    {
+        name: "xkcd",
+        description: "Show an xkcd comic. Gets the latest comic by default. Specify a number or 'random' to get a specific or random comic.",
+        argumentNames: ["<number>?"],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            function postXkcd(data) {
+                const embed = new discord.RichEmbed()
+                    .setTitle(`xkcd ${data.num}: ${data.safe_title} (${data.year}-${_.padStart(data.month, 2, 0)}-${_.padStart(data.day, 2, 0)})`)
+                    .setColor(bot.config.defaultColors.success)
+                    .setImage(data.img)
+                    .setFooter(data.alt);
+                msg.channel.send({embed});
+            }
+
+            request(`${xkcdURL}/info.0.json`, (err, response, body) => {
+                if (!err) {
+                    try {
+                        const json = JSON.parse(body);
+                        if (args.length == 0) {
+                            postXkcd(json);
+                        } else {
+                            const num = parseInt(args[0]);
+                            if (num <= json.num && num != 404 && num > 0) {
+                                request(`${xkcdURL}/${num ? `${num}/` : ""}info.0.json`, (err, response, body) => {
+                                    try {
+                                        if (!err) postXkcd(JSON.parse(body));
+                                        else msg.channel.send(`❌ Error getting comic.`);
+                                    } catch (err) {
+                                        msg.channel.send(`❌ Error getting comic.`);
+                                    }
+                                });
+                            } else msg.react("❌");
+                        }
+                    } catch (err) {
+                        msg.channel.send(`❌ Error getting comic.`);
+                    }
+                } else msg.channel.send(`❌ Error getting comic.`);
             });
         }
     },
