@@ -5,6 +5,7 @@ const request = require("request");
 const urbanDictionaryURL = "https://api.urbandictionary.com/v0";
 const openWeatherMapURL = "http://api.openweathermap.org/data/2.5";
 const xkcdURL = "https://xkcd.com";
+const wikipediaURL = "https://en.wikipedia.org/w/api.php";
 
 const pollState = {};
 
@@ -21,6 +22,37 @@ module.exports.init = async function(bot) {
 }
 
 module.exports.commands = [
+    {
+        name: "wikipedia",
+        description: "Search Wikipedia.",
+        argumentNames: ["<query>"],
+        permissionLevel: "all",
+        aliases: ["wiki"],
+        execute: async function(args, msg, bot) {
+            request(`${wikipediaURL}?action=opensearch&search=${args.join("%20")}&limit=5&namespace=0&format=json`, (err, response, body) => {
+                if (!err) {
+                    try {
+                        const json = JSON.parse(body);
+                        if (json[1].length) {
+                            const embed = new discord.RichEmbed()
+                                .setTitle(`Wikipedia Search: ${args.join(" ")}`)
+                                .setColor(bot.config.defaultColors.success);
+                            for (var i = 0; i < json[1].length; i++) {
+                                let contents = json[2][i];
+                                if (contents.length > 1000) {
+                                    contents = contents.substring(0, 1000) + "...\n\nDescription too long to display here.";
+                                }
+                                embed.addField(json[1][i], `[${contents}](${json[3][i]})`, false);
+                            }
+                            msg.channel.send({embed});
+                        } else msg.channel.send(`❌ No results found.`);
+                    } catch {
+                        msg.channel.send(`❌ Error parsing results.`);
+                    }
+                } else msg.channel.send(`❌ Error searching Wikipedia.`);
+            });
+        }
+    },
     {
         name: "urban",
         description: "Search Urban Dictionary for a word.",
@@ -47,7 +79,7 @@ module.exports.commands = [
                             msg.channel.send({embed});
                         } else msg.channel.send(`❌ Word not found.`);
                     } catch {
-                        msg.channel.send(`❌ Error getting definiton.`);
+                        msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error getting definiton.`);
             });
@@ -80,7 +112,7 @@ module.exports.commands = [
                         } else if (json.cod == 404) msg.channel.send(`❌ Location not found.`);
                         else msg.channel.send(`❌ Error getting weather.`);
                     } catch {
-                        msg.channel.send(`❌ Error getting weather.`);
+                        msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error getting weather.`);
             });
@@ -114,7 +146,7 @@ module.exports.commands = [
                                 request(`${xkcdURL}/${num ? `${num}/` : ""}info.0.json`, (err, response, body) => {
                                     try {
                                         if (!err) postXkcd(JSON.parse(body));
-                                        else msg.channel.send(`❌ Error getting comic.`);
+                                        else msg.channel.send(`❌ Error parsing results.`);
                                     } catch (err) {
                                         msg.channel.send(`❌ Error getting comic.`);
                                     }
@@ -122,7 +154,7 @@ module.exports.commands = [
                             } else msg.react("❌");
                         }
                     } catch (err) {
-                        msg.channel.send(`❌ Error getting comic.`);
+                        msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error getting comic.`);
             });

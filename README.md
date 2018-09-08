@@ -221,10 +221,9 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] get server icon
 - [ ] reddit image search
 - [ ] dice
-- [ ] wikipedia
+- [x] wikipedia
 - [ ] 8 ball
 - [x] poll
-- [ ] remindme
 - [ ] translate last message
 
 ## License
