@@ -62,10 +62,17 @@ module.exports.commands = [
             } else {
                 bot.getCommandNamed(args[0], cmd => {
                     if (cmd) {
+                        let aliases = "";
+                        cmd.aliases.forEach(a => { aliases += `\`${a}\` ` });
+                        const customAliases = Object.keys(bot.config.commandAliases);
+                        customAliases.forEach(a => {
+                            if (bot.config.commandAliases[a] == cmd.name) aliases += `\`${a}\` `;
+                        });
                         const embed = new discord.RichEmbed()
-                            .setTitle("Command Help")
+                            .setTitle(`Command Help: \`${cmd.name}\``)
                             .setColor(bot.config.defaultColors.neutral)
-                            .addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description)
+                            .setDescription(`Aliases: ${aliases}`)
+                            .addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
                         msg.channel.send({embed});
                     } else msg.channel.send(`❌ Command \`${args[0]}\` not found.`);
                 });

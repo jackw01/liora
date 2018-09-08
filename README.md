@@ -188,7 +188,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] error logging
 - [x] rate limit
 - [x] default aliases
-- [ ] display aliases in help
+- [x] display aliases in help
 
 ### Commands for builtin modules
 - [x] load modules

@@ -175,7 +175,7 @@ module.exports.commands = [
                     const embed = new discord.RichEmbed()
                         .setTitle(args[0])
                         .setColor(bot.config.defaultColors.success)
-                        .setDescription(`Use \`${bot.prefixForMessageContext(msg)}vote <choiceNumber\` to vote.`);
+                        .setDescription(`Use \`${bot.prefixForMessageContext(msg)}vote <choiceNumber>\` to vote.`);
                     for (var i = 1; i < args.length; i++) {
                         pollState[msg.channel.id].args.push(args[i]);
                         pollState[msg.channel.id].votes.push(0);
