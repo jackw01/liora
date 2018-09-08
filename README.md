@@ -224,6 +224,7 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] wikipedia
 - [x] 8 ball
 - [x] poll
+- [x] fortune
 - [ ] translate last message
 
 ## License

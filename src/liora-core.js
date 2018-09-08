@@ -393,7 +393,6 @@ bot.load = function() {
         this.log.info("Loading modules...");
         this.config.activeModules.forEach(module => { this.loadModule(module, err => {}) });
         this.log.info("Connecting...");
-        console.log(this.config.discordToken);
         this.client.login(this.config.discordToken);
     });
 }

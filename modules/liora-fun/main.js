@@ -1,5 +1,6 @@
 const discord = require("discord.js");
 const commandExists = require("command-exists");
+const cp = require("child_process");
 
 const magic8Ball = [
     "It is certain.", "It is decidedly so.", "Without a doubt.", "Yes - definitely.", "You may rely on it.",
@@ -8,7 +9,16 @@ const magic8Ball = [
     "Don't count on it.", "My reply is no.", "My sources say no", "Outlook not so good.", "Very doubtful."
 ];
 
+const fortuneFiles = [
+    "all", "computers", "cookie", "definitions", "miscellaneous", "people", "platitudes", "politics",
+    "science", "wisdom"
+];
+
 module.exports.init = async function(bot) {
+    if (!commandExists.sync("fortune")) {
+        bot.log.modinfo("Fun: fortune command disabled - make sure that fortune is installed and in path.");
+        module.exports.commands = module.exports.commands.filter(c => c.name != "fortune");
+    }
 }
 
 module.exports.commands = [
@@ -51,6 +61,31 @@ module.exports.commands = [
                 .setColor(bot.config.defaultColors.success)
                 .setDescription(`${magic8Ball[randomIntInRange(0, magic8Ball.length - 1)]}`)
             msg.channel.send({embed});
+        }
+    },
+    {
+        name: "fortune",
+        description: "Get a fortune.",
+        argumentNames: [`[${fortuneFiles.join("|")}]?`],
+        permissionLevel: "all",
+        aliases: [],
+        execute: async function(args, msg, bot) {
+            const file = args.length == 0 ? "wisdom" : args[0];
+            if (fortuneFiles.includes(file)) {
+                cp.exec(`fortune -s ${file}`, (err, stdout, stderr) => {
+                    if (err) {
+                        msg.channel.send(`❌ Error running fortune`);
+                    } else {
+                        const embed = new discord.RichEmbed()
+                            .setTitle("Fortune")
+                            .setColor(bot.config.defaultColors.success)
+                            .setDescription(stdout);
+                        msg.channel.send({embed});
+                    }
+                });
+            } else {
+                msg.channel.send(`❌ Fortune file not valid: choose from \`${fortuneFiles.join("`, `")}\``);
+            }
         }
     }
 ]
