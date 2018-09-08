@@ -222,8 +222,8 @@ function enqueueVideo(id, msg, bot) {
             });
             // Generate queueing message
             let message;
-            if (!state[msg.guild.id].nowPlaying && state[msg.guild.id].queue.length == 1) message = `▶️ Now Playing`;
-            else message = `▶️ Added to the Queue`;
+            if (!state[msg.guild.id].nowPlaying && state[msg.guild.id].queue.length == 1) message = `Now Playing`;
+            else message = `Added to the Queue`;
             const embed = new discord.RichEmbed()
                 .setTitle(message)
                 .setColor(bot.config.defaultColors.success)
