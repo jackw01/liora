@@ -90,7 +90,7 @@ module.exports.commands = [
                 const embed = new discord.RichEmbed()
                     .setTitle("Active modules:")
                     .setColor(bot.config.defaultColors.neutral)
-                    .setDescription(`Use \`${bot.prefixForMessageContext(msg)}hlist <module>\` to view command usage and description for a module.`);
+                    .setDescription(`Use \`${bot.prefixForMessageContext(msg)}list <module>\` to view command usage and description for a module.`);
                 const modules = Object.getOwnPropertyNames(bot.modules);
                 modules.forEach(mod => {
                     const arr = bot.modules[mod].commands.map(cmd => cmd.name);
@@ -601,6 +601,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             msg.guild.members.get(bot.client.user.id).setNickname(args.join(" "));
+            msg.react("✅");
         }
     },
     {
