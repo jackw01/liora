@@ -6,6 +6,9 @@ const urbanDictionaryURL = "https://api.urbandictionary.com/v0";
 const openWeatherMapURL = "http://api.openweathermap.org/data/2.5";
 const xkcdURL = "https://xkcd.com";
 const wikipediaURL = "https://en.wikipedia.org/w/api.php";
+const redditURL = "https://www.reddit.com/";
+
+const redditSearchCounter = {};
 
 const pollState = {};
 
@@ -50,6 +53,37 @@ module.exports.commands = [
                         msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error searching Wikipedia.`);
+            });
+        }
+    },
+    {
+        name: "redditimgsearch",
+        description: "Search imgur.com links on Reddit and post one of the top results.",
+        argumentNames: ["<query>"],
+        permissionLevel: "all",
+        aliases: ["rimgsearch"],
+        execute: async function(args, msg, bot) {
+            request(`${redditURL}search.json?q=${args.join("%20")}%20site:imgur.com&sort=top`, (err, response, body) => {
+                if (!err) {
+                    try {
+                        const json = JSON.parse(body);
+                        const posts = json.data.children;
+                        if (posts.length) {
+                            if (_.has(redditSearchCounter, args.join(" "))) redditSearchCounter[args.join(" ")] ++;
+                            else redditSearchCounter[args.join(" ")] = 0;
+                            console.dir(redditSearchCounter);
+                            const post = posts[redditSearchCounter[args.join(" ")] % (posts.length - 1)];
+                            const embed = new discord.RichEmbed()
+                                .setTitle(`Reddit image for ${args.join(" ")}`)
+                                .setColor(bot.config.defaultColors.success)
+                                .setImage(post.data.url)
+                                .setURL(`${redditURL}${post.data.permalink}`);
+                            msg.channel.send({embed});
+                        } else msg.channel.send(`❌ No results found.`);
+                    } catch {
+                        msg.channel.send(`❌ Error parsing results.`);
+                    }
+                } else msg.channel.send(`❌ Error searching Reddit.`);
             });
         }
     },
