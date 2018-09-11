@@ -220,7 +220,8 @@ Searches all loaded modules for a command with the specified name. `callback` wi
 - [x] get profile picture
 - [x] get server icon
 - [x] reddit image search
-- [x] reddit image by sub
+- [x] reddit gif search
+- [ ] reddit image by sub
 - [x] dice
 - [x] wikipedia
 - [x] 8 ball

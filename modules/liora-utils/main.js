@@ -49,7 +49,7 @@ module.exports.commands = [
                             }
                             msg.channel.send({embed});
                         } else msg.channel.send(`❌ No results found.`);
-                    } catch {
+                    } catch (err) {
                         msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error searching Wikipedia.`);
@@ -58,33 +58,32 @@ module.exports.commands = [
     },
     {
         name: "redditimgsearch",
-        description: "Search imgur.com links on Reddit and post one of the top results.",
+        description: "Search imgur.com and i.redd.it image (not gif) links on Reddit and post one of the top results.",
         argumentNames: ["<query>"],
         permissionLevel: "all",
         aliases: ["rimgsearch"],
         execute: async function(args, msg, bot) {
-            request(`${redditURL}search.json?q=${args.join("%20")}%20site:imgur.com&sort=top`, (err, response, body) => {
-                if (!err) {
-                    try {
-                        const json = JSON.parse(body);
-                        const posts = json.data.children;
-                        if (posts.length) {
-                            if (_.has(redditSearchCounter, args.join(" "))) redditSearchCounter[args.join(" ")] ++;
-                            else redditSearchCounter[args.join(" ")] = 0;
-                            console.dir(redditSearchCounter);
-                            const post = posts[redditSearchCounter[args.join(" ")] % (posts.length - 1)];
-                            const embed = new discord.RichEmbed()
-                                .setTitle(`Reddit image for ${args.join(" ")}`)
-                                .setColor(bot.config.defaultColors.success)
-                                .setImage(post.data.url)
-                                .setURL(`${redditURL}${post.data.permalink}`);
-                            msg.channel.send({embed});
-                        } else msg.channel.send(`❌ No results found.`);
-                    } catch {
-                        msg.channel.send(`❌ Error parsing results.`);
-                    }
-                } else msg.channel.send(`❌ Error searching Reddit.`);
-            });
+            showRedditResult(
+                msg, bot, `${redditURL}search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
+                post => {
+                    return /.*(imgur\.com|i\.redd\.it).*/.test(post.data.url) && !/.*(gifv|gif)$/.test(post.data.url);
+                }
+            );
+        }
+    },
+    {
+        name: "redditgifsearch",
+        description: "Search imgur.com, gfycat, and i.redd.it gifv links on Reddit and post one of the top results.",
+        argumentNames: ["<query>"],
+        permissionLevel: "all",
+        aliases: ["rgifsearch"],
+        execute: async function(args, msg, bot) {
+            showRedditResult(
+                msg, bot, `${redditURL}search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
+                post => {
+                    return /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/.test(post.data.url);
+                }
+            );
         }
     },
     {
@@ -112,7 +111,7 @@ module.exports.commands = [
                                 .setDescription(contents);
                             msg.channel.send({embed});
                         } else msg.channel.send(`❌ Word not found.`);
-                    } catch {
+                    } catch (err) {
                         msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error getting definiton.`);
@@ -145,7 +144,7 @@ module.exports.commands = [
                             msg.channel.send({embed});
                         } else if (json.cod == 404) msg.channel.send(`❌ Location not found.`);
                         else msg.channel.send(`❌ Error getting weather.`);
-                    } catch {
+                    } catch (err) {
                         msg.channel.send(`❌ Error parsing results.`);
                     }
                 } else msg.channel.send(`❌ Error getting weather.`);
@@ -264,6 +263,33 @@ module.exports.commands = [
         }
     }
 ]
+
+function showRedditResult(msg, bot, queryURL, queryString, filter) {
+    request(queryURL, (err, response, body) => {
+        if (!err) {
+            try {
+                const json = JSON.parse(body);
+                const posts = json.data.children.filter(filter);
+                if (posts.length) {
+                    if (_.has(redditSearchCounter, queryString)) redditSearchCounter[queryString] ++;
+                    else redditSearchCounter[queryString] = 0;
+                    const post = posts[redditSearchCounter[queryString] % (posts.length - 1)];
+                    const embed = new discord.RichEmbed()
+                        .setTitle(`Reddit image for ${queryString}`)
+                        .setColor(bot.config.defaultColors.success)
+                        .setDescription(post.data.title)
+                        .setImage(post.data.url)
+                        .setURL(`${redditURL}${post.data.permalink}`)
+                        .setFooter(new Date(post.data.created * 1000));
+                    msg.channel.send({embed});
+                } else msg.channel.send(`❌ No results found.`);
+            } catch (err) {
+                console.log(err);
+                msg.channel.send(`❌ Error parsing results.`);
+            }
+        } else msg.channel.send(`❌ Error searching Reddit.`);
+    });
+}
 
 function showPollData(bot, channel) {
     const embed = new discord.RichEmbed()
