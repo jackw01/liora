@@ -6,7 +6,7 @@ const urbanDictionaryURL = "https://api.urbandictionary.com/v0";
 const openWeatherMapURL = "http://api.openweathermap.org/data/2.5";
 const xkcdURL = "https://xkcd.com";
 const wikipediaURL = "https://en.wikipedia.org/w/api.php";
-const redditURL = "https://www.reddit.com/";
+const redditURL = "https://www.reddit.com";
 
 const redditSearchCounter = {};
 
@@ -64,7 +64,7 @@ module.exports.commands = [
         aliases: ["rimgsearch"],
         execute: async function(args, msg, bot) {
             showRedditResult(
-                msg, bot, `${redditURL}search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
+                msg, bot, `${redditURL}/search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
                 post => {
                     return /.*(imgur\.com|i\.redd\.it).*/.test(post.data.url) && !/.*(gifv|gif)$/.test(post.data.url);
                 }
@@ -73,19 +73,53 @@ module.exports.commands = [
     },
     {
         name: "redditgifsearch",
-        description: "Search imgur.com, gfycat, and i.redd.it gifv links on Reddit and post one of the top results.",
+        description: "Search imgur.com, gfycat, and i.redd.it gif/v links on Reddit and post one of the top results.",
         argumentNames: ["<query>"],
         permissionLevel: "all",
         aliases: ["rgifsearch"],
         execute: async function(args, msg, bot) {
             showRedditResult(
-                msg, bot, `${redditURL}search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
+                msg, bot, `${redditURL}/search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
                 post => {
                     return /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/.test(post.data.url);
                 }
             );
         }
     },
+    {
+        name: "redditimg",
+        description: "Get a image from the front page of a subreddit. Specify a time range to get an image from top posts.",
+        argumentNames: ["<subreddit>"],
+        permissionLevel: "all",
+        aliases: ["rimg"],
+        execute: async function(args, msg, bot) {
+            showRedditResult(
+                msg, bot, `${redditURL}/r/${args.join("%20")}/hot/.json`, args.join(" "),
+                post => {
+                    return !post.data.stickied &&
+                           !post.data.pinned &&
+                           /.*(imgur\.com|i\.redd\.it).*/.test(post.data.url) && !/.*(gifv|gif)$/.test(post.data.url);
+                }
+            );
+        }
+    },
+    {
+        name: "redditgif",
+        description: "Get a gif or gifv from the front page of a subreddit.",
+        argumentNames: ["<subreddit>"],
+        permissionLevel: "all",
+        aliases: ["rgif"],
+        execute: async function(args, msg, bot) {
+            showRedditResult(
+                msg, bot, `${redditURL}/r/${args.join("%20")}/hot/.json`, args.join(" "),
+                post => {
+                    return !post.data.stickied &&
+                           !post.data.pinned &&
+                           /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/.test(post.data.url);
+                }
+            );
+        }
+    }
     {
         name: "urban",
         description: "Search Urban Dictionary for a word.",
