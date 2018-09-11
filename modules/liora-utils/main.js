@@ -285,7 +285,7 @@ module.exports.commands = [
 ]
 
 function redditSubPostHandler(msg, args, bot, gif) {
-    let view, opt;
+    let view = "hot", opt = "";
     if (args.length > 1) {
         if (["hour", "day", "week", "month", "year", "all"].includes(args[args.length - 1])) {
             view = "top";
@@ -294,9 +294,6 @@ function redditSubPostHandler(msg, args, bot, gif) {
             msg.channel.send(`❌ Subreddit name must be one word. If you are specifying a time range, it must be hour, day, week, month, year, or all.`);
             return;
         }
-    } else {
-        view = "hot";
-        opt = "";
     }
     showRedditResult(
         msg, bot, `${redditURL}/r/${args[0]}/${view}/.json${opt}`, args.join(" "),
@@ -331,7 +328,7 @@ function showRedditResult(msg, bot, queryURL, queryString, filter) {
             } catch (err) {
                 msg.channel.send(`❌ Error parsing results.`);
             }
-        } else msg.channel.send(`❌ Error getting results.`);
+        } else msg.channel.send(`❌ Error searching Reddit.`);
     });
 }
 
