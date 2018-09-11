@@ -8,6 +8,10 @@ const xkcdURL = "https://xkcd.com";
 const wikipediaURL = "https://en.wikipedia.org/w/api.php";
 const redditURL = "https://www.reddit.com";
 
+const isGifRegex = /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/;
+const isImageRegex = /.*(imgur\.com|i\.redd\.it).*/;
+const gifExtensionRegex = /.*(gifv|gif)$/;
+
 const redditSearchCounter = {};
 
 const pollState = {};
@@ -65,9 +69,7 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             showRedditResult(
                 msg, bot, `${redditURL}/search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
-                post => {
-                    return /.*(imgur\.com|i\.redd\.it).*/.test(post.data.url) && !/.*(gifv|gif)$/.test(post.data.url);
-                }
+                post => { return isImageRegex.test(post.data.url) && !gifExtensionRegex.test(post.data.url); }
             );
         }
     },
@@ -80,46 +82,30 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             showRedditResult(
                 msg, bot, `${redditURL}/search.json?q=${args.join("%20")}&sort=top`, args.join(" "),
-                post => {
-                    return /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/.test(post.data.url);
-                }
+                post => { return isGifRegex.test(post.data.url); }
             );
         }
     },
     {
         name: "redditimg",
         description: "Get a image from the front page of a subreddit. Specify a time range to get an image from top posts.",
-        argumentNames: ["<subreddit>"],
+        argumentNames: ["<subreddit> <hour|day|week|month|year|all>?"],
         permissionLevel: "all",
         aliases: ["rimg"],
         execute: async function(args, msg, bot) {
-            showRedditResult(
-                msg, bot, `${redditURL}/r/${args.join("%20")}/hot/.json`, args.join(" "),
-                post => {
-                    return !post.data.stickied &&
-                           !post.data.pinned &&
-                           /.*(imgur\.com|i\.redd\.it).*/.test(post.data.url) && !/.*(gifv|gif)$/.test(post.data.url);
-                }
-            );
+            redditSubPostHandler(msg, args, bot, false);
         }
     },
     {
         name: "redditgif",
         description: "Get a gif or gifv from the front page of a subreddit.",
-        argumentNames: ["<subreddit>"],
+        argumentNames: ["<subreddit> <hour|day|week|month|year|all>?"],
         permissionLevel: "all",
         aliases: ["rgif"],
         execute: async function(args, msg, bot) {
-            showRedditResult(
-                msg, bot, `${redditURL}/r/${args.join("%20")}/hot/.json`, args.join(" "),
-                post => {
-                    return !post.data.stickied &&
-                           !post.data.pinned &&
-                           /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/.test(post.data.url);
-                }
-            );
+            redditSubPostHandler(msg, args, bot, true);
         }
-    }
+    },
     {
         name: "urban",
         description: "Search Urban Dictionary for a word.",
@@ -298,6 +284,31 @@ module.exports.commands = [
     }
 ]
 
+function redditSubPostHandler(msg, args, bot, gif) {
+    let view, opt;
+    if (args.length > 1) {
+        if (["hour", "day", "week", "month", "year", "all"].includes(args[args.length - 1])) {
+            view = "top";
+            opt = `?t=${args[args.length - 1]}`;
+        } else {
+            msg.channel.send(`❌ Subreddit name must be one word. If you are specifying a time range, it must be hour, day, week, month, year, or all.`);
+            return;
+        }
+    } else {
+        view = "hot";
+        opt = "";
+    }
+    showRedditResult(
+        msg, bot, `${redditURL}/r/${args[0]}/${view}/.json${opt}`, args.join(" "),
+        post => {
+            if (!post.data.stickied && !post.data.pinned) {
+                if (gif) return isGifRegex.test(post.data.url);
+                else return isImageRegex.test(post.data.url) && !gifExtensionRegex.test(post.data.url);
+            }
+        }
+    );
+}
+
 function showRedditResult(msg, bot, queryURL, queryString, filter) {
     request(queryURL, (err, response, body) => {
         if (!err) {
@@ -318,10 +329,9 @@ function showRedditResult(msg, bot, queryURL, queryString, filter) {
                     msg.channel.send({embed});
                 } else msg.channel.send(`❌ No results found.`);
             } catch (err) {
-                console.log(err);
                 msg.channel.send(`❌ Error parsing results.`);
             }
-        } else msg.channel.send(`❌ Error searching Reddit.`);
+        } else msg.channel.send(`❌ Error getting results.`);
     });
 }
 
