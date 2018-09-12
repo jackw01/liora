@@ -89,7 +89,7 @@ module.exports.commands = [
     {
         name: "redditimg",
         description: "Get a image from the front page of a subreddit. Specify a time range to get an image from top posts.",
-        argumentNames: ["<subreddit> <hour|day|week|month|year|all>?"],
+        argumentNames: ["<subreddit>", "<hour|day|week|month|year|all>?"],
         permissionLevel: "all",
         aliases: ["rimg"],
         execute: async function(args, msg, bot) {
@@ -99,7 +99,7 @@ module.exports.commands = [
     {
         name: "redditgif",
         description: "Get a gif or gifv from the front page of a subreddit.",
-        argumentNames: ["<subreddit> <hour|day|week|month|year|all>?"],
+        argumentNames: ["<subreddit>", "<hour|day|week|month|year|all>?"],
         permissionLevel: "all",
         aliases: ["rgif"],
         execute: async function(args, msg, bot) {

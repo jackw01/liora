@@ -292,6 +292,15 @@ bot.getCommandNamed = function(command, callback) {
     if (err) callback();
 }
 
+// Show error message embed with args
+bot.sendError = function(channel, title, description) {
+    const embed = new discord.RichEmbed()
+        .setTitle(`❌ ${title}`)
+        .setDescription(description)
+        .setColor(this.config.defaultColors.error);
+    channel.send({embed});
+}
+
 // Section: Message handling middleware pipeline
 
 // Middleware that discards messages if they are sent by another bot
@@ -352,13 +361,13 @@ const commandDispatcher = function(c, next) {
                 if (bot.hasPermission(c.message.member, c.message.author, permissionLevel, roleOverride)) {
                     // Execute the command with args, message object, and bot object
                     cmd.execute(c.args, c.message, bot).catch(err => {
-                        c.message.channel.send(`❌ Error executing command \`${c.command}\`: ${err.message}`);
+                        bot.sendError(c.message.channel, `Error executing command \`${c.command}\``, `${err.message}`);
                     });
                 } else {
                     c.message.channel.send("🔒 You do not have permission to use this command.");
                 }
             } else {
-                c.message.channel.send(`❌ Not enough arguments. Use \`${bot.prefixForMessageContext(c.message)}${c.command} ${cmd.argumentNames.join(" ")}\`: ${cmd.description}`);
+                bot.sendError(c.message.channel, "Not enough arguments.", `Use \`${bot.prefixForMessageContext(c.message)}${c.command} ${cmd.argumentNames.join(" ")}\`:\n ${cmd.description}`);
             }
         }
     });
