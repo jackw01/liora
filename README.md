@@ -49,15 +49,17 @@ liora.load();
 
 Liora's dynamic module loader allows you to load, unload, and reload modules from Discord commands without restarting the bot from the command line. This requires that all modules are in a standard format and are located inside folders that are set as module sources.
 
-#### Module format
+### Module format
 Liora loads modules using the path `absolute-path-to-module-source/module-name/main.js`. This means that all modules must consist of a folder with the name of the module containing a `main.js` file.
 
-Modules can be a subfolder within your custom bot (recommended) or they can be individual Node.js modules with their own `package.json` file and `node_modules` folder (possible, but not recommended because of the redundant `node_modules` folders).
+Modules can be a subfolder within your custom bot's Node.js package (recommended) or they can be individual Node.js modules with their own `package.json` file and `node_modules` folder (possible, but not recommended because of the redundant `node_modules` folders).
 
 #### Module main.js
 `module-name/main.js`
 
-Module init function - called after bot is connected and in servers.
+###### Module init function
+Called after bot is connected and in servers.
+
 Use this for initializing per-server module state information or similar things.
 `bot` is the Liora instance that called this function.
 ```javascript
@@ -65,7 +67,9 @@ module.exports.init = async function(bot) {
 }
 ```
 
-Module commands array - all commands should be defined here.
+###### Module commands array
+All commands should be defined here.
+
 Format:
 ```javascript
 {
@@ -105,6 +109,7 @@ module.exports.commands = [
         description: "Ping.",
         argumentNames: [],
         permissionLevel: "all",
+		aliases: [],
         execute: async function(args, msg, bot) {
             msg.channel.send("pong");
         }
@@ -112,11 +117,35 @@ module.exports.commands = [
 ]
 ```
 
-See `liora-core-commands` in the modules folder for an example module.
+See `modules/liora-core-commands/main.js` for an example module.
 
-#### Liora object properties and methods
+###### Optional: Module middleware array
+Middleware to pass all messages through can be defined here. This can be useful for detecting certain text in messages, analyzing message content, or preventing commands from being executed in certain conditions.
 
-##### Properties
+Format:
+```javascript
+// c: context object (c.bot, c.message represent the bot and message)
+// next: next function in the middleware chain
+(c, next) => {
+	if (condition) {
+		// Send message to the channel of the message in context
+		c.message.channel.send(message);
+
+		// If return is called, the middleware chain stops and commands in the message will not be parsed and executed
+		return;
+	}
+
+	// To continue to the next middleware, call next()
+    next();
+}
+```
+
+Example:
+See example of custom middleware usage in `modules/liora-autorespond/main.js`.
+
+### Liora object properties and methods
+
+#### Properties
 ###### `bot.client`
 The currently in-use [Discord.js `client` instance](https://discord.js.org/#/docs/main/stable/class/Client)
 
@@ -132,9 +161,9 @@ The currently in-use [Discord.js `client` instance](https://discord.js.org/#/doc
 ###### `bot.lastLoadDuration`
 Number representing the time it took for the bot to load in milliseconds.
 
-##### Methods
+#### Methods
 ###### `bot.setConfigDirectory(configDir)`
-Sets the configuration folder used by the bot.
+Sets the configuration folder used by the bot. Do not use this after the bot has loaded.
 
 ###### `bot.addModuleSource(directory)`
 Adds a folder by absolute path as a source for modules.
@@ -144,6 +173,9 @@ Initializes the bot and connects to Discord. This function should only be called
 
 ###### `bot.saveConfig(callback)`
 Saves the current configuration data object to the config file. `callback` will be called with an error object if saving fails.
+
+###### `bot.saveConfigAndAck(message)`
+Saves the current configuration data object to the config file. Reacts to the message with a green check mark emoji if successful and sends an error message in the same channel if not.
 
 ###### `bot.loadModule(name, callback)`
 Loads a module by name from any module source. `callback` will be called with an error object if loading fails.
@@ -164,6 +196,40 @@ Either `group` or `role` may be empty strings. If both are specified, any this f
 
 ###### `bot.getCommandNamed(name, callback)`
 Searches all loaded modules for a command with the specified name. `callback` will be called with either no arguments or the requested command object.
+
+###### `bot.restart()`
+Reloads all modules and config and reconnects to Discord.
+
+###### `bot.shutdown()`
+Disconnects from Discord and ends the process.
+
+###### `bot.sendEmojiEmbed(channel, emoji, title, description)`
+Send an embed to the channel with an emoji, title, and description.
+
+###### `bot.sendError(channel, title, description)`
+Send an embed to the channel with a red X emoji (❌) to indicate error, a title, and a description.
+
+###### `bot.sendSuccess(channel, title, description)`
+Send an embed to the channel with a check mark emoji (✅) to indicate success, a title, and a description.
+
+###### `bot.sendInfo(channel, title, description)`
+Send an embed to the channel with an info emoji (ℹ️) to indicate an info message, a title, and a description.
+
+### Discord utility methods
+###### `bot.util.username(user)`
+Returns a Discord.js user object's username and discriminator as a string for displaying to users
+
+###### `bot.util.isSnowflake(string)`
+Returns true if a string fits the format of a snowflake ID used by Discord.
+
+###### `bot.util.parseUsername(userString, server)`
+Returns an array of Discord.js member objects from a string containing a user mention, name, or id. `server` is a Discord.js `Guild` object.
+
+###### `bot.util.parseRole(roleString, server)`
+Returns an array of Discord.js role objects from a string containing a role mention or name. `server` is a Discord.js `Guild` object.
+
+###### `bot.util.parseChannel(channelString, server)`
+Returns an array of Discord.js channel objects from a string containing a channel mention or name. `server` is a Discord.js `Guild` object.
 
 ## Todo
 ### Core

@@ -445,12 +445,6 @@ bot.onConnect = async function() {
     });
 }
 
-// Disconnect and end the process
-bot.shutdown = function() {
-    bot.log.info("Shutting down...");
-    this.client.destroy().then(() => {});
-}
-
 // Disconnect, unload all modules, and reconnect
 bot.restart = function() {
     bot.log.info("Restarting: resetting client...");
@@ -458,6 +452,12 @@ bot.restart = function() {
         this.config.activeModules.forEach(module => { bot.unloadModule(module, err => {}) });
         this.load();
     });
+}
+
+// Disconnect and end the process
+bot.shutdown = function() {
+    bot.log.info("Shutting down...");
+    this.client.destroy().then(() => {});
 }
 
 // Section: Discord utility functions
@@ -472,7 +472,7 @@ bot.util.isSnowflake = function(string) {
     return /^\d{17,19}$/.test(string);
 }
 
-// Return  an array of member objects from text containing a user mention, name, or id
+// Return an array of member objects from text containing a user mention, name, or id
 bot.util.parseUsername = function(userString, server) {
     const query = userString.toLowerCase();
     let userIds = query.match(/^<@!?(\d{17,19})>$/); // Is it a user mention?
