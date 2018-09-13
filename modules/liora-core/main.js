@@ -493,13 +493,15 @@ module.exports.commands = [
     },
     {
         name: "userinfo",
-        description: "Get info for a user mention, username, or nickname.",
-        argumentNames: ["<user>"],
+        description: "Get info for a user mention, username, or nickname. If no user is mentioned, this command will use the user that triggered it.",
+        argumentNames: ["<user>?"],
         permissionLevel: "all",
         aliases: ["userid"],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
-                var result = bot.util.parseUsername(args.join(" "), msg.guild);
+                let result;
+                if (args.length) result = bot.util.parseUsername(args.join(" "), msg.guild);
+                else result = [msg.author];
                 if (result) {
                     const user = result[0];
                     const member = msg.guild.members.get(user.id);
@@ -521,13 +523,15 @@ module.exports.commands = [
     },
     {
         name: "profilepic",
-        description: "Get a profile picture for a user mention, username, or nickname.",
-        argumentNames: ["<user>"],
+        description: "Get a profile picture for a user mention, username, or nickname. If no user is mentioned, this command will use the user that triggered it.",
+        argumentNames: ["<user>?"],
         permissionLevel: "all",
         aliases: ["avatar", "pfp"],
         execute: async function(args, msg, bot) {
             if (msg.guild) {
-                var result = bot.util.parseUsername(args.join(" "), msg.guild);
+                let result;
+                if (args.length) result = bot.util.parseUsername(args.join(" "), msg.guild);
+                else result = [msg.author];
                 if (result) {
                     const user = result[0];
                     const embed = new discord.RichEmbed()
