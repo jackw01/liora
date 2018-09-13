@@ -110,7 +110,7 @@ bot.saveConfig = function(callback) {
 
 bot.saveConfigAndAck = function(msg) {
     this.saveConfig(err => {
-        if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
+        if (err) bot.sendError(msg.channel, `Error saving config file.`, `${err.message}`);
         else msg.react("✅");
     });
 }
@@ -301,9 +301,17 @@ bot.sendEmojiEmbed = function(channel, emoji, title, description) {
     channel.send({embed});
 }
 
-// Show error message embed with args
+// Show emoji embeds with standard emojis
 bot.sendError = function(channel, title, description) {
     this.sendEmojiEmbed(channel, "❌", title, description);
+}
+
+bot.sendSuccess = function(channel, title, description) {
+    this.sendEmojiEmbed(channel, "✅", title, description);
+}
+
+bot.sendInfo = function(channel, title, description) {
+    this.sendEmojiEmbed(channel, "ℹ️", title, description);
 }
 
 // Section: Message handling middleware pipeline
@@ -369,7 +377,7 @@ const commandDispatcher = function(c, next) {
                         bot.sendError(c.message.channel, `Error executing command \`${c.command}\``, `${err.message}`);
                     });
                 } else {
-                    c.message.channel.send("🔒 You do not have permission to use this command.");
+                    bot.sendEmojiEmbed(c.message.channel, "🔒", "You do not have permission to use this command.")
                 }
             } else {
                 bot.sendError(c.message.channel, "Not enough arguments.", `Use \`${bot.prefixForMessageContext(c.message)}${c.command} ${cmd.argumentNames.join(" ")}\`:\n ${cmd.description}`);

@@ -162,7 +162,7 @@ module.exports.commands = [
                             if (json.wind) embed.addField("💨 Wind Speed", `${json.wind.speed} ${imperial ? "mph" : "m/s"}`, true);
                             if (json.clouds) embed.addField("☁️ Clouds", `${json.clouds.all} %`, true);
                             msg.channel.send({embed});
-                        } else if (json.cod == 404) msg.channel.send(`❌ Location not found.`);
+                        } else if (json.cod == 404) bot.sendError(msg.channel, `Location not found.`);
                         else bot.sendError(msg.channel, `Error getting weather.`, `Unknown: OpenWeatherMap error.`);
                     } catch (err) {
                         bot.sendError(msg.channel, `Error getting weather.`, `Error parsing results.`);

@@ -74,7 +74,7 @@ module.exports.commands = [
             if (fortuneFiles.includes(file)) {
                 cp.exec(`fortune -s ${file}`, (err, stdout, stderr) => {
                     if (err) {
-                        msg.channel.send(`❌ Error running fortune`);
+                        bot.sendError(msg.channel, `Error running fortune`);
                     } else {
                         const embed = new discord.RichEmbed()
                             .setTitle("Fortune")

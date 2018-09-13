@@ -58,7 +58,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             if (args.length == 0) {
-                msg.channel.send(`Use \`${bot.prefixForMessageContext(msg)}help <command>\` to view help for a command. Use \`${bot.prefixForMessageContext(msg)}list\` to list commands.`);
+                bot.sendInfo(msg.channel, `Help`, `Use \`${bot.prefixForMessageContext(msg)}info\` to view bot status. Use \`${bot.prefixForMessageContext(msg)}list\` to list commands. Use \`${bot.prefixForMessageContext(msg)}help <command>\` to view help for a command.`);
             } else {
                 bot.getCommandNamed(args[0], cmd => {
                     if (cmd) {
@@ -74,7 +74,7 @@ module.exports.commands = [
                             .setDescription(`Aliases: ${aliases}`)
                             .addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(" ")}\``, cmd.description);
                         msg.channel.send({embed});
-                    } else msg.channel.send(`❌ Command \`${args[0]}\` not found.`);
+                    } else bot.sendError(msg.channel, `Command \`${args[0]}\` not found.`);
                 });
             }
         }
@@ -111,7 +111,7 @@ module.exports.commands = [
                         embed = new discord.RichEmbed()
                             .setColor(bot.config.defaultColors.neutral);
                     })
-                } else msg.channel.send(`❌ Module \`${args[0]}\` not found.`);
+                } else bot.sendError(msg.channel, `Module \`${args[0]}\` not found.`);
             }
         }
     },
@@ -133,7 +133,7 @@ module.exports.commands = [
         permissionLevel: "owner",
         aliases: ["cget"],
         execute: async function(args, msg, bot) {
-            msg.channel.send(`ℹ️ Value for key ${args[0]}: ${_.get(bot.config, args[0], "undefined")}`);
+            bot.sendInfo(msg.channel, `Value for key ${args[0]}`, `${_.get(bot.config, args[0], "undefined")}`);
         }
     },
     {
@@ -145,7 +145,7 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             // Cannot change permissions using this command
             if (args[0] == "owner" || args[0].includes("groups") || args[0].includes("Permissions")) {
-                msg.channel.send("❌ This configuration item cannot be edited.");
+                bot.sendError(msg.channel, "This configuration item cannot be edited.");
             } else {
                 _.set(bot.config, args[0], args.splice(1).join(" "));
                 bot.saveConfigAndAck(msg);
@@ -187,16 +187,16 @@ module.exports.commands = [
             for (let i = 0; i < bot.config.activeModules.length; i++) {
                 const module = bot.config.activeModules[i];
                 bot.unloadModule(module, err => {
-                    if (err) msg.channel.send(`❌ Error unloading \`${module}\`: ${err.message}`);
+                    if (err) bot.sendError(msg.channel, `Error unloading \`${module}\``, `${err.message}`);
                     bot.loadModule(bot.config.activeModules[i], err => {
                         if (err) {
-                            msg.channel.send(`❌ Error loading \`${module}\`: ${err.message}`);
+                            bot.sendError(msg.channel, `Error loading \`${module}\``, `${err.message}`);
                         } else {
                             bot.initModule(module, err => {
                                 if (err) {
-                                    msg.channel.send(`❌ Error initializing \`${module}\`: ${err.message}`);
+                                    bot.sendError(msg.channel, `Error initializing \`${module}\``, `${err.message}`);
                                 } else if (++moduleCount >= bot.config.activeModules.length) {
-                                    msg.channel.send(`✅ Reloaded all modules in ${prettyMs(Date.now() - startTime)}`);
+                                    bot.sendSuccess(msg.channel, `Reloaded all modules in ${prettyMs(Date.now() - startTime)}`);
                                 }
                             });
                         }
@@ -215,19 +215,19 @@ module.exports.commands = [
             var startTime = Date.now();
             bot.loadModule(args.join(""), err => {
                 if (err) {
-                    msg.channel.send(`❌ Error: ${err.message}`);
+                    bot.sendError(msg.channel, `Error`, `${err.message}`);
                 } else {
                     bot.initModule(args.join(""), err => {
                         if (err) {
-                            msg.channel.send(`❌ Error initializing \`${args.join("")}\`: ${err.message}`);
+                            bot.sendError(msg.channel, `Error initializing \`${args.join("")}\``, `${err.message}`);
                         } else {
                             let value = _.get(bot.config, "activeModules");
                             if (value.indexOf(args.join("")) == -1) {
                                 value.push(args.join(""))
                                 _.set(bot.config, "activeModules", value);
                                 bot.saveConfig(err => {
-                                    if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
-                                    else msg.channel.send(`✅ Module loaded in ${prettyMs(Date.now() - startTime)}`);
+                                    if (err) bot.sendError(msg.channel, `Error saving config file`, `${err.message}`);
+                                    else bot.sendSuccess(msg.channel, `Module loaded in ${prettyMs(Date.now() - startTime)}`);
                                 });
                             }
                         }
@@ -246,18 +246,18 @@ module.exports.commands = [
             var startTime = Date.now();
             bot.unloadModule(args.join(""), err => {
                 if (err) {
-                    msg.channel.send(`❌ Error: ${err.message}`);
+                    mbot.sendError(msg.channel, `Error`, `${err.message}`);
                 } else {
                     bot.loadModule(args.join(""), err => {
                         if (err) {
-                            msg.channel.send(`❌ Error: ${err.message}`);
+                            bot.sendError(msg.channel, `Error`, `${err.message}`);
                         } else {
                             bot.modules[args.join("")].init(bot);
                             bot.initModule(args.join(""), err => {
                                 if (err) {
-                                    msg.channel.send(`❌ Error initializing \`${args.join("")}\`: ${err.message}`);
+                                    bot.sendError(msg.channel, `Error initializing \`${args.join("")}\``, `${err.message}`);
                                 } else {
-                                    msg.channel.send(`✅ Module reloaded in ${prettyMs(Date.now() - startTime)}`);
+                                    bot.sendSuccess(msg.channel, `Module reloaded in ${prettyMs(Date.now() - startTime)}`);
                                 }
                             });
                         }
@@ -276,15 +276,15 @@ module.exports.commands = [
             var startTime = Date.now();
             bot.unloadModule(args.join(""), err => {
                 if (err) {
-                    msg.channel.send(`❌ Error: ${err.message}`);
+                    bot.sendError(msg.channel, `Error`, `${err.message}`);
                 } else {
                     let value = _.get(bot.config, "activeModules");
                     if (value.indexOf(args.join("")) != -1) {
                         value.splice(value.indexOf(args.join("")), 1);
                         _.set(bot.config, "activeModules", value);
                         bot.saveConfig(err => {
-                            if (err) msg.channel.send(`❌ Error saving config file: ${err.message}`);
-                            else msg.channel.send(`✅ Module unloaded in ${prettyMs(Date.now() - startTime)}`);
+                            if (err) bot.sendError(msg.channel, `Error saving config file`, `${err.message}`);
+                            else bot.sendSuccess(msg.channel, `Module unloaded in ${prettyMs(Date.now() - startTime)}`);
                         });
                     }
                 }
@@ -304,19 +304,19 @@ module.exports.commands = [
                     var result = bot.util.parseUsername(args[0], msg.guild);
                     if (result) {
                         if (result.length == 1) id = result[0].id;
-                        else msg.channel.send(`❌ Multiple users matching user string found. Please @mention or be more specific.`);
+                        else bot.sendError(msg.channel, `Multiple users matching user string found. Please @mention or be more specific.`);
                     }
-                    else msg.channel.send(`❌ User not found.`);
+                    else bot.sendError(msg.channel, `User not found.`);
                 } else {
                     if (bot.util.isSnowflake(args[0])) id = args[0];
-                    else msg.channel.send(`❌ User string does not appear to be a valid user id.`);
+                    else bot.sendError(msg.channel, `User string does not appear to be a valid user id.`);
                 }
                 if (id) {
                     if (!bot.config.groups[args[1]]) bot.config.groups[args[1]] = [];
                     if (!bot.config.groups[args[1]].includes(id)) bot.config.groups[args[1]].push(id);
                     bot.saveConfigAndAck(msg);
                 }
-            } else msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
+            } else bot.sendError(msg.channel, `Spaces are not allowed in userstrings or group names.`);
         }
     },
     {
@@ -332,22 +332,22 @@ module.exports.commands = [
                     var result = bot.util.parseUsername(args[0], msg.guild);
                     if (result) {
                         if (result.length == 1) id = result[0].id;
-                        else msg.channel.send(`❌ Multiple users matching user string found. Please @mention or be more specific.`);
+                        else bot.sendError(msg.channel, `Multiple users matching user string found. Please @mention or be more specific.`);
                     }
-                    else msg.channel.send(`❌ User not found.`);
+                    else bot.sendError(msg.channel, `User not found.`);
                 } else {
                     if (bot.util.isSnowflake(args[0])) id = args[0];
-                    else msg.channel.send(`❌ User string does not appear to be a valid user id.`);
+                    else bot.sendError(msg.channel, `User string does not appear to be a valid user id.`);
                 }
                 if (id) {
                     if (bot.config.groups[args[1]]) {
                         _.remove(bot.config.groups[args[1]], i => {return i == id});
                         bot.saveConfigAndAck(msg);
                     } else {
-                        msg.channel.send("❌ Group does not exist.");
+                        bot.sendError(msg.channel, "Group does not exist.");
                     }
                 }
-            } else msg.channel.send(`❌ Spaces are not allowed in userstrings or group names.`);
+            } else bot.sendError(msg.channel, `Spaces are not allowed in userstrings or group names.`);
         }
     },
     {
@@ -358,8 +358,8 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             const groups = Object.keys(bot.config.groups);
-            if (groups.length > 0) msg.channel.send(`Groups: \`${groups.join("\`, \`")}\``);
-            else msg.channel.send("❌ No groups configured.");
+            if (groups.length > 0) bot.sendInfo(msg.channel, `Groups`, `\`${groups.join("\`, \`")}\``);
+            else bot.sendError(msg.channel, "No groups configured.");
         }
     },
     {
@@ -370,8 +370,8 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             const group = bot.config.groups[args[0]] || [];
-            if (group.length > 0) msg.channel.send(`Users: \`${group.join("\`, \`")}\``);
-            else msg.channel.send("❌ Group does not exist or is empty.");
+            if (group.length > 0) bot.sendInfo(msg.channel, `Users`, `\`${group.join("\`, \`")}\``);
+            else bot.sendError(msg.channel, "Group does not exist or is empty.");
         }
     },
     {
@@ -409,18 +409,18 @@ module.exports.commands = [
                     var result = bot.util.parseRole(args[1], msg.guild);
                     if (result) {
                         if (result.length == 1) id = result[0].id;
-                        else msg.channel.send(`❌ Multiple roles matching role string found. Please @mention or be more specific.`);
+                        else bot.sendError(msg.channel, `Multiple roles matching role string found. Please @mention or be more specific.`);
                     }
-                    else msg.channel.send(`❌ Role not found.`);
+                    else bot.sendError(msg.channel, `Role not found.`);
                 } else {
                     if (bot.util.isSnowflake(args[1])) id = args[1];
-                    else msg.channel.send(`❌ Role string does not appear to be a valid role id.`);
+                    else bot.sendError(msg.channel, `Role string does not appear to be a valid role id.`);
                 }
                 if (id) {
                     bot.config.serverPermissions[msg.guild.id][args[0]] = id;
                     bot.saveConfigAndAck(msg);
                 }
-            } else msg.channel.send(`❌ Spaces are not allowed in rolestrings or command names.`);
+            } else bot.sendError(msg.channel, `Spaces are not allowed in rolestrings or command names.`);
         }
     },
     {
@@ -471,7 +471,7 @@ module.exports.commands = [
                     .addField("Joined", msg.guild.joinedAt)
                     .addField("Created", msg.guild.createdAt);
                 msg.channel.send({embed});
-            } else msg.channel.send(`❌ Must be in a server to use this command.`);
+            } else bot.sendError(msg.channel, `Must be in a server to use this command.`);
         }
     },
     {
@@ -488,7 +488,7 @@ module.exports.commands = [
                     .setImage(msg.guild.iconURL)
                     .setURL(msg.guild.iconURL);
                 msg.channel.send({embed});
-            } else msg.channel.send(`❌ Must be in a server to use this command.`);
+            } else bot.sendError(msg.channel, `Must be in a server to use this command.`);
         }
     },
     {
@@ -515,8 +515,8 @@ module.exports.commands = [
                         .addField("Joined", member.joinedAt)
                         .addField("Created", user.createdAt);
                     msg.channel.send({embed});
-                } else msg.channel.send(`❌ User not found.`);
-            } else msg.channel.send(`❌ Must be in a server to use this command.`);
+                } else bot.sendError(msg.channel, `User not found.`);
+            } else bot.sendError(msg.channel, `Must be in a server to use this command.`);
         }
     },
     {
@@ -536,8 +536,8 @@ module.exports.commands = [
                         .setImage(user.avatarURL)
                         .setURL(user.avatarURL);
                     msg.channel.send({embed});
-                } else msg.channel.send(`❌ User not found.`);
-            } else msg.channel.send(`❌ Must be in a server to use this command.`);
+                } else bot.sendError(msg.channel, `User not found.`);
+            } else bot.sendError(msg.channel, `Must be in a server to use this command.`);
         }
     },
     {
@@ -567,8 +567,8 @@ module.exports.commands = [
                         .addField("Members", membersString)
                         .addField("Created", role.createdAt);
                     msg.channel.send({embed});
-                } else msg.channel.send(`❌ Role not found.`);
-            } else msg.channel.send(`❌ Must be in a server to use this command.`);
+                } else bot.sendError(msg.channel, `Role not found.`);
+            } else bot.sendError(msg.channel, `Must be in a server to use this command.`);
         }
     },
     {
@@ -589,8 +589,8 @@ module.exports.commands = [
                         .addField("Type", channel.type, true)
                         .addField("Created", channel.createdAt);
                     msg.channel.send({embed});
-                } else msg.channel.send(`❌ Channel not found.`);
-            } else msg.channel.send(`❌ Must be in a server to use this command.`);
+                } else bot.sendError(msg.channel, `Channel not found.`);
+            } else bot.sendError(msg.channel, `Must be in a server to use this command.`);
         }
     },
     {
@@ -612,7 +612,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             const m = await msg.channel.send("pong");
-            msg.channel.send(`ℹ️ Socket heartbeat ping is ${Math.round(bot.client.ping)}ms. Message RTT is ${m.createdTimestamp - msg.createdTimestamp}ms.`);
+            bot.sendInfo(msg.channel, `Ping`, `Socket heartbeat ping is ${Math.round(bot.client.ping)}ms. Message RTT is ${m.createdTimestamp - msg.createdTimestamp}ms.`);
             m.delete();
         }
     },
