@@ -36,8 +36,8 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(args.join(" "))}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
                 const json = JSON.parse(body);
-                if ("error" in json) msg.channel.send(`❌ Error: ${json.error.errors[0].message}`);
-                else if (json.items.length == 0) msg.channel.send("❌ No videos found.");
+                if ("error" in json) bot.sendError(msg.channel, `Error`, `${json.error.errors[0].message}`);
+                else if (json.items.length == 0) bot.sendError(msg.channel, `No videos found.`);
                 else {
                     const embed = new discord.RichEmbed()
                         .setTitle("Youtube Search Results")
@@ -69,19 +69,19 @@ module.exports.commands = [
                     // Pass in the id only so url can be converted to a standard format
                     let matches = query.match(/(?:\?v=|&v=|youtu\.be\/)(.*?)(?:\?|&|$)/);
                     if (matches) enqueueVideo(matches[1], msg, bot);
-                    else msg.channel.send("❌ URL does not appear to be a YouTube URL.");
+                    else bot.sendError(msg.channel, `URL does not appear to be a YouTube URL.`);
                 } else {
                     request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(query)}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
                 		const json = JSON.parse(body);
-                		if ("error" in json) msg.channel.send(`❌ Error: ${json.error.errors[0].message}`);
-                		else if (json.items.length == 0) msg.channel.send("❌ No videos found.");
+                		if ("error" in json) bot.sendError(msg.channel, `Error`, `${json.error.errors[0].message}`);
+                		else if (json.items.length == 0) bot.sendError(msg.channel, `No videos found.`);
                 		else {
                             state[msg.guild.id].voiceChannel = msg.member.voiceChannel;
                             enqueueVideo(json.items[0].id.videoId, msg, bot);
                         }
                 	});
                 }
-            } else msg.channel.send("❌ You must be in a voice channel to use this command.");
+            } else bot.sendError(msg.channel, `You must be in a voice channel to use this command.`);
         }
     },
     {
@@ -91,12 +91,14 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            if (state[msg.guild.id].playing) {
-                state[msg.guild.id].paused = true;
-                state[msg.guild.id].stream.pause();
-                state[msg.guild.id].dispatcher.pause();
-                msg.react("⏸️");
-            }
+            if (msg.guild) {
+                if (state[msg.guild.id].playing) {
+                    state[msg.guild.id].paused = true;
+                    state[msg.guild.id].stream.pause();
+                    state[msg.guild.id].dispatcher.pause();
+                    msg.react("⏸️");
+                }
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -106,12 +108,14 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            if (state[msg.guild.id].playing) {
-                state[msg.guild.id].paused = false;
-                state[msg.guild.id].stream.resume();
-                state[msg.guild.id].dispatcher.resume();
-                msg.react("▶️");
-            }
+            if (msg.guild) {
+                if (state[msg.guild.id].playing) {
+                    state[msg.guild.id].paused = false;
+                    state[msg.guild.id].stream.resume();
+                    state[msg.guild.id].dispatcher.resume();
+                    msg.react("▶️");
+                }
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -121,12 +125,14 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            state[msg.guild.id].queue = [];
-            state[msg.guild.id].dispatcher.end();
-            state[msg.guild.id].voiceChannel.leave();
-            state[msg.guild.id].playing = false;
-            state[msg.guild.id].paused = false;
-            msg.react("🛑");
+            if (msg.guild) {
+                state[msg.guild.id].queue = [];
+                state[msg.guild.id].dispatcher.end();
+                state[msg.guild.id].voiceChannel.leave();
+                state[msg.guild.id].playing = false;
+                state[msg.guild.id].paused = false;
+                msg.react("🛑");
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -136,8 +142,10 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            state[msg.guild.id].dispatcher.end();
-            msg.react("⏩");
+            if (msg.guild) {
+                state[msg.guild.id].dispatcher.end();
+                msg.react("⏩");
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -147,12 +155,14 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: ["vol"],
         execute: async function(args, msg, bot) {
-            if (args.length == 0) {
-                msg.channel.send(`🔊 Current volume: ${state[msg.guild.id].dispatcher.volumeLogarithmic.toFixed(2)}`);
-            } else {
-                state[msg.guild.id].dispatcher.setVolumeLogarithmic(_.clamp(args[0], 0, bot.config.modules.player.servers[msg.guild.id].volumeLimit));
-                msg.react("🔊");
-            }
+            if (msg.guild) {
+                if (args.length == 0) {
+                    bot.sendEmojiEmbed(msg.channel, "🔊", `Current volume: ${state[msg.guild.id].dispatcher.volumeLogarithmic.toFixed(2)}`);
+                } else {
+                    state[msg.guild.id].dispatcher.setVolumeLogarithmic(_.clamp(args[0], 0, bot.config.modules.player.servers[msg.guild.id].volumeLimit));
+                    msg.react("🔊");
+                }
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -162,8 +172,10 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            state[msg.guild.id].queue = _.shuffle(state[msg.guild.id].queue);
-            msg.react("🔀");
+            if (msg.guild) {
+                state[msg.guild.id].queue = _.shuffle(state[msg.guild.id].queue);
+                msg.react("🔀");
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -173,14 +185,16 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: ["np"],
         execute: async function(args, msg, bot) {
-            if (state[msg.guild.id].nowPlaying) {
-                const embed = new discord.RichEmbed()
-                    .setTitle(`Now Playing on ${state[msg.guild.id].voiceChannel.name}`)
-                    .setColor(bot.config.defaultColors.neutral)
-                    .setThumbnail(state[msg.guild.id].nowPlaying.thumbnail)
-                    .setDescription(` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\nenqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)}\n`);
-                msg.channel.send({embed});
-            } else msg.channel.send("❌ Nothing is playing.");
+            if (msg.guild) {
+                if (state[msg.guild.id].nowPlaying) {
+                    const embed = new discord.RichEmbed()
+                        .setTitle(`Now Playing on ${state[msg.guild.id].voiceChannel.name}`)
+                        .setColor(bot.config.defaultColors.neutral)
+                        .setThumbnail(state[msg.guild.id].nowPlaying.thumbnail)
+                        .setDescription(` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\nenqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)}\n`);
+                    msg.channel.send({embed});
+                } else bot.sendError(msg.channel, "Nothing is playing.");
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     },
     {
@@ -190,19 +204,21 @@ module.exports.commands = [
         permissionLevel: "all",
         aliases: [],
         execute: async function(args, msg, bot) {
-            if (state[msg.guild.id].queue.length > 0) {
-                const embed = new discord.RichEmbed()
-                    .setTitle(`Queue for ${state[msg.guild.id].voiceChannel.name}`)
-                    .setColor(bot.config.defaultColors.neutral)
-                    .addField("Now Playing:", ` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\n(enqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)})`);
-                var totalDuration = state[msg.guild.id].nowPlaying.duration;
-                state[msg.guild.id].queue.forEach((item, i) => {
-                    if (i < 24) embed.addField(`${i + 1}. ${item.title}`, `${item.url} (enqueued by ${bot.util.username(item.user)})`);
-                    totalDuration += item.duration;
-                })
-                embed.setFooter(`${state[msg.guild.id].queue.length} in queue: total duration ${prettyMs(totalDuration * 1000)}`);
-                msg.channel.send({embed});
-            } else msg.channel.send("❌ Queue is empty.");
+            if (msg.guild) {
+                if (state[msg.guild.id].queue.length > 0) {
+                    const embed = new discord.RichEmbed()
+                        .setTitle(`Queue for ${state[msg.guild.id].voiceChannel.name}`)
+                        .setColor(bot.config.defaultColors.neutral)
+                        .addField("Now Playing:", ` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\n(enqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)})`);
+                    var totalDuration = state[msg.guild.id].nowPlaying.duration;
+                    state[msg.guild.id].queue.forEach((item, i) => {
+                        if (i < 24) embed.addField(`${i + 1}. ${item.title}`, `${item.url} (enqueued by ${bot.util.username(item.user)})`);
+                        totalDuration += item.duration;
+                    })
+                    embed.setFooter(`${state[msg.guild.id].queue.length} in queue: total duration ${prettyMs(totalDuration * 1000)}`);
+                    msg.channel.send({embed});
+                } else bot.sendError(msg.channel, "Queue is empty.");
+            } else bot.sendError(msg.channel, `You must be in a server to use this command.`);
         }
     }
 ]
@@ -211,7 +227,7 @@ function enqueueVideo(id, msg, bot) {
     const url = `https://www.youtube.com/watch?v=${id}`;
     ytdl.getInfo(url, (err, info) => {
         if (err) {
-            msg.channel.send("❌ Video does not exist or cannot be played.");
+            bot.sendError(msg.channel, "Video does not exist or cannot be played.");
         } else if (msg.guild) {
             state[msg.guild.id].queue.push({
                 title: info.title,
@@ -261,6 +277,6 @@ function playNextQueuedVideo(msg, bot) {
             }
     	});
     }).catch(err => {
-        msg.channel.send(`❌ Error connecting to voice channel: ${err}`);
+        bot.sendError(msg.channel, `Error connecting to voice channel:`, `${err}`);
     });
 }

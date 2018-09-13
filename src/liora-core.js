@@ -292,13 +292,18 @@ bot.getCommandNamed = function(command, callback) {
     if (err) callback();
 }
 
-// Show error message embed with args
-bot.sendError = function(channel, title, description) {
+// Show emoji embed with args
+bot.sendEmojiEmbed = function(channel, emoji, title, description) {
     const embed = new discord.RichEmbed()
-        .setTitle(`❌ ${title}`)
+        .setTitle(`${emoji}   ${title}`)
         .setColor(this.config.defaultColors.error);
     if (description) embed.setDescription(description);
     channel.send({embed});
+}
+
+// Show error message embed with args
+bot.sendError = function(channel, title, description) {
+    this.sendEmojiEmbed(channel, "❌", title, description);
 }
 
 // Section: Message handling middleware pipeline

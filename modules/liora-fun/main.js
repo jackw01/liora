@@ -34,7 +34,7 @@ module.exports.commands = [
                 rolls = 1;
                 sides = 6;
             } else if (args.length == 1) {
-                msg.channel.send(`❌ Please specify either zero or two arguments. See help for more info.`);
+                bot.sendError(msg.channel, `Please specify either zero or two arguments. See help for more info.`);
                 return;
             } else {
                 rolls = args[0];
@@ -84,7 +84,7 @@ module.exports.commands = [
                     }
                 });
             } else {
-                msg.channel.send(`❌ Fortune file not valid: choose from \`${fortuneFiles.join("`, `")}\``);
+                bot.sendError(msg.channel, `Fortune file not valid.`, `Choose from \`${fortuneFiles.join("`, `")}\``);
             }
         }
     }

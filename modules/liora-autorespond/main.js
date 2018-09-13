@@ -42,7 +42,7 @@ module.exports.commands = [
             else responsePath = `modules.autorespond.global.${args[0]}`;
 
             if (!_.has(bot.config, responsePath + `[${args[1]}]`)) {
-                msg.channel.send("❌ Response not found.");
+                bot.sendError(msg.channel, `Response not found.`);
             } else {
                 let value = _.get(bot.config, responsePath);
                 value.splice(args[1], 1);
