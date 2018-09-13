@@ -296,8 +296,8 @@ bot.getCommandNamed = function(command, callback) {
 bot.sendError = function(channel, title, description) {
     const embed = new discord.RichEmbed()
         .setTitle(`❌ ${title}`)
-        .setDescription(description)
         .setColor(this.config.defaultColors.error);
+    if (description) embed.setDescription(description);
     channel.send({embed});
 }
 

@@ -52,11 +52,11 @@ module.exports.commands = [
                                 embed.addField(json[1][i], `[${contents}](${json[3][i]})`, false);
                             }
                             msg.channel.send({embed});
-                        } else msg.channel.send(`❌ No results found.`);
+                        } else bot.sendError(msg.channel, `No results found.`);
                     } catch (err) {
-                        msg.channel.send(`❌ Error parsing results.`);
+                        bot.sendError(msg.channel, `Error searching Wikipedia.`, `Error parsing results.`);
                     }
-                } else msg.channel.send(`❌ Error searching Wikipedia.`);
+                } else bot.sendError(msg.channel, `Error searching Wikipedia.`, `Request failed.`);
             });
         }
     },
@@ -130,11 +130,11 @@ module.exports.commands = [
                                 .setURL(result.permalink)
                                 .setDescription(contents);
                             msg.channel.send({embed});
-                        } else msg.channel.send(`❌ Word not found.`);
+                        } else bot.sendError(msg.channel, `Word not found.`);
                     } catch (err) {
-                        msg.channel.send(`❌ Error parsing results.`);
+                        bot.sendError(msg.channel, `Error searching Urban Dictionary.`, `Error parsing results.`);
                     }
-                } else msg.channel.send(`❌ Error getting definiton.`);
+                } else bot.sendError(msg.channel, `Error searching Urban Dictionary.`, `Request failed.`);
             });
         }
     },
@@ -163,11 +163,11 @@ module.exports.commands = [
                             if (json.clouds) embed.addField("☁️ Clouds", `${json.clouds.all} %`, true);
                             msg.channel.send({embed});
                         } else if (json.cod == 404) msg.channel.send(`❌ Location not found.`);
-                        else msg.channel.send(`❌ Error getting weather.`);
+                        else bot.sendError(msg.channel, `Error getting weather.`, `Unknown: OpenWeatherMap error.`);
                     } catch (err) {
-                        msg.channel.send(`❌ Error parsing results.`);
+                        bot.sendError(msg.channel, `Error getting weather.`, `Error parsing results.`);
                     }
-                } else msg.channel.send(`❌ Error getting weather.`);
+                } else bot.sendError(msg.channel, `Error getting weather.`, `Request failed.`);
             });
         }
     },
@@ -199,17 +199,17 @@ module.exports.commands = [
                                 request(`${xkcdURL}/${num ? `${num}/` : ""}info.0.json`, (err, response, body) => {
                                     try {
                                         if (!err) postXkcd(JSON.parse(body));
-                                        else msg.channel.send(`❌ Error parsing results.`);
+                                        else bot.sendError(msg.channel, `Error getting xkcd.`, `Request failed.`);
                                     } catch (err) {
-                                        msg.channel.send(`❌ Error getting comic.`);
+                                        bot.sendError(msg.channel, `Error getting xkcd.`, `Error parsing results.`);
                                     }
                                 });
-                            } else msg.react("❌");
+                            } else bot.sendError(msg.channel, `Error getting xkcd.`, `Unknown error.`);
                         }
                     } catch (err) {
-                        msg.channel.send(`❌ Error parsing results.`);
+                        bot.sendError(msg.channel, `Error getting xkcd.`, `Error parsing results.`);
                     }
-                } else msg.channel.send(`❌ Error getting comic.`);
+                } else bot.sendError(msg.channel, `Error getting xkcd.`, `Request failed.`);
             });
         }
     },
@@ -235,8 +235,8 @@ module.exports.commands = [
                         embed.addField(i, args[i]);
                     }
                     msg.channel.send({embed});
-                } else msg.channel.send(`❌ Only up to 25 answer choices are allowed.`);
-            } else msg.channel.send(`❌ A poll is already running on this channel.`);
+                } else bot.sendError(msg.channel, `Only up to 25 answer choices are allowed.`);
+            } else bot.sendError(msg.channel, `A poll is already running on this channel.`);
         }
     },
     {
@@ -247,7 +247,7 @@ module.exports.commands = [
         aliases: [],
         execute: async function(args, msg, bot) {
             if (pollState[msg.channel.id]) showPollData(bot, msg.channel);
-            else msg.channel.send(`❌ No poll is running on this channel.`);
+            else bot.sendError(msg.channel, `No poll is running on this channel.`);
         }
     },
     {
@@ -260,7 +260,7 @@ module.exports.commands = [
             if (pollState[msg.channel.id]) {
                 showPollData(bot, msg.channel);
                 delete pollState[msg.channel.id];
-            } else msg.channel.send(`❌ No poll is running on this channel.`);
+            } else bot.sendError(msg.channel, `No poll is running on this channel.`);
         }
     },
     {
@@ -277,9 +277,9 @@ module.exports.commands = [
                         pollState[msg.channel.id].votes[choice]++;
                         pollState[msg.channel.id].users.add(msg.author.id);
                         msg.react("✅");
-                    } else msg.channel.send(`❌ You have already voted on this poll.`);
-                } else msg.channel.send(`❌ Choice ${choice + 1} does not exist.`);
-            } else msg.channel.send(`❌ No poll is running on this channel.`);
+                    } else bot.sendError(msg.channel, `You have already voted on this poll.`);
+                } else bot.sendError(msg.channel, `Choice ${choice + 1} does not exist.`);
+            } else bot.sendError(msg.channel, `No poll is running on this channel.`);
         }
     }
 ]
@@ -291,7 +291,7 @@ function redditSubPostHandler(msg, args, bot, gif) {
             view = "top";
             opt = `?t=${args[args.length - 1]}`;
         } else {
-            msg.channel.send(`❌ Subreddit name must be one word. If you are specifying a time range, it must be hour, day, week, month, year, or all.`);
+            bot.sendError(msg.channel, `Subreddit name must be one word. If you are specifying a time range, it must be hour, day, week, month, year, or all.`);
             return;
         }
     }
@@ -324,11 +324,11 @@ function showRedditResult(msg, bot, queryURL, queryString, filter) {
                         .setURL(`${redditURL}${post.data.permalink}`)
                         .setFooter(new Date(post.data.created * 1000));
                     msg.channel.send({embed});
-                } else msg.channel.send(`❌ No results found.`);
+                } else bot.sendError(msg.channel, `No results found.`);
             } catch (err) {
-                msg.channel.send(`❌ Error parsing results.`);
+                bot.sendError(msg.channel, `Error searching Reddit.`, `Error parsing results.`);
             }
-        } else msg.channel.send(`❌ Error searching Reddit.`);
+        } else bot.sendError(msg.channel, `Error searching Reddit.`, `Request failed.`);
     });
 }
 
