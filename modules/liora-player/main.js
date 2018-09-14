@@ -157,7 +157,7 @@ module.exports.commands = [
         execute: async function(args, msg, bot) {
             if (msg.guild) {
                 if (args.length == 0) {
-                    bot.sendEmojiEmbed(msg.channel, "🔊", `Current volume: ${state[msg.guild.id].dispatcher.volumeLogarithmic.toFixed(2)}`);
+                    bot.sendEmojiEmbed(msg.channel, "🔊", bot.config.defaultColors.neutral, `Current volume: ${state[msg.guild.id].dispatcher.volumeLogarithmic.toFixed(2)}`);
                 } else {
                     state[msg.guild.id].dispatcher.setVolumeLogarithmic(_.clamp(args[0], 0, bot.config.modules.player.servers[msg.guild.id].volumeLimit));
                     msg.react("🔊");

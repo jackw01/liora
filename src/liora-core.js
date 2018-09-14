@@ -11,6 +11,8 @@ const compose = require('koa-compose');
 const prettyMs = require('pretty-ms');
 const discord = require('discord.js');
 
+const has = Object.prototype.hasOwnProperty;
+
 const localModuleDirectory = '../modules';
 
 // Logger
@@ -142,22 +144,21 @@ bot.loadConfig = function loadConfig(callback) {
 
   // Recursively iterate over the config to check types and reset properties to default if they are the wrong type
   function configIterator(startPoint, startPointInSchema) {
-    for (const property in startPointInSchema) {
-      if (startPointInSchema.hasOwnProperty(property) && !startPoint.hasOwnProperty(property)) {
-        if (startPointInSchema[property].type != 'object') {
+    Object.keys(startPointInSchema).forEach((property) => {
+      if (!has.call(startPoint, property)) {
+        if (startPointInSchema[property].type !== 'object') {
           startPoint[property] = startPointInSchema[property].default;
         } else {
           startPoint[property] = {};
         }
       }
-      if (startPointInSchema[property].type == 'object') {
+      if (startPointInSchema[property].type === 'object') {
         configIterator(startPoint[property], startPointInSchema[property].default);
       }
-      if (!Array.isArray(startPoint[property]) &&
-      typeof startPoint[property] != startPointInSchema[property].type) {
+      if (!Array.isArray(startPoint[property]) && typeof startPoint[property] !== startPointInSchema[property].type) {
         startPoint[property] = startPointInSchema[property].default;
       }
-    }
+    });
   }
   configIterator(bot.config, configSchema);
 
@@ -181,24 +182,24 @@ bot.addModuleSource = function addModuleSource(directory) {
 };
 
 // Load module
-bot.loadModule = function(name, callback) {
+bot.loadModule = function loadModule(name, callback) {
   bot.log.modules(`Attempting to load module ${name}...`);
   if (!(name in this.modules)) {
     let found = false;
-    this.moduleSources.forEach(directory => {
+    this.moduleSources.forEach((directory) => {
       let absolutePath = path.join(directory, `${name}`);
-      if (directory == localModuleDirectory) absolutePath = path.join(__dirname, absolutePath);
+      if (directory === localModuleDirectory) absolutePath = path.join(__dirname, absolutePath);
       if (fs.existsSync(absolutePath)) {
         if (!fs.existsSync(path.join(absolutePath, 'package.json'))) {
-          absolutePath = path.join(absolutePath, 'main.js')
+          absolutePath = path.join(absolutePath, 'main.js');
         }
         let newModule;
         try {
           newModule = require(absolutePath);
           newModule.path = absolutePath; // Set path property of module so we know the path to unload
           newModule.defaultAliases = {};
-          newModule.commands.forEach(cmd => {
-            cmd.aliases.forEach(a => { newModule.defaultAliases[a] = cmd.name });
+          newModule.commands.forEach((cmd) => {
+            cmd.aliases.forEach((a) => { newModule.defaultAliases[a] = cmd.name; });
           });
         } catch (err) {
           bot.log.warn(chalk.red(`Unable to load module ${name}: ${err.message}`));
@@ -220,10 +221,10 @@ bot.loadModule = function(name, callback) {
     bot.log.warn(`Module ${name} already loaded`);
     callback(new Error(`Module ${name} already loaded`));
   }
-}
+};
 
 // Unload module
-bot.unloadModule = function(name, callback) {
+bot.unloadModule = function unloadModule(name, callback) {
   bot.log.modules(`Attempting to unload module ${name}...`);
   if (name in this.modules) {
     delete require.cache[require.resolve(this.modules[name].path)];
@@ -234,15 +235,15 @@ bot.unloadModule = function(name, callback) {
     bot.log.warn(`Module ${name} not currently loaded`);
     callback(new Error(`Module ${name} not currently loaded`));
   }
-}
+};
 
 // Initialize module
-bot.initModule = function(name, callback) {
+bot.initModule = function initModule(name, callback) {
   if (name in this.modules) {
     this.modules[name].init(this).then(() => {
       bot.log.modules(chalk.green(`Initialized module ${name}`));
       callback();
-    }).catch(err => {
+    }).catch((err) => {
       bot.log.warn(chalk.red(`Failed to initialize module ${name}: ${err.message}`));
       callback(err);
     });
@@ -250,18 +251,17 @@ bot.initModule = function(name, callback) {
     bot.log.warn(`Module ${name} not currently loaded`);
     callback(new Error(`Module ${name} not currently loaded`));
   }
-}
+};
 
 // Section: Bot utility functions
 
 // Return the correct command prefix for the context of a message
-bot.prefixForMessageContext = function(msg) {
+bot.prefixForMessageContext = function prefixForMessageContext(msg) {
   if (msg.guild && _.has(this.config.settings, `[${msg.guild.id}].prefix`)) {
     return this.config.settings[msg.guild.id].prefix;
-  } else {
-    return this.config.prefix;
   }
-}
+  return this.config.prefix;
+};
 
 // Does this user have group/role permission on this server?
 // Returns true in these cases:
@@ -269,67 +269,68 @@ bot.prefixForMessageContext = function(msg) {
 //   If the permission group is all users
 //   If the user is in the global permission group
 //   If the user is in the permission role on this server
-bot.hasPermission = function(member, user, group, role) {
-  if (user.id == this.config.owner) return true;
-  if (group == 'all') return true;
-  if (Object.keys(this.config.groups).includes(group) &&  this.config.groups[group].includes(user.id)) return true;
+bot.hasPermission = function hasPermission(member, user, group, role) {
+  if (user.id === this.config.owner) return true;
+  if (group === 'all') return true;
+  if (Object.keys(this.config.groups).includes(group) && this.config.groups[group].includes(user.id)) return true;
   if (member && member.roles.has(role)) return true;
   return false;
-}
+};
 
 // Returns the command object for a command name
-bot.getCommandNamed = function(command, callback) {
+bot.getCommandNamed = function getCommandNamed(command, callback) {
+  let cmdStr = command;
   const moduleNames = Object.keys(this.modules);
   let err = true;
   // Search for configured and default aliases
-  if (command in this.config.commandAliases) command = this.config.commandAliases[command];
-  else moduleNames.forEach(name => { command = this.modules[name].defaultAliases[command] || command });
-  moduleNames.forEach(name => {
-    const found = this.modules[name].commands.find(cmd => cmd.name == command);
+  if (cmdStr in this.config.commandAliases) cmdStr = this.config.commandAliases[cmdStr];
+  else moduleNames.forEach((name) => { cmdStr = this.modules[name].defaultAliases[cmdStr] || cmdStr; });
+  moduleNames.forEach((name) => {
+    const found = this.modules[name].commands.find(cmd => cmd.name === cmdStr);
     if (found && err) {
       err = false;
       callback(found);
     }
   });
   if (err) callback();
-}
+};
 
 // Show emoji embed with args
-bot.sendEmojiEmbed = function(channel, emoji, title, description) {
+bot.sendEmojiEmbed = function sendEmojiEmbed(channel, emoji, color, title, description) {
   const embed = new discord.RichEmbed()
-  .setTitle(`${emoji}   ${title}`)
-  .setColor(this.config.defaultColors.error);
+    .setTitle(`${emoji}   ${title}`)
+    .setColor(color);
   if (description) embed.setDescription(description);
-  channel.send({embed});
-}
+  channel.send({ embed });
+};
 
 // Show emoji embeds with standard emojis
-bot.sendError = function(channel, title, description) {
-  this.sendEmojiEmbed(channel, '❌', title, description);
-}
+bot.sendError = function sendError(channel, title, description) {
+  this.sendEmojiEmbed(channel, '❌', this.config.defaultColors.error, title, description);
+};
 
-bot.sendSuccess = function(channel, title, description) {
-  this.sendEmojiEmbed(channel, '✅', title, description);
-}
+bot.sendSuccess = function sendSuccess(channel, title, description) {
+  this.sendEmojiEmbed(channel, '✅', this.config.defaultColors.success, title, description);
+};
 
-bot.sendInfo = function(channel, title, description) {
-  this.sendEmojiEmbed(channel, 'ℹ️', title, description);
-}
+bot.sendInfo = function sendInfo(channel, title, description) {
+  this.sendEmojiEmbed(channel, 'ℹ️', this.config.defaultColors.neutral, title, description);
+};
 
 // Section: Message handling middleware pipeline
 
 // Middleware that discards messages if they are sent by another bot
-const checkMessageAuthor = function(c, next) {
+const checkMessageAuthor = function checkMessageAuthor(c, next) {
   if (!c.message.author.bot) next();
-}
+};
 
 // Middleware that discards messages from blocked users
-const blockHandler = function(c, next) {
+const blockHandler = function blockHandler(c, next) {
   if (!bot.config.blockedUsers.includes(c.message.author.id)) next();
-}
+};
 
 // Middleware that detects commands in messages and parses arguments
-const commandDetector = function(c, next) {
+const commandDetector = function commandDetector(c, next) {
   if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
     const argString = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim();
     c.args = argString.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g).map(a => a.replace(/^['"]+|['"]$/g, ''));
@@ -337,10 +338,10 @@ const commandDetector = function(c, next) {
     bot.log.debug(`Detected command ${c.command} with args ${c.args.join(', ')}`);
     next();
   }
-}
+};
 
 // Middleware that detects if messages are being sent too fast and blocks users who exceed the limit
-const rateLimiter = function(c, next) {
+const rateLimiter = function rateLimiter(c, next) {
   if (!bot.userCooldowns.has(c.message.author.id)) {
     bot.userCooldowns.add(c.message.author.id);
     setTimeout(() => {
@@ -351,22 +352,22 @@ const rateLimiter = function(c, next) {
   bot.userMessageCounters[c.message.author.id] = bot.userMessageCounters[c.message.author.id] || 0;
   if (++bot.userMessageCounters[c.message.author.id] < bot.config.defaultUserCooldown.messageCount) {
     next();
-  } else if (bot.userMessageCounters[c.message.author.id] == bot.config.defaultUserCooldown.messageCount) {
+  } else if (bot.userMessageCounters[c.message.author.id] === bot.config.defaultUserCooldown.messageCount) {
     const embed = new discord.RichEmbed()
-    .setTitle('⌛ Rate limit exceeded')
-    .setDescription(`User ${bot.util.username(c.message.author)} blocked for ${prettyMs(bot.config.defaultUserCooldown.blockDurationMs)}`)
-    .setColor(bot.config.defaultColors.error);
-    c.message.channel.send({embed});
+      .setTitle('⌛ Rate limit exceeded')
+      .setDescription(`User ${bot.util.username(c.message.author)} blocked for ${prettyMs(bot.config.defaultUserCooldown.blockDurationMs)}`)
+      .setColor(bot.config.defaultColors.error);
+    c.message.channel.send({ embed });
     bot.config.blockedUsers.push(c.message.author.id);
     setTimeout(() => {
-      _.remove(bot.config.blockedUsers, i => {return i == c.message.author.id});
+      _.remove(bot.config.blockedUsers, i => i === c.message.author.id);
     }, bot.config.defaultUserCooldown.blockDurationMs);
   }
-}
+};
 
 // Final middleware that finds and executes commands
-const commandDispatcher = function(c, next) {
-  bot.getCommandNamed(c.command, cmd => {
+const commandDispatcher = function commandDispatcher(c) {
+  bot.getCommandNamed(c.command, (cmd) => {
     if (cmd) {
       if (c.args.length >= _.filter(cmd.argumentNames, i => !_.endsWith(i, '?')).length) {
         // Determine permission level for the message context
@@ -375,33 +376,33 @@ const commandDispatcher = function(c, next) {
         const roleOverride = c.message.guild ? bot.config.serverPermissions[c.message.guild.id][c.command] || '' : '';
         if (bot.hasPermission(c.message.member, c.message.author, permissionLevel, roleOverride)) {
           // Execute the command with args, message object, and bot object
-          cmd.execute(c.args, c.message, bot).catch(err => {
+          cmd.execute(c.args, c.message, bot).catch((err) => {
             bot.sendError(c.message.channel, `Error executing command \`${c.command}\``, `${err.message}`);
           });
         } else {
-          bot.sendEmojiEmbed(c.message.channel, '🔒', 'You do not have permission to use this command.')
+          bot.sendEmojiEmbed(c.message.channel, '🔒', 'You do not have permission to use this command.');
         }
       } else {
         bot.sendError(c.message.channel, 'Not enough arguments.', `Use \`${bot.prefixForMessageContext(c.message)}${c.command} ${cmd.argumentNames.join(' ')}\`:\n ${cmd.description}`);
       }
     }
   });
-}
+};
 
 // Handle a message by running all of the bot's middleware
-bot.onMessage = async function(msg) {
-  let container = {message: msg, bot: bot};
+bot.onMessage = async function onMessage(msg) {
+  const container = { message: msg, bot };
   // Load author check middleware first, then modules, then rate limiter and other command-related things
   let middleware = [checkMessageAuthor];
   const moduleNames = Object.keys(this.modules);
-  moduleNames.forEach(name => {
+  moduleNames.forEach((name) => {
     if (this.modules[name].middleware && this.modules[name].middleware.length > 0) {
       middleware = _.concat(middleware, this.modules[name].middleware);
     }
   });
   middleware = _.concat(middleware, [blockHandler, commandDetector, rateLimiter, commandDispatcher]);
   compose(middleware)(container);
-}
+};
 
 // Section: Bot load and connect event handlers
 
