@@ -32,16 +32,16 @@ To add your own functionality, just create an empty Node.js project and install 
 
 `main.js`
 ```javascript
-const path = require("path");
-const liora = require("liora");
+const path = require('path');
+const liora = require('liora');
 
 // If setConfigDirectory is not called, Liora will use the default at ~/.liora-bot/
-liora.setConfigDirectory("path/to/your/config/directory");
+liora.setConfigDirectory('path/to/your/config/directory');
 
 // Call addModuleSource with the absolute path to a directory to make that directory a module source
 // Your custom modules will go in this folder and it is possible to add multiple module sources
 // Liora will still load its internal modules in addition to yours
-liora.addModuleSource(path.join(__dirname, "modules"));
+liora.addModuleSource(path.join(__dirname, 'modules'));
 
 // Start the bot
 liora.load();
@@ -73,28 +73,28 @@ All commands should be defined here.
 Format:
 ```javascript
 {
-    // Name of the command (what users will type to run it) - must be lowercase
-    name: "command",
+  // Name of the command (what users will type to run it) - must be lowercase
+  name: 'command',
 
-    // Description of the command (not arguments) that will be displayed in the help text
-    description: "description",
+  // Description of the command (not arguments) that will be displayed in the help text
+  description: 'description',
 
-    // Array of argument names: follow the provided format
-    argumentNames: ["<requiredArgument>", "<optionalArgument>?"],
+  // Array of argument names: follow the provided format
+  argumentNames: ['<requiredArgument>', '<optionalArgument>?'],
 
-    // Permission level: "all" for all users, "owner" for owner, "manager" or anything else for a group
-    permissionLevel: "all",
+  // Permission level: 'all' for all users, 'owner' for owner, 'manager' or anything else for a group
+  permissionLevel: 'all',
 
-    // Array of default aliases (alternate ways of running this command)
-    aliases: ["alternate1", "alternate2"],
+  // Array of default aliases (alternate ways of running this command)
+  aliases: ['alternate1', 'alternate2'],
 
-    // Function that performs the command: must accept three arguments
-    //   args: array of arguments that the user executed the command with
-    //   msg: Discord.js message object that the command was found in
-    //   bot: the Liora instance calling this function
-    execute: async function(args, msg, bot) {
-        // Do the command here
-    }
+  // Function that performs the command: must accept three arguments
+  //   args: array of arguments that the user executed the command with
+  //   msg: Discord.js message object that the command was found in
+  //   bot: the Liora instance calling this function
+  async execute(args, msg, bot) {
+    // Do the command here
+  }
 }
 ```
 
@@ -104,17 +104,18 @@ module.exports.init = async function(bot) {
 }
 
 module.exports.commands = [
-    {
-        name: "ping",
-        description: "Ping.",
-        argumentNames: [],
-        permissionLevel: "all",
-		aliases: [],
-        execute: async function(args, msg, bot) {
-            msg.channel.send("pong");
-        }
-    }
-]
+  {
+    name: 'ping',
+    description: 'Ping.',
+    argumentNames: [],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      msg.channel.send('pong');
+    },
+  },
+];
+
 ```
 
 See `modules/liora-core-commands/main.js` for an example module.
@@ -136,7 +137,7 @@ Format:
 	}
 
 	// To continue to the next middleware, call next()
-    next();
+  next();
 }
 ```
 
