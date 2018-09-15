@@ -1,3 +1,6 @@
+// Liora - Modular and extensible Node.js Discord bot
+// Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
+
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
@@ -173,6 +176,11 @@ bot.loadConfig = function loadConfig(callback) {
       callback();
     }
   });
+};
+
+// Config manipulation
+bot.configUnset = function configUnset(pathToProperty) {
+  _.unset(this.config, pathToProperty);
 };
 
 // Add source folder to search in when loading modules

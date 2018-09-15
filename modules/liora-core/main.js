@@ -1,3 +1,6 @@
+// Liora - Modular and extensible Node.js Discord bot
+// Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
+
 const discord = require('discord.js');
 const _ = require('lodash');
 const prettyMs = require('pretty-ms');
@@ -386,8 +389,8 @@ module.exports.commands = [
     permissionLevel: 'owner',
     aliases: [],
     async execute(args, msg, bot) {
-      delete bot.config.commandPermissions[args[0]];
-      bot.saveConfigAndAck(msg);
+      if (bot.configUnset(`commandPermissions[${args[0]}]`)) bot.saveConfigAndAck(msg);
+      else bot.sendError(msg.channel, 'No override set for this command.');
     },
   },
   {
@@ -422,8 +425,8 @@ module.exports.commands = [
     permissionLevel: 'owner',
     aliases: [],
     async execute(args, msg, bot) {
-      delete bot.config.serverPermissions[msg.guild.id][args[0]];
-      bot.saveConfigAndAck(msg);
+      if (bot.configUnset(`serverPermissions[${msg.guild.id}][${args[0]}]`)) bot.saveConfigAndAck(msg);
+      else bot.sendError(msg.channel, 'No role override set for this command on this server.');
     },
   },
   {
@@ -630,8 +633,8 @@ module.exports.commands = [
     permissionLevel: 'manager',
     aliases: [],
     async execute(args, msg, bot) {
-      delete bot.config.commandAliases[args[0]];
-      bot.saveConfigAndAck(msg);
+      if (bot.configUnset(`commandAliases[${args[0]}]`)) bot.saveConfigAndAck(msg);
+      else bot.sendError(msg.channel, 'Alias does not exist.');
     },
   },
   {

@@ -1,3 +1,7 @@
+// Liora - Modular and extensible Node.js Discord bot
+// Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
+// Example usage
+
 const path = require('path');
 const commandLineArgs = require('command-line-args');
 const liora = require('../src/liora-core.js');
