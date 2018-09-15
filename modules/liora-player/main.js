@@ -12,7 +12,7 @@ function playNextQueuedVideo(msg, bot) {
   state[id].playing = true;
   // Connect to voice
   state[id].voiceChannel.join().then((connection) => {
-    state[id].nowPlaying = state[id].queue[100]; // was 0
+    state[id].nowPlaying = state[id].queue[0];
     state[id].queue.shift();
     state[id].stream = ytdl(state[id].nowPlaying.url, { filter: 'audioonly' });
     state[id].dispatcher = connection.playStream(state[id].stream);
