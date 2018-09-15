@@ -6,6 +6,19 @@
         "global-require": 0,
         "import/no-dynamic-require": 0,
         "no-param-reassign": 1,
-        "valid-typeof": 0
+        "valid-typeof": 0,
+        "no-loop-func": 0,
+        "prefer-destructuring": ["error", {
+            "VariableDeclarator": {
+                "array": false,
+                "object": true
+            },
+            "AssignmentExpression": {
+                "array": false,
+                "object": true
+            }
+        }, {
+            "enforceForRenamedProperties": false
+        }]
     }
 }
