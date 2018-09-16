@@ -44,7 +44,7 @@ function enqueueVideo(id, msg, bot) {
     } else if (msg.guild) {
       state[msg.guild.id].queue.push({
         title: info.title,
-        url: url,
+        url,
         thumbnail: info.thumbnail_url,
         duration: parseFloat(info.length_seconds),
         user: msg.author,
@@ -77,8 +77,7 @@ module.exports.init = async function init(bot) {
   const servers = bot.client.guilds.array();
   for (let i = 0; i < servers.length; i++) {
     // Initialize server-specific config
-    if (!bot.configHas(`modules.player.servers[${servers[i].id}]`)) {
-      bot.configSet(`modules.player.servers[${servers[i].id}]`, { defaultVolume: 0.5, volumeLimit: 1 });
+    if (bot.configSetDefault(`modules.player.servers[${servers[i].id}]`, { defaultVolume: 0.5, volumeLimit: 1 })) {
       bot.saveConfig(() => {});
     }
     // Initialize state variables

@@ -57,11 +57,12 @@ Modules can be a subfolder within your custom bot's Node.js package (recommended
 #### Module main.js
 `module-name/main.js`
 
-###### Module init function
+###### Optional: Module init function
 Called after bot is connected and in servers.
 
 Use this for initializing per-server module state information or similar things.
 `bot` is the Liora instance that called this function.
+This function is optional.
 ```javascript
 module.exports.init = async function(bot) {
 }
@@ -101,17 +102,19 @@ Format:
 Example:
 ```javascript
 module.exports.init = async function(bot) {
+	// Run initialization task
 }
 
 module.exports.commands = [
   {
-    name: 'ping',
-    description: 'Ping.',
+    name: 'command',
+    description: 'Command description here.',
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      msg.channel.send('pong');
+			// Get result of command here
+      msg.channel.send(result);
     },
   },
 ];

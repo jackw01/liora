@@ -7,8 +7,9 @@ const prettyMs = require('pretty-ms');
 
 // Module init function - called after bot is connected and in servers
 // Use for initializing per-server module state information or similar things
-module.exports.init = async function init(bot) {
-};
+// Commented out here since it is empty
+// module.exports.init = async function init(bot) {
+// };
 
 // Module commands object - all commands should be defined here
 //

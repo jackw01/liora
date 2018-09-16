@@ -179,21 +179,24 @@ bot.loadConfig = function loadConfig(callback) {
 };
 
 // Config manipulation
+// Return if the config has a property at the specified path
 bot.configHas = function configHas(pathToProperty) {
   return _.has(this.config, pathToProperty);
 };
 
+// Get a config property at the specified path
 bot.configGet = function configGet(pathToProperty, defaultValue) {
   _.get(this.config, pathToProperty, defaultValue);
 };
 
+// Set a config property at the specified path
 bot.configSet = function configSet(pathToProperty, value) {
   _.set(this.config, pathToProperty, value);
 };
 
 // If no property is set at the path, set it to the default value and return true.
 // Otherwise returns false
-bot.configSetDefault = function configHas(pathToProperty, defaultValue) {
+bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
   if (!_.has(this.config, pathToProperty)) {
     _.set(this.config, pathToProperty, defaultValue);
     return true;
@@ -201,6 +204,7 @@ bot.configSetDefault = function configHas(pathToProperty, defaultValue) {
   return false;
 };
 
+// Delete a config property at the specified path
 bot.configUnset = function configUnset(pathToProperty) {
   _.unset(this.config, pathToProperty);
 };
@@ -270,13 +274,18 @@ bot.unloadModule = function unloadModule(name, callback) {
 // Initialize module
 bot.initModule = function initModule(name, callback) {
   if (name in this.modules) {
-    this.modules[name].init(this).then(() => {
+    if (this.modules[name].init) {
+      this.modules[name].init(this).then(() => {
+        bot.log.modules(chalk.green(`Initialized module ${name}`));
+        callback();
+      }).catch((err) => {
+        bot.log.warn(chalk.red(`Failed to initialize module ${name}: ${err.message}`));
+        callback(err);
+      });
+    } else {
       bot.log.modules(chalk.green(`Initialized module ${name}`));
       callback();
-    }).catch((err) => {
-      bot.log.warn(chalk.red(`Failed to initialize module ${name}: ${err.message}`));
-      callback(err);
-    });
+    }
   } else {
     bot.log.warn(`Module ${name} not currently loaded`);
     callback(new Error(`Module ${name} not currently loaded`));
@@ -461,12 +470,8 @@ bot.onConnect = async function onConnect() {
   const servers = this.client.guilds.array();
   servers.forEach((server) => {
     this.log.info(`In server ${server.id}: ${server.name}`);
-    if (!_.has(this.config, `serverPermissions[${server.id}]`)) {
-      _.set(this.config, `serverPermissions[${server.id}]`, {});
-    }
-    if (!_.has(this.config, `settings[${server.id}]`)) {
-      _.set(this.config, `settings[${server.id}]`, {});
-    }
+    this.configSetDefault(`serverPermissions[${server.id}]`, {});
+    this.configSetDefault(`settings[${server.id}]`, {});
   });
   this.saveConfig(() => {});
 

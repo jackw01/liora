@@ -5,13 +5,11 @@ const discord = require('discord.js');
 const _ = require('lodash');
 
 module.exports.init = async function init(bot) {
-  if (!bot.configHas('modules.autorespond.global')) bot.configSet('modules.autorespond.global', {});
+  bot.configSetDefault('modules.autorespond.global', {});
 
   const servers = bot.client.guilds.array();
   servers.forEach((server) => {
-    if (!bot.configHas(`modules.autorespond.servers[${server.id}]`)) {
-      bot.configSet(`modules.autorespond.servers[${server.id}]`, {});
-    }
+    bot.configSetDefault(`modules.autorespond.servers[${server.id}]`, {});
   });
 };
 
@@ -27,7 +25,7 @@ module.exports.commands = [
       if (msg.guild) responsePath = `modules.autorespond.servers[${msg.guild.id}]["${args[0]}"]`;
       else responsePath = `modules.autorespond.global["${args[0]}"]`;
 
-      if (!bot.configHas(responsePath)) bot.configSet(responsePath, []);
+      bot.configSetDefault(responsePath, []);
       const value = bot.configGet(responsePath);
       value.push(args.splice(1).join(' '));
       bot.configSet(responsePath, value);
