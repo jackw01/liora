@@ -180,7 +180,7 @@ bot.loadConfig = function loadConfig(callback) {
 
 // Config manipulation
 bot.configHas = function configHas(pathToProperty) {
-  _.has(this.config, pathToProperty);
+  return _.has(this.config, pathToProperty);
 };
 
 bot.configGet = function configGet(pathToProperty, defaultValue) {
@@ -189,6 +189,16 @@ bot.configGet = function configGet(pathToProperty, defaultValue) {
 
 bot.configSet = function configSet(pathToProperty, value) {
   _.set(this.config, pathToProperty, value);
+};
+
+// If no property is set at the path, set it to the default value and return true.
+// Otherwise returns false
+bot.configSetDefault = function configHas(pathToProperty, defaultValue) {
+  if (!_.has(this.config, pathToProperty)) {
+    _.set(this.config, pathToProperty, defaultValue);
+    return true;
+  }
+  return false;
 };
 
 bot.configUnset = function configUnset(pathToProperty) {

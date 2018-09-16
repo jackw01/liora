@@ -69,8 +69,7 @@ function enqueueVideo(id, msg, bot) {
 }
 
 module.exports.init = async function init(bot) {
-  if (!bot.configHas('modules.player.youtubeKey')) {
-    bot.configSet('modules.player.youtubeKey', 'Replace with your YouTube API Key');
+  if (bot.configSetDefault('modules.player.youtubeKey', 'Replace with your YouTube API Key')) {
     bot.saveConfig(() => {});
     bot.log.modwarn('Player: YouTube API key not specified in config.json. YouTube search functionality will not work.');
   }

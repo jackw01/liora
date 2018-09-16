@@ -83,13 +83,11 @@ function showPollData(bot, channel) {
 
 
 module.exports.init = async function init(bot) {
-  if (!bot.configHas('modules.utils.openWeatherMapKey')) {
-    bot.configSet('modules.utils.openWeatherMapKey', 'Replace with your OpenWeatherMap API Key');
+  if (bot.configSetDefault('modules.utils.openWeatherMapKey', 'Replace with your OpenWeatherMap API Key')) {
     bot.saveConfig(() => {});
     bot.log.modwarn('Utils: OpenWeatherMap API key not specified in config.json. Weather command will not work.');
   }
-  if (!bot.configHas('modules.utils.weatherImperialUnits')) {
-    bot.configSet('modules.utils.weatherImperialUnits', false);
+  if (bot.configSetDefault('modules.utils.weatherImperialUnits', false)) {
     bot.saveConfig(() => {});
   }
 };
