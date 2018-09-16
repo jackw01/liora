@@ -69,8 +69,8 @@ function enqueueVideo(id, msg, bot) {
 }
 
 module.exports.init = async function init(bot) {
-  if (!_.has(bot.config, 'modules.player.youtubeKey')) {
-    _.set(bot.config, 'modules.player.youtubeKey', 'Replace with your YouTube API Key');
+  if (!bot.configHas('modules.player.youtubeKey')) {
+    bot.configSet('modules.player.youtubeKey', 'Replace with your YouTube API Key');
     bot.saveConfig(() => {});
     bot.log.modwarn('Player: YouTube API key not specified in config.json. YouTube search functionality will not work.');
   }
@@ -78,8 +78,8 @@ module.exports.init = async function init(bot) {
   const servers = bot.client.guilds.array();
   for (let i = 0; i < servers.length; i++) {
     // Initialize server-specific config
-    if (!_.has(bot.config, `modules.player.servers[${servers[i].id}]`)) {
-      _.set(bot.config, `modules.player.servers[${servers[i].id}]`, { defaultVolume: 0.5, volumeLimit: 1 });
+    if (!bot.configHas(`modules.player.servers[${servers[i].id}]`)) {
+      bot.configSet(`modules.player.servers[${servers[i].id}]`, { defaultVolume: 0.5, volumeLimit: 1 });
       bot.saveConfig(() => {});
     }
     // Initialize state variables

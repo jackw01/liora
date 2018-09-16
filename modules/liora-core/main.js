@@ -123,8 +123,10 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      bot.config.owner = bot.config.owner || msg.author.id;
-      bot.bot.saveConfigAndAck(msg);
+      if (!bot.config.owner) {
+        bot.configSet('owner', msg.author.id);
+        bot.saveConfigAndAck(msg);
+      }
     },
   },
   {
@@ -134,7 +136,7 @@ module.exports.commands = [
     permissionLevel: 'owner',
     aliases: ['cget'],
     async execute(args, msg, bot) {
-      bot.sendInfo(msg.channel, `Value for key ${args[0]}`, `${_.get(bot.config, args[0], 'undefined')}`);
+      bot.sendInfo(msg.channel, `Value for key ${args[0]}`, `${bot.configGet(args[0], 'undefined')}`);
     },
   },
   {
@@ -148,7 +150,7 @@ module.exports.commands = [
       if (args[0] === 'owner' || args[0].includes('groups') || args[0].includes('Permissions')) {
         bot.sendError(msg.channel, 'This configuration item cannot be edited.');
       } else {
-        _.set(bot.config, args[0], args.splice(1).join(' '));
+        bot.configSet(args[0], args.splice(1).join(' '));
         bot.saveConfigAndAck(msg);
         if (args[0] === 'defaultGame') bot.client.user.setActivity(bot.config.defaultGame);
       }
@@ -222,10 +224,10 @@ module.exports.commands = [
             if (initErr) {
               bot.sendError(msg.channel, `Error initializing \`${args.join('')}\``, `${initErr.message}`);
             } else {
-              const value = _.get(bot.config, 'activeModules');
+              const value = bot.configGet('activeModules');
               if (value.indexOf(args.join('')) === -1) {
                 value.push(args.join(''));
-                _.set(bot.config, 'activeModules', value);
+                bot.configSet('activeModules', value);
                 bot.saveConfig((err) => {
                   if (err) bot.sendError(msg.channel, 'Error saving config file', `${err.message}`);
                   else bot.sendSuccess(msg.channel, `Module loaded in ${prettyMs(Date.now() - startTime)}`);
@@ -279,10 +281,10 @@ module.exports.commands = [
         if (unloadErr) {
           bot.sendError(msg.channel, 'Error', `${unloadErr.message}`);
         } else {
-          const value = _.get(bot.config, 'activeModules');
+          const value = bot.configGet('activeModules');
           if (value.indexOf(args.join('')) !== -1) {
             value.splice(value.indexOf(args.join('')), 1);
-            _.set(bot.config, 'activeModules', value);
+            bot.configSet('activeModules', value);
             bot.saveConfig((err) => {
               if (err) bot.sendError(msg.channel, 'Error saving config file', `${err.message}`);
               else bot.sendSuccess(msg.channel, `Module unloaded in ${prettyMs(Date.now() - startTime)}`);
@@ -311,7 +313,7 @@ module.exports.commands = [
         else bot.sendError(msg.channel, 'User string does not appear to be a valid user id.');
 
         if (id) {
-          if (!bot.config.groups[args[1]]) bot.config.groups[args[1]] = [];
+          if (!bot.config.groups[args[1]]) bot.configSet(`groups[${args[1]}]`, []);
           if (!bot.config.groups[args[1]].includes(id)) bot.config.groups[args[1]].push(id);
           bot.saveConfigAndAck(msg);
         }
@@ -378,7 +380,7 @@ module.exports.commands = [
     permissionLevel: 'owner',
     aliases: [],
     async execute(args, msg, bot) {
-      bot.config.commandPermissions[args[0]] = args[1];
+      bot.configSet(`commandPermissions[${args[0]}]`, args[1]);
       bot.saveConfigAndAck(msg);
     },
   },
@@ -412,7 +414,7 @@ module.exports.commands = [
         else bot.sendError(msg.channel, 'Role string does not appear to be a valid role id.');
 
         if (id) {
-          bot.config.serverPermissions[msg.guild.id][args[0]] = id;
+          bot.configSet(`serverPermissions[${msg.guild.id}][${args[0]}]`, id);
           bot.saveConfigAndAck(msg);
         }
       } else bot.sendError(msg.channel, 'Spaces are not allowed in rolestrings or command names.');
@@ -622,7 +624,7 @@ module.exports.commands = [
     permissionLevel: 'manager',
     aliases: [],
     async execute(args, msg, bot) {
-      bot.config.commandAliases[args[0]] = args[1];
+      bot.configSet(`commandAliases[${args[0]}]`, args[1]);
       bot.saveConfigAndAck(msg);
     },
   },

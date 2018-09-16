@@ -179,6 +179,18 @@ bot.loadConfig = function loadConfig(callback) {
 };
 
 // Config manipulation
+bot.configHas = function configHas(pathToProperty) {
+  _.has(this.config, pathToProperty);
+};
+
+bot.configGet = function configGet(pathToProperty, defaultValue) {
+  _.get(this.config, pathToProperty, defaultValue);
+};
+
+bot.configSet = function configSet(pathToProperty, value) {
+  _.set(this.config, pathToProperty, value);
+};
+
 bot.configUnset = function configUnset(pathToProperty) {
   _.unset(this.config, pathToProperty);
 };
