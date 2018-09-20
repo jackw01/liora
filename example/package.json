@@ -1,0 +1,13 @@
+{
+  "name": "liora-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "example.js",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "command-line-args": "^5.0.2",
+    "discord.js": "^11.4.2",
+    "relevant-urban": "^2.0.0"
+  }
+}

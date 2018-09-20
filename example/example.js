@@ -4,7 +4,7 @@
 
 const path = require('path');
 const commandLineArgs = require('command-line-args');
-const liora = require('../src/liora-core.js');
+const liora = require('liora');
 
 // If --configDir is specified as a command line argument, use it
 // If setConfigDirectory is not called, Liora will use the default at ~/.liora-bot/

@@ -11,16 +11,15 @@
 Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for fast and easy development of custom bot functionality with Node.js.
 
 ## User Guide
-This guide assumes that you have created an application for your bot at https://discordapp.com/developers/applications/ and obtained a bot token.
+This guide assumes that you have created an application for your bot at https://discordapp.com/developers/applications/ and obtained a bot token, and added the bot to your server(s). There are many good guides out there already.
 
 ### Standalone Usage
 1. Install Node.js 8.0.0 or higher on your system: https://nodejs.org/en/download/
 2. Install Liora globally: `npm install -g git+https://github.com/jackw01/liora.git`
-3. Run `liora` to run using the default configuration folder at `~/.liora-bot/`.
+3. Run `liora` to run using the default configuration folder at `~/.liora-bot/` or run `liora --configDir .` to use the current folder as the configuration folder.
 4. Stop Liora once it has initialized.
 5. Open `config.json` inside the config folder and paste your bot token into the `discordToken` property.
 6. Run `liora` again to connect to Discord.
-7. Add the bot to your server(s).
 
 An optional config directory can be specified with the `--configDir` option. The first time Liora is run, it will create a blank config file. In standalone mode, only built-in modules will be accessible.
 
@@ -113,7 +112,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-			// Get result of command here
+      // Get result of command here
       msg.channel.send(result);
     },
   },
@@ -274,6 +273,7 @@ Returns an array of Discord.js channel objects from a string containing a channe
 - [x] rate limit
 - [x] default aliases
 - [x] display aliases in help
+- [ ] openConfig command line arg
 
 ### Commands for builtin modules
 - [x] load modules

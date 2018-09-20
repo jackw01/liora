@@ -188,7 +188,7 @@ bot.configHas = function configHas(pathToProperty) {
 
 // Get a config property at the specified path
 bot.configGet = function configGet(pathToProperty, defaultValue) {
-  _.get(this.config, pathToProperty, defaultValue);
+  return _.get(this.config, pathToProperty, defaultValue);
 };
 
 // Set a config property at the specified path
