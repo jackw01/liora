@@ -16,6 +16,9 @@
     "discord"
   ],
   "preferGlobal": true,
+  "bin": {
+		"liora": "src/liora-core.js"
+  },
   "main": "src/liora-core.js",
   "scripts": {
     "start": "node ."

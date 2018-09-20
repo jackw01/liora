@@ -190,6 +190,21 @@ Unloads a module by name and clears the `require` cache. `callback` will be call
 ###### `bot.initModule(name, callback)`
 Calls the init function on a module by name. `callback` will be called with an error object if initialization fails.
 
+###### `bot.configHas(pathToProperty)`
+Returns true if config has a property at the specified path.
+
+###### `bot.configGet(pathToProperty, defaultValue)`
+Returns the value stored in config at the specified path or returns `defaultValue` if it is not present.
+
+###### `bot.configSet(pathToProperty, value)`
+Sets the value stored in config at the specified path to `value`.
+
+###### `bot.configSetDefault(pathToProperty, defaultValue)`
+Sets the value stored in config at the specified path to `defaultValue` if it is not set already. Returns true if the value has not been set already, otherwise false.
+
+###### `bot.configUnset(pathToProperty)`
+Deletes the value stored in config at the specified path.
+
 ###### `bot.prefixForMessageContext(msg)`
 Returns the bot's command prefix for the context of a Discord.js message object.
 
