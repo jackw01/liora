@@ -144,7 +144,7 @@ bot.loadConfig = function loadConfig(callback) {
   } catch (err) {
     bot.log.error(`Error reading config: ${err.message}`);
     bot.log.error('Please fix the config error or delete config.json so it can be regenerated.');
-    process.exit(1);
+    throw err;
   }
 
   // Recursively iterate over the config to check types and reset properties to default if they are the wrong type
@@ -238,7 +238,7 @@ bot.loadModule = function loadModule(name, callback) {
             cmd.aliases.forEach((a) => { newModule.defaultAliases[a] = cmd.name; });
           });
         } catch (err) {
-          bot.log.warn(chalk.red(`Unable to load module ${name}: ${err.message}`));
+          bot.log.warn(chalk.yellow(`Unable to load module ${name}: ${err.message}`));
           bot.log.warn(`> ${err.stack}`);
           callback(err);
           return;
@@ -281,7 +281,7 @@ bot.initModule = function initModule(name, callback) {
         bot.log.modules(chalk.green(`Initialized module ${name}`));
         callback();
       }).catch((err) => {
-        bot.log.warn(chalk.red(`Failed to initialize module ${name}: ${err.message}`));
+        bot.log.warn(chalk.yellow(`Failed to initialize module ${name}: ${err.message}`));
         callback(err);
       });
     } else {
@@ -561,7 +561,7 @@ bot.util.parseChannel = function parseChannel(channelString, server) {
 bot.client.on('ready', bot.onConnect.bind(bot));
 bot.client.on('error', (err) => { bot.log.error(chalk.red(`Client error: ${err.message}`)); });
 bot.client.on('reconnecting', () => { bot.log.info('Reconnecting...'); });
-bot.client.on('disconnect', (evt) => { bot.log.warn(chalk.red(`Disconnected: ${evt.reason} (${evt.code})`)); });
+bot.client.on('disconnect', (evt) => { bot.log.warn(chalk.yellow(`Disconnected: ${evt.reason} (${evt.code})`)); });
 bot.client.on('message', bot.onMessage.bind(bot));
 
 // Set default config directory

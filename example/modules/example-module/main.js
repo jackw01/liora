@@ -12,7 +12,6 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      await test();
       const embed = new discord.RichEmbed()
         .setTitle('Test command')
         .setAuthor('jackw01', 'https://avatars3.githubusercontent.com/u/22643669?s=460&v=4')

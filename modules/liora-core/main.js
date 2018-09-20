@@ -170,7 +170,7 @@ module.exports.commands = [
   },
   {
     name: 'restart',
-    description: 'Completely restart the bot.',
+    description: 'Restart the bot.',
     argumentNames: [],
     permissionLevel: 'owner',
     aliases: [],
