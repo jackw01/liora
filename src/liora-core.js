@@ -4,6 +4,7 @@
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
+const updateNotifier = require('update-notifier');
 const commandLineArgs = require('command-line-args');
 const mkdirp = require('mkdirp');
 const jsonfile = require('jsonfile');
@@ -13,6 +14,7 @@ const chalk = require('chalk');
 const compose = require('koa-compose');
 const prettyMs = require('pretty-ms');
 const discord = require('discord.js');
+const pkg = require('../package.json');
 
 const has = Object.prototype.hasOwnProperty;
 
@@ -567,6 +569,7 @@ bot.setConfigDirectory(path.join(os.homedir(), '.liora-bot'));
 
 // Run the bot automatically if module is run instead of imported
 if (!module.parent) {
+  updateNotifier({ pkg }).notify();
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
   const options = commandLineArgs([{ name: 'configDir', defaultValue: '' }]);
   if (options.configDir !== '') bot.setConfigDirectory(options.configDir);

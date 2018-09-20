@@ -17,7 +17,7 @@
   ],
   "preferGlobal": true,
   "bin": {
-		"liora": "src/liora-core.js"
+    "liora": "src/liora-core.js"
   },
   "main": "src/liora-core.js",
   "scripts": {
@@ -47,6 +47,7 @@
     "node-opus": "^0.3.0",
     "pretty-ms": "^3.2.0",
     "request": "^2.88.0",
+    "update-notifier": "^2.5.0",
     "uws": "^99.0.0",
     "valid-url": "^1.0.9",
     "winston": "^3.0.0",
