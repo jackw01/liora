@@ -47,7 +47,7 @@ module.exports.commands = [
         .setColor(bot.config.defaultColors.neutral)
         .addField('Bot ID', bot.client.user.id, true)
         .addField('Owner ID', bot.config.owner, true)
-        .addField('Channels', bot.client.channels.array().length, true)
+        .addField('Channels', bot.client.channels.size, true)
         .addField('Client Uptime', prettyMs(bot.client.uptime), true)
         .addField('Bot Uptime', prettyMs(Date.now() - bot.firstLoadTime), true)
         .addField('Last Startup Time', prettyMs(bot.lastLoadDuration), true);
@@ -462,9 +462,9 @@ module.exports.commands = [
           .setThumbnail(msg.guild.iconURL)
           .addField('ID', `\`${msg.guild.id}\``, true)
           .addField('Owner', bot.util.username(msg.guild.owner.user), true)
-          .addField('Channels', msg.guild.channels.array().length, true)
+          .addField('Channels', msg.guild.channels.size, true)
           .addField('Verified', msg.guild.verified, true)
-          .addField('Custom Emojis', `${msg.guild.emojis.array().length}`, true)
+          .addField('Custom Emojis', `${msg.guild.emojis.size}`, true)
           .addField('Roles', `${roles.length}: ${roles.map(r => r.name).join(', ')}`)
           .addField('Joined', msg.guild.joinedAt)
           .addField('Created', msg.guild.createdAt);

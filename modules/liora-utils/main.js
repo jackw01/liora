@@ -10,6 +10,7 @@ const openWeatherMapURL = 'http://api.openweathermap.org/data/2.5';
 const xkcdURL = 'https://xkcd.com';
 const wikipediaURL = 'https://en.wikipedia.org/w/api.php';
 const redditURL = 'https://www.reddit.com';
+const googleImagesURL = 'https://images.google.com';
 
 const isGifRegex = /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/;
 const isImageRegex = /.*(imgur\.com|i\.redd\.it).*/;
@@ -18,6 +19,8 @@ const gifExtensionRegex = /.*(gifv|gif)$/;
 const redditSearchCounter = {};
 
 const pollState = {};
+
+let lastImage;
 
 function showRedditResult(msg, bot, queryURL, queryString, filter) {
   request(queryURL, (err, response, body) => {
@@ -277,6 +280,24 @@ module.exports.commands = [
     },
   },
   {
+    name: 'reverseimg',
+    description: 'Reverse image search the last posted image on the current channel.',
+    argumentNames: [],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      if (lastImage) {
+        const embed = new discord.RichEmbed()
+          .setTitle(`Reverse image search for the last image on this channel`)
+          .setColor(bot.config.defaultColors.success)
+          .setURL(`${googleImagesURL}/searchbyimage?image_url=${lastImage.url}`)
+          .setThumbnail(lastImage.url);
+        msg.channel.send({ embed });
+      } else bot.sendError(msg.channel, 'Can\'t find an image.');
+
+    },
+  },
+  {
     name: 'poll',
     description: 'Create a poll on the current channel.',
     argumentNames: ['"question"', '"answer-1"', '"answer-n"'],
@@ -344,5 +365,12 @@ module.exports.commands = [
         } else bot.sendError(msg.channel, `Choice ${choice + 1} does not exist.`);
       } else bot.sendError(msg.channel, 'No poll is running on this channel.');
     },
+  },
+];
+
+module.exports.middleware = [
+  (c, next) => {
+    if (c.message.attachments.size) c.message.attachments.forEach((a) => { if (a.width) lastImage = a; });
+    next();
   },
 ];
