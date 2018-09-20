@@ -8,6 +8,6 @@
   "dependencies": {
     "command-line-args": "^5.0.2",
     "discord.js": "^11.4.2",
-    "relevant-urban": "^2.0.0"
+    "liora": "git+https://github.com/jackw01/liora.git"
   }
 }

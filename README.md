@@ -8,7 +8,7 @@
  > Modular and extensible Node.js discord-bot with lots of built-in functionality
 
 ## Is It a Bot or a Framework?
-Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for fast and easy development of custom bot functionality with Node.js.
+Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for developing custom Discord bot functionality in Javascript without having to worry about dynamic module loading, handling commands, or parsing user/role/channel mentions in messages.
 
 ## User Guide
 This guide assumes that you have created an application for your bot at https://discordapp.com/developers/applications/ and obtained a bot token, and added the bot to your server(s). There are many good guides out there already.
@@ -80,9 +80,12 @@ Format:
   description: 'description',
 
   // Array of argument names: follow the provided format
+	// If the command is called by a user with too *few* arguments, an error message will be sent
+	// to the channel it was called from and execute() will not be called.
   argumentNames: ['<requiredArgument>', '<optionalArgument>?'],
 
   // Permission level: 'all' for all users, 'owner' for owner, 'manager' or anything else for a group
+	// There is no need for checking permissions inside of your command, the bot does this for you.
   permissionLevel: 'all',
 
   // Array of default aliases (alternate ways of running this command)
@@ -153,18 +156,10 @@ See example of custom middleware usage in `modules/liora-autorespond/main.js`.
 The currently in-use [Discord.js `client` instance](https://discord.js.org/#/docs/main/stable/class/Client)
 
 ###### `bot.log`
-[Winston logger](https://github.com/winstonjs/winston) instance that can be used for logging to the console.
-
-###### `bot.firstLoadTime`
-`Date` object representing the time when the bot first loaded.
-
-###### `bot.lastLoadTime`
-`Date` object representing the time when the bot last loaded.
-
-###### `bot.lastLoadDuration`
-Number representing the time it took for the bot to load in milliseconds.
+[Winston logger](https://github.com/winstonjs/winston) instance that can be used for logging to the console. Use `bot.log.modinfo()` and `bot.log.modwarn()` inside of custom modules so that core and module messages can be differentiated. 
 
 #### Methods
+
 ###### `bot.setConfigDirectory(configDir)`
 Sets the configuration folder used by the bot. Do not use this after the bot has loaded.
 
@@ -179,15 +174,6 @@ Saves the current configuration data object to the config file. `callback` will 
 
 ###### `bot.saveConfigAndAck(message)`
 Saves the current configuration data object to the config file. Reacts to the message with a green check mark emoji if successful and sends an error message in the same channel if not.
-
-###### `bot.loadModule(name, callback)`
-Loads a module by name from any module source. `callback` will be called with an error object if loading fails.
-
-###### `bot.unloadModule(name, callback)`
-Unloads a module by name and clears the `require` cache. `callback` will be called with an error object if unloading fails.
-
-###### `bot.initModule(name, callback)`
-Calls the init function on a module by name. `callback` will be called with an error object if initialization fails.
 
 ###### `bot.configHas(pathToProperty)`
 Returns true if config has a property at the specified path.
@@ -204,23 +190,6 @@ Sets the value stored in config at the specified path to `defaultValue` if it is
 ###### `bot.configUnset(pathToProperty)`
 Deletes the value stored in config at the specified path.
 
-###### `bot.prefixForMessageContext(msg)`
-Returns the bot's command prefix for the context of a Discord.js message object.
-
-###### `bot.hasPermission(member, user, group, role)`
-Returns `true` if a user meets the criteria for the specified permission `group` or `role`. Requires a Discord.js `GuildMember` object (or `null` if not in a server), a Discord.js `User` object, a group name, and a Discord.js `Snowflake` with the role ID.
-
-Either `group` or `role` may be empty strings. If both are specified, any this function will return `true` if the user matches **either** `group` or `role`.
-
-###### `bot.getCommandNamed(name, callback)`
-Searches all loaded modules for a command with the specified name. `callback` will be called with either no arguments or the requested command object.
-
-###### `bot.restart()`
-Reloads all modules and config and reconnects to Discord.
-
-###### `bot.shutdown()`
-Disconnects from Discord and ends the process.
-
 ###### `bot.sendEmojiEmbed(channel, emoji, title, description)`
 Send an embed to the channel with an emoji, title, and description.
 
@@ -233,7 +202,10 @@ Send an embed to the channel with a check mark emoji (✅) to indicate success, 
 ###### `bot.sendInfo(channel, title, description)`
 Send an embed to the channel with an info emoji (ℹ️) to indicate an info message, a title, and a description.
 
-### Discord utility methods
+###### `bot.prefixForMessageContext(msg)`
+Returns the bot's command prefix for the context of a Discord.js message object. Returns the server-specific prefix if one is set, otherwise returns the global prefix.
+
+#### Discord utility methods
 ###### `bot.util.username(user)`
 Returns a Discord.js user object's username and discriminator as a string for displaying to users
 
@@ -248,6 +220,41 @@ Returns an array of Discord.js role objects from a string containing a role ment
 
 ###### `bot.util.parseChannel(channelString, server)`
 Returns an array of Discord.js channel objects from a string containing a channel mention or name. `server` is a Discord.js `Guild` object.
+
+#### Bot internals
+These properties and methods are in a separate section since they will rarely be used outside of the `liora-core` module.
+
+###### `bot.firstLoadTime`
+`Date` object representing the time when the bot first loaded.
+
+###### `bot.lastLoadTime`
+`Date` object representing the time when the bot last loaded.
+
+###### `bot.lastLoadDuration`
+Number representing the time it took for the bot to load in milliseconds.
+
+###### `bot.loadModule(name, callback)`
+Loads a module by name from any module source. `callback` will be called with an error object if loading fails.
+
+###### `bot.unloadModule(name, callback)`
+Unloads a module by name and clears the `require` cache. `callback` will be called with an error object if unloading fails.
+
+###### `bot.initModule(name, callback)`
+Calls the init function on a module by name. `callback` will be called with an error object if initialization fails.
+
+###### `bot.getCommandNamed(name, callback)`
+Searches all loaded modules for a command with the specified name. `callback` will be called with either no arguments or the requested command object.
+
+###### `bot.hasPermission(member, user, group, role)`
+Returns `true` if a user meets the criteria for the specified permission `group` or `role`. Requires a Discord.js `GuildMember` object (or `null` if not in a server), a Discord.js `User` object, a group name, and a Discord.js `Snowflake` with the role ID.
+
+Either `group` or `role` may be empty strings. If both are specified, this function will return `true` if the user matches **either** `group` or `role`.
+
+###### `bot.restart()`
+Reloads all modules and config and reconnects to Discord.
+
+###### `bot.shutdown()`
+Disconnects from Discord and ends the process.
 
 ## Todo
 ### Core
