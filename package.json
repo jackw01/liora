@@ -40,6 +40,7 @@
     "command-line-args": "^5.0.2",
     "discord.js": "^11.4.2",
     "erlpack": "^0.1.2",
+    "google-translate-api": "^2.3.0",
     "jsonfile": "^4.0.0",
     "koa-compose": "^4.1.0",
     "lodash": "^4.17.10",

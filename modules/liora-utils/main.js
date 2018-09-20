@@ -4,6 +4,7 @@
 const discord = require('discord.js');
 const _ = require('lodash');
 const request = require('request');
+const translate = require('google-translate-api');
 
 const urbanDictionaryURL = 'https://api.urbandictionary.com/v0';
 const openWeatherMapURL = 'http://api.openweathermap.org/data/2.5';
@@ -20,6 +21,8 @@ const redditSearchCounter = {};
 
 const pollState = {};
 
+let lastMessageText;
+let lastMessageBuffer;
 let lastImage;
 
 function showRedditResult(msg, bot, queryURL, queryString, filter) {
@@ -288,13 +291,35 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (lastImage) {
         const embed = new discord.RichEmbed()
-          .setTitle(`Reverse image search for the last image on this channel`)
+          .setTitle('Reverse image search for the last image on this channel')
           .setColor(bot.config.defaultColors.success)
           .setURL(`${googleImagesURL}/searchbyimage?image_url=${lastImage.url}`)
           .setThumbnail(lastImage.url);
         msg.channel.send({ embed });
       } else bot.sendError(msg.channel, 'Can\'t find an image.');
-
+    },
+  },
+  {
+    name: 'translatelast',
+    description: 'Translate the last posted message on the current channel. Automatically detects the language of the last message.',
+    argumentNames: ['languageTo'],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      if (lastMessageText) {
+        if (translate.languages.isSupported(args[0])) {
+          translate(lastMessageText, { to: args[0] }).then((res) => {
+            const embed = new discord.RichEmbed()
+              .setTitle('Translation Result')
+              .setColor(bot.config.defaultColors.success)
+              .setDescription(res.text)
+              .setFooter(`Detected language: ${res.from.language.iso}`);
+            msg.channel.send({ embed });
+          }).catch((err) => {
+            bot.sendError(msg.channel, `Error translating message: ${err.message}.`);
+          });
+        } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
+      } else bot.sendError(msg.channel, 'Can\'t find a last message.');
     },
   },
   {
@@ -371,6 +396,10 @@ module.exports.commands = [
 module.exports.middleware = [
   (c, next) => {
     if (c.message.attachments.size) c.message.attachments.forEach((a) => { if (a.width) lastImage = a; });
+    if (c.message.content) {
+      lastMessageText = lastMessageBuffer;
+      lastMessageBuffer = c.message.content;
+    }
     next();
   },
 ];

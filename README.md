@@ -312,7 +312,7 @@ Returns an array of Discord.js channel objects from a string containing a channe
 - [x] 8 ball
 - [x] poll
 - [x] fortune
-- [ ] translate last message
+- [x] translate last message
 - [x] reverse search last image
 
 ## License
