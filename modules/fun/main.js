@@ -5,6 +5,20 @@ const discord = require('discord.js');
 const commandExists = require('command-exists');
 const cp = require('child_process');
 
+const numberEmojis = {
+  0: ':zero: ',
+  1: ':one: ',
+  2: ':two: ',
+  3: ':three: ',
+  4: ':four: ',
+  5: ':five: ',
+  6: ':six: ',
+  7: ':seven: ',
+  8: ':eight: ',
+  9: ':nine: ',
+};
+const numbers = Object.keys(numberEmojis);
+
 const magic8Ball = [
   'It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes - definitely.', 'You may rely on it.',
   'As I see it, yes.', 'Most likely.', 'Outlook good.', 'Yes.', 'Signs point to yes.', 'Reply hazy, try again',
@@ -30,6 +44,24 @@ module.exports.init = async function init(bot) {
 };
 
 module.exports.commands = [
+  {
+    name: 'bigtext',
+    description: 'Generate large text with regional indicators.',
+    argumentNames: ['text'],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg) {
+      const inText = args.join(' ').toLowerCase().split('');
+      let output = '';
+      inText.forEach((char) => {
+        if (char === ' ') output += '    ';
+        else if (numbers.includes(char)) output += numberEmojis[char];
+        else if (/[a-z]/.test(char)) output += `:regional_indicator_${char}: `;
+        else output += char;
+      });
+      msg.channel.send(output);
+    },
+  },
   {
     name: 'dice',
     description: 'Roll dice. If no arguments are given, will default to 1 d6.',

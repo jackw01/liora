@@ -332,10 +332,9 @@ Disconnects from Discord and ends the process.
 - [x] reverse search last image
 - [x] general purpose translate
 - [ ] imgur
-- [ ] text with regional indicators
+- [x] text with regional indicators
 - [ ] rotating motd
-- [ ] tell command
-- [ ] reverse profile pic
+- [x] reverse profile pic
 
 ## License
 MIT

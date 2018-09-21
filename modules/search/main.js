@@ -269,7 +269,7 @@ module.exports.commands = [
   },
   {
     name: 'reverseimg',
-    description: 'Reverse image search the last posted image on the current channel.',
+    description: 'Reverse image search the last posted image on the current channel or the image attached to the message with this command.',
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
@@ -285,8 +285,31 @@ module.exports.commands = [
     },
   },
   {
+    name: 'reverseprofilepic',
+    description: 'Reverse image search the profile picture for a user mention, username, or nickname. If no user is mentioned, this command will use the user that triggered it.',
+    argumentNames: ['<user>?'],
+    permissionLevel: 'all',
+    aliases: ['reverseavatar', 'reversepfp'],
+    async execute(args, msg, bot) {
+      if (msg.guild) {
+        let result;
+        if (args.length) result = bot.util.parseUsername(args.join(' '), msg.guild);
+        else result = [msg.author];
+        if (result) {
+          const user = result[0];
+          const embed = new discord.RichEmbed()
+            .setTitle(`Reverse image search of profile picture for ${bot.util.username(user)}`)
+            .setColor(bot.config.defaultColors.success)
+            .setURL(`${googleImagesURL}/searchbyimage?image_url=${user.avatarURL}`)
+            .setThumbnail(user.avatarURL);
+          msg.channel.send({ embed });
+        } else bot.sendError(msg.channel, 'User not found.');
+      } else bot.sendError(msg.channel, 'Must be in a server to use this command.');
+    },
+  },
+  {
     name: 'translate',
-    description: 'Translate something to the specified language. Text must be enclosed in quote marks.',
+    description: 'Translate something to the specified language.',
     argumentNames: ['languageTo', '"text"'],
     permissionLevel: 'all',
     aliases: [],
