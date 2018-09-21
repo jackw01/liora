@@ -19,8 +19,6 @@ const gifExtensionRegex = /.*(gifv|gif)$/;
 
 const redditSearchCounter = {};
 
-const pollState = {};
-
 let lastMessageText;
 let lastMessageBuffer;
 let lastImage;
@@ -74,19 +72,6 @@ function redditSubPostHandler(msg, args, bot, gif) {
     },
   );
 }
-
-function showPollData(bot, channel) {
-  const embed = new discord.RichEmbed()
-    .setTitle('Poll Results')
-    .setColor(bot.config.defaultColors.success)
-    .setDescription(`Question: ${pollState[channel.id].question}`);
-  pollState[channel.id].args.forEach((option, i) => {
-    const votes = pollState[channel.id].votes[i];
-    embed.addField(`${i + 1}: ${option}`, `${votes} vote${votes === 1 ? '' : 's'}`);
-  });
-  channel.send({ embed });
-}
-
 
 module.exports.init = async function init(bot) {
   if (bot.configSetDefault('modules.utils.openWeatherMapKey', 'Replace with your OpenWeatherMap API Key')) {
@@ -341,75 +326,6 @@ module.exports.commands = [
           });
         } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
       } else bot.sendError(msg.channel, 'Can\'t find a last message.');
-    },
-  },
-  {
-    name: 'poll',
-    description: 'Create a poll on the current channel.',
-    argumentNames: ['"question"', '"answer-1"', '"answer-n"'],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (!pollState[msg.channel.id]) {
-        if (args.length < 25) {
-          pollState[msg.channel.id] = {
-            question: args[0], args: [], votes: [], users: new Set(),
-          };
-          const embed = new discord.RichEmbed()
-            .setTitle(args[0])
-            .setColor(bot.config.defaultColors.success)
-            .setDescription(`Use \`${bot.prefixForMessageContext(msg)}vote <choiceNumber>\` to vote.`);
-          for (let i = 1; i < args.length; i++) {
-            pollState[msg.channel.id].args.push(args[i]);
-            pollState[msg.channel.id].votes.push(0);
-            embed.addField(i, args[i]);
-          }
-          msg.channel.send({ embed });
-        } else bot.sendError(msg.channel, 'Only up to 25 answer choices are allowed.');
-      } else bot.sendError(msg.channel, 'A poll is already running on this channel.');
-    },
-  },
-  {
-    name: 'polldata',
-    description: 'View poll data on the current channel without ending the poll.',
-    argumentNames: [],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (pollState[msg.channel.id]) showPollData(bot, msg.channel);
-      else bot.sendError(msg.channel, 'No poll is running on this channel.');
-    },
-  },
-  {
-    name: 'endpoll',
-    description: 'End the poll on the current channel.',
-    argumentNames: [],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (pollState[msg.channel.id]) {
-        showPollData(bot, msg.channel);
-        delete pollState[msg.channel.id];
-      } else bot.sendError(msg.channel, 'No poll is running on this channel.');
-    },
-  },
-  {
-    name: 'vote',
-    description: 'Vote in the current poll.',
-    argumentNames: ['<choiceNumber>'],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (pollState[msg.channel.id]) {
-        const choice = parseInt(args[0], 10) - 1;
-        if (choice < pollState[msg.channel.id].votes.length) {
-          if (!pollState[msg.channel.id].users.has(msg.author.id)) {
-            pollState[msg.channel.id].votes[choice]++;
-            pollState[msg.channel.id].users.add(msg.author.id);
-            msg.react('✅');
-          } else bot.sendError(msg.channel, 'You have already voted on this poll.');
-        } else bot.sendError(msg.channel, `Choice ${choice + 1} does not exist.`);
-      } else bot.sendError(msg.channel, 'No poll is running on this channel.');
     },
   },
 ];

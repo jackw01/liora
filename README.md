@@ -334,9 +334,6 @@ Disconnects from Discord and ends the process.
 - [ ] imgur
 - [ ] text with regional indicators
 - [ ] rotating motd
-- [ ] greet dm
-- [ ] greet message
-- [ ] bye message
 - [ ] tell command
 - [ ] reverse profile pic
 
