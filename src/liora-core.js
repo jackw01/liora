@@ -128,7 +128,7 @@ bot.saveConfigAndAck = function saveConfigAndAck(msg) {
 
 // Open the config file in a text editor
 bot.openConfigFile = function openConfigFile() {
-  liora.log.info('Opening config file in a text editor...');
+  bot.log.info('Opening config file in a text editor...');
   opn(this.configFile).then(() => {
     bot.log.info('Exiting.');
     process.exit(0);

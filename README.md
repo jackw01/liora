@@ -13,7 +13,11 @@ Liora can be used as a standalone bot with all of the commands in its built-in m
 ## User Guide
 This guide assumes that you have created an application for your bot at https://discordapp.com/developers/applications/ and obtained a bot token, and added the bot to your server(s). There are many good guides out there already.
 
+Liora is built for ease of self-hosting for individual servers and not as a centrally hosted bot.
+
 ### Standalone Usage
+Thanks to the simplicity of Node.js and npm, Liora is very easy to install and run for self-hosting.
+
 1. Install Node.js 8.0.0 or higher on your system: https://nodejs.org/en/download/
 2. Install Liora globally: `npm install -g git+https://github.com/jackw01/liora.git`
 3. Run `liora` to run using the default configuration folder at `~/.liora-bot/` or run `liora --configDir .` to use the current folder as the configuration folder.
@@ -28,6 +32,8 @@ Note: For long term use, use [forever](https://www.npmjs.com/package/forever) to
 For developers who want to add their own functionality to their bot.
 
 #### Loader script
+**See the `example` folder for an example loader with a custom module and command line arguments.**
+
 To add your own functionality, just create an empty Node.js project and install and require Liora. Set a custom config folder if you want to and add a folder as a module source.
 
 `main.js`
@@ -50,6 +56,8 @@ liora.load();
 Liora's dynamic module loader allows you to load, unload, and reload modules from Discord commands without restarting the bot from the command line. This requires that all modules are in a standard format and are located inside folders that are set as module sources.
 
 ### Module format
+**See `modules/liora-core-commands/main.js` for an example module.**
+
 Liora loads modules using the path `absolute-path-to-module-source/module-name/main.js`. This means that all modules must consist of a folder with the name of the module containing a `main.js` file.
 
 Modules can be a subfolder within your custom bot's Node.js package (recommended) or they can be individual Node.js modules with their own `package.json` file and `node_modules` folder (possible, but not recommended because of the redundant `node_modules` folders).
@@ -124,7 +132,7 @@ module.exports.commands = [
 
 ```
 
-See `modules/liora-core-commands/main.js` for an example module.
+**See `modules/liora-core/main.js` and `modules/liora-utils/main.js` for an example module.**
 
 ###### Optional: Module middleware array
 Middleware to pass all messages through can be defined here. This can be useful for detecting certain text in messages, analyzing message content, or preventing commands from being executed in certain conditions.
@@ -147,8 +155,7 @@ Format:
 }
 ```
 
-Example:
-See example of custom middleware usage in `modules/liora-autorespond/main.js`.
+**See example of custom middleware usage in `modules/liora-autorespond/main.js` and `modules/liora-utils/main.js`.**
 
 ### Liora object properties and methods
 
@@ -282,6 +289,7 @@ Disconnects from Discord and ends the process.
 - [x] default aliases
 - [x] display aliases in help
 - [x] openConfig command line arg
+- [ ] command docs generator
 
 ### Commands for builtin modules
 - [x] load modules
@@ -323,6 +331,14 @@ Disconnects from Discord and ends the process.
 - [x] translate last message
 - [x] reverse search last image
 - [x] general purpose translate
+- [ ] imgur
+- [ ] text with regional indicators
+- [ ] rotating motd
+- [ ] greet dm
+- [ ] greet message
+- [ ] bye message
+- [ ] tell command
+- [ ] reverse profile pic
 
 ## License
 MIT
