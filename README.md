@@ -17,9 +17,8 @@ This guide assumes that you have created an application for your bot at https://
 1. Install Node.js 8.0.0 or higher on your system: https://nodejs.org/en/download/
 2. Install Liora globally: `npm install -g git+https://github.com/jackw01/liora.git`
 3. Run `liora` to run using the default configuration folder at `~/.liora-bot/` or run `liora --configDir .` to use the current folder as the configuration folder.
-4. Stop Liora once it has initialized.
-5. Open `config.json` inside the config folder and paste your bot token into the `discordToken` property.
-6. Run `liora` again to connect to Discord.
+4. The `config.json` file inside the config folder will open. Paste your bot token into the `discordToken` property.
+5. Run `liora` again to connect to Discord.
 
 An optional config directory can be specified with the `--configDir` option. The first time Liora is run, it will create a blank config file. In standalone mode, only built-in modules will be accessible.
 
@@ -282,7 +281,7 @@ Disconnects from Discord and ends the process.
 - [x] rate limit
 - [x] default aliases
 - [x] display aliases in help
-- [ ] openConfig command line arg
+- [x] openConfig command line arg
 
 ### Commands for builtin modules
 - [x] load modules
@@ -323,7 +322,7 @@ Disconnects from Discord and ends the process.
 - [x] fortune
 - [x] translate last message
 - [x] reverse search last image
-- [ ] general purpose translate
+- [x] general purpose translate
 
 ## License
 MIT

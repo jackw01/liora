@@ -5,7 +5,8 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const updateNotifier = require('update-notifier');
-const commandLineArgs = require('command-line-args');
+const yargs = require('yargs');
+const opn = require('opn');
 const mkdirp = require('mkdirp');
 const jsonfile = require('jsonfile');
 const _ = require('lodash');
@@ -14,6 +15,7 @@ const chalk = require('chalk');
 const compose = require('koa-compose');
 const prettyMs = require('pretty-ms');
 const discord = require('discord.js');
+
 const pkg = require('../package.json');
 
 const has = Object.prototype.hasOwnProperty;
@@ -124,26 +126,39 @@ bot.saveConfigAndAck = function saveConfigAndAck(msg) {
   });
 };
 
+// Open the config file in a text editor
+bot.openConfigFile = function openConfigFile() {
+  liora.log.info('Opening config file in a text editor...');
+  opn(this.configFile).then(() => {
+    bot.log.info('Exiting.');
+    process.exit(0);
+  }).catch((err) => {
+    this.log.error('Error opening config file.');
+    throw err;
+  });
+};
+
 // Load config file
 bot.loadConfig = function loadConfig(callback) {
+  const configExists = fs.existsSync(this.configFile);
   // If file does not exist, create it
-  if (!fs.existsSync(this.configFile)) {
+  if (!configExists) {
     try {
       mkdirp.sync(path.dirname(this.configFile));
       fs.writeFileSync(this.configFile, JSON.stringify({}, null, 4));
     } catch (err) {
-      bot.log.error(chalk.red.bold(`Unable to create config.json: ${err.message}`));
+      this.log.error(chalk.red.bold(`Unable to create config.json: ${err.message}`));
       throw err;
     }
   }
 
   // Load the created file, even if it is empty
-  bot.log.info('Loading config...');
+  this.log.info('Loading config...');
   try {
-    bot.config = JSON.parse(fs.readFileSync(this.configFile));
+    this.config = JSON.parse(fs.readFileSync(this.configFile));
   } catch (err) {
-    bot.log.error(`Error reading config: ${err.message}`);
-    bot.log.error('Please fix the config error or delete config.json so it can be regenerated.');
+    this.log.error(`Error reading config: ${err.message}`);
+    this.log.error('Please fix the config error or delete config.json so it can be regenerated.');
     throw err;
   }
 
@@ -165,19 +180,25 @@ bot.loadConfig = function loadConfig(callback) {
       }
     });
   }
-  configIterator(bot.config, configSchema);
+  configIterator(this.config, configSchema);
 
   // Write the checked config data and open it again
-  fs.writeFileSync(this.configFile, JSON.stringify(bot.config, null, 4));
-  jsonfile.readFile(this.configFile, (err, obj) => {
-    if (err) {
-      bot.log.error(chalk.red.bold(`Unable to load config.json: ${err.message}`));
-      throw err;
-    } else {
-      bot.config = obj;
-      callback();
-    }
-  });
+  fs.writeFileSync(this.configFile, JSON.stringify(this.config, null, 4));
+  if (!configExists) {
+    this.log.warn('Config file created for the first time.');
+    this.log.warn('Paste your Discord bot token into the botToken field and restart Liora.');
+    this.openConfigFile();
+  } else {
+    jsonfile.readFile(this.configFile, (err, obj) => {
+      if (err) {
+        bot.log.error(chalk.red.bold(`Unable to load config.json: ${err.message}`));
+        throw err;
+      } else {
+        bot.config = obj;
+        callback();
+      }
+    });
+  }
 };
 
 // Config manipulation
@@ -214,12 +235,12 @@ bot.configUnset = function configUnset(pathToProperty) {
 // Add source folder to search in when loading modules
 bot.addModuleSource = function addModuleSource(directory) {
   if (fs.existsSync(directory)) this.moduleSources.push(directory);
-  else bot.log.warn(chalk.yellow(`Module source ${directory} does not exist`));
+  else this.log.warn(chalk.yellow(`Module source ${directory} does not exist`));
 };
 
 // Load module
 bot.loadModule = function loadModule(name, callback) {
-  bot.log.modules(`Attempting to load module ${name}...`);
+  this.log.modules(`Attempting to load module ${name}...`);
   if (!(name in this.modules)) {
     let found = false;
     this.moduleSources.forEach((directory) => {
@@ -254,21 +275,21 @@ bot.loadModule = function loadModule(name, callback) {
       callback(new Error(`Module ${name} not found`));
     }
   } else {
-    bot.log.warn(`Module ${name} already loaded`);
+    this.log.warn(`Module ${name} already loaded`);
     callback(new Error(`Module ${name} already loaded`));
   }
 };
 
 // Unload module
 bot.unloadModule = function unloadModule(name, callback) {
-  bot.log.modules(`Attempting to unload module ${name}...`);
+  this.log.modules(`Attempting to unload module ${name}...`);
   if (name in this.modules) {
     delete require.cache[require.resolve(this.modules[name].path)];
     delete this.modules[name];
-    bot.log.modules(chalk.green(`Unloaded module ${name}`));
+    this.log.modules(chalk.green(`Unloaded module ${name}`));
     callback();
   } else {
-    bot.log.warn(`Module ${name} not currently loaded`);
+    this.log.warn(`Module ${name} not currently loaded`);
     callback(new Error(`Module ${name} not currently loaded`));
   }
 };
@@ -285,11 +306,11 @@ bot.initModule = function initModule(name, callback) {
         callback(err);
       });
     } else {
-      bot.log.modules(chalk.green(`Initialized module ${name}`));
+      this.log.modules(chalk.green(`Initialized module ${name}`));
       callback();
     }
   } else {
-    bot.log.warn(`Module ${name} not currently loaded`);
+    this.log.warn(`Module ${name} not currently loaded`);
     callback(new Error(`Module ${name} not currently loaded`));
   }
 };
@@ -489,7 +510,7 @@ bot.onConnect = async function onConnect() {
 
 // Disconnect, unload all modules, and reconnect
 bot.restart = function restart() {
-  bot.log.info('Restarting: resetting client...');
+  this.log.info('Restarting: resetting client...');
   this.client.destroy().then(() => {
     this.config.activeModules.forEach((module) => { bot.unloadModule(module, () => {}); });
     this.load();
@@ -498,7 +519,7 @@ bot.restart = function restart() {
 
 // Disconnect and end the process
 bot.shutdown = function shutdown() {
-  bot.log.info('Shutting down...');
+  this.log.info('Shutting down...');
   this.client.destroy().then(() => {});
 };
 
@@ -569,11 +590,22 @@ bot.setConfigDirectory(path.join(os.homedir(), '.liora-bot'));
 
 // Run the bot automatically if module is run instead of imported
 if (!module.parent) {
+  const args = yargs.usage('Usage: liora [options]')
+    .example('liora --configDir .', 'run using the current directory as the config directory')
+    .alias('c', 'configDir')
+    .nargs('c', 1)
+    .describe('c', 'Config directory (defaults to ~/.liora-bot/)')
+    .boolean('openConfig')
+    .describe('openConfig', 'Open config.json in the default text editor')
+    .help('h')
+    .alias('h', 'help')
+    .epilog('Liora Discord bot copyright 2018 jackw01. Released under the MIT license.')
+    .argv;
   updateNotifier({ pkg }).notify();
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
-  const options = commandLineArgs([{ name: 'configDir', defaultValue: '' }]);
-  if (options.configDir !== '') bot.setConfigDirectory(options.configDir);
-  bot.load();
+  if (args.configDir) bot.setConfigDirectory(args.configDir);
+  if (args.openConfig) bot.openConfigFile();
+  else bot.load();
 }
 
 module.exports = bot;

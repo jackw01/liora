@@ -6,8 +6,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "command-line-args": "^5.0.2",
     "discord.js": "^11.4.2",
-    "liora": "git+https://github.com/jackw01/liora.git"
+    "liora": "git+https://github.com/jackw01/liora.git",
+    "yargs": "^12.0.2"
   }
 }

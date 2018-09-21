@@ -300,6 +300,27 @@ module.exports.commands = [
     },
   },
   {
+    name: 'translate',
+    description: 'Translate something to the specified language. Text must be enclosed in quote marks.',
+    argumentNames: ['languageTo', '"text"'],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      if (translate.languages.isSupported(args[0])) {
+        translate(args.slice(1).join(' '), { to: args[0] }).then((res) => {
+          const embed = new discord.RichEmbed()
+            .setTitle('Translation Result')
+            .setColor(bot.config.defaultColors.success)
+            .setDescription(res.text)
+            .setFooter(`Detected language: ${res.from.language.iso}`);
+          msg.channel.send({ embed });
+        }).catch((err) => {
+          bot.sendError(msg.channel, `Error translating message: ${err.message}.`);
+        });
+      } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
+    },
+  },
+  {
     name: 'translatelast',
     description: 'Translate the last posted message on the current channel. Automatically detects the language of the last message.',
     argumentNames: ['languageTo'],
@@ -320,27 +341,6 @@ module.exports.commands = [
           });
         } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
       } else bot.sendError(msg.channel, 'Can\'t find a last message.');
-    },
-  },
-  {
-    name: 'translate',
-    description: 'Translate something to the specified language. Text must be enclosed in quote marks.',
-    argumentNames: ['languageTo', '"text"'],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (translate.languages.isSupported(args[0])) {
-        translate(args.slice(1).join(' '), { to: args[0] }).then((res) => {
-          const embed = new discord.RichEmbed()
-            .setTitle('Translation Result')
-            .setColor(bot.config.defaultColors.success)
-            .setDescription(res.text)
-            .setFooter(`Detected language: ${res.from.language.iso}`);
-          msg.channel.send({ embed });
-        }).catch((err) => {
-          bot.sendError(msg.channel, `Error translating message: ${err.message}.`);
-        });
-      } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
     },
   },
   {
