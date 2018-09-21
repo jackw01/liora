@@ -23,6 +23,8 @@ This guide assumes that you have created an application for your bot at https://
 
 An optional config directory can be specified with the `--configDir` option. The first time Liora is run, it will create a blank config file. In standalone mode, only built-in modules will be accessible.
 
+Note: For long term use, use [forever](https://www.npmjs.com/package/forever) to keep the bot running if it ever crashes.
+
 ### Customizable Usage
 For developers who want to add their own functionality to their bot.
 
@@ -156,7 +158,7 @@ See example of custom middleware usage in `modules/liora-autorespond/main.js`.
 The currently in-use [Discord.js `client` instance](https://discord.js.org/#/docs/main/stable/class/Client)
 
 ###### `bot.log`
-[Winston logger](https://github.com/winstonjs/winston) instance that can be used for logging to the console. Use `bot.log.modinfo()` and `bot.log.modwarn()` inside of custom modules so that core and module messages can be differentiated. 
+[Winston logger](https://github.com/winstonjs/winston) instance that can be used for logging to the console. Use `bot.log.modinfo()` and `bot.log.modwarn()` inside of custom modules so that core and module messages can be differentiated.
 
 #### Methods
 
@@ -321,6 +323,7 @@ Disconnects from Discord and ends the process.
 - [x] fortune
 - [x] translate last message
 - [x] reverse search last image
+- [ ] general purpose translate
 
 ## License
 MIT
