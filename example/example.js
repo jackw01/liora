@@ -31,5 +31,8 @@ else {
   liora.addModuleSource(path.join(__dirname, 'modules'));
 
   // Start the bot
-  liora.load(() => {});
+  liora.load(() => {
+    // Generate documentation for all loaded modules
+    liora.generateDocs('COMMANDS.md');
+  });
 }

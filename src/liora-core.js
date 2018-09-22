@@ -379,6 +379,27 @@ bot.sendInfo = function sendInfo(channel, title, description) {
   this.sendEmojiEmbed(channel, 'ℹ️', this.config.defaultColors.neutral, title, description);
 };
 
+// Generate documentation
+bot.generateDocs = function generateDocs(file) {
+  let docs = '';
+  let modCount = 0;
+  let cmdCount = 0;
+  const modules = Object.getOwnPropertyNames(this.modules);
+  modules.forEach((mod) => {
+    modCount++;
+    docs += `## Module \`${mod}\`\n`;
+    bot.modules[mod].commands.forEach((cmd) => {
+      cmdCount++;
+      docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`<br>\n${cmd.description}\n\n`;
+    });
+  });
+  const out = `# Liora Discord Bot Command Documentation\n${modCount} modules, ${cmdCount} commands<br>\nGenerated ${new Date()}.\n\n${docs}`;
+  fs.writeFile(file, out, 'utf8', (err) => {
+    if (err) this.log.error(`Error saving command documentation: ${err.message}`);
+    else this.log.info(chalk.green('Saved command documentation to COMMANDS.md.'));
+  });
+};
+
 // Section: Message handling middleware pipeline
 
 // Middleware that discards messages if they are sent by another bot
@@ -598,8 +619,8 @@ if (!module.parent) {
     .describe('c', 'Config directory (defaults to ~/.liora-bot/)')
     .boolean('openConfig')
     .describe('openConfig', 'Open config.json in the default text editor')
-    .boolean('generateDoc')
-    .describe('generateDoc', 'Generate Markdown file containing command documenation.')
+    .boolean('generateDocs')
+    .describe('generateDocs', 'Generate Markdown file containing command documenation.')
     .help('h')
     .alias('h', 'help')
     .epilog('Liora Discord bot copyright 2018 jackw01. Released under the MIT license.')
@@ -609,27 +630,7 @@ if (!module.parent) {
   if (args.configDir) bot.setConfigDirectory(args.configDir);
   if (args.openConfig) bot.openConfigFile();
   else {
-    bot.load(() => {
-      if (args.generateDoc) {
-        let docs = ''
-        let modCount = 0;
-        let cmdCount = 0;
-        const modules = Object.getOwnPropertyNames(bot.modules);
-        modules.forEach((mod) => {
-          modCount++;
-          docs += `## Module \`${mod}\`\n`;
-          bot.modules[mod].commands.forEach((cmd) => {
-            cmdCount++;
-            docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`<br>\n${cmd.description}\n\n`;
-          });
-        });
-        const out = `# Liora Command Documentation\n${modCount} modules, ${cmdCount} commands<br>\nGenerated ${new Date()}.\n\n${docs}`;
-        fs.writeFile('COMMANDS.md', out, 'utf8', (err) => {
-          if (err) bot.log.error(`Error saving command documentation: ${err.message}`);
-          else bot.log.info(chalk.green('Saved command documentation to COMMANDS.md.'));
-        });
-      }
-    });
+    bot.load(() => { if (args.generateDocs) bot.generateDocs('COMMANDS.md'); });
   }
 }
 

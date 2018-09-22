@@ -15,6 +15,8 @@ This guide assumes that you have created an application for your bot at https://
 
 Liora is built for ease of self-hosting for individual servers and not as a centrally hosted bot.
 
+**Documentation for all built-in commands is located in COMMANDS.md and automatically generated.**
+
 ### Standalone Usage
 Thanks to the simplicity of Node.js and npm, Liora is very easy to install and run for self-hosting.
 
@@ -50,7 +52,10 @@ liora.setConfigDirectory('path/to/your/config/directory');
 liora.addModuleSource(path.join(__dirname, 'modules'));
 
 // Start the bot
-liora.load();
+liora.load(() => {
+	// Generate documentation for all loaded modules
+	liora.generateDocs('COMMANDS.md');
+});
 ```
 
 Liora's dynamic module loader allows you to load, unload, and reload modules from Discord commands without restarting the bot from the command line. This requires that all modules are in a standard format and are located inside folders that are set as module sources.
