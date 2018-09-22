@@ -390,7 +390,7 @@ bot.generateDocs = function generateDocs(file) {
     docs += `## Module \`${mod}\`\n`;
     bot.modules[mod].commands.forEach((cmd) => {
       cmdCount++;
-      docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`<br>\n${cmd.description}\n\n`;
+      docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`<br>\nDefault permission level: \`${cmd.permissionLevel}\`<br>\n${cmd.aliases.length ? `Default aliases: \`${cmd.aliases.join('\`, \`')}\`<br>\n` : ''}${cmd.description}\n\n`;
     });
   });
   const out = `# Liora Discord Bot Command Documentation\n${modCount} modules, ${cmdCount} commands<br>\nGenerated ${new Date()}.\n\n${docs}`;
@@ -629,9 +629,7 @@ if (!module.parent) {
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
   if (args.configDir) bot.setConfigDirectory(args.configDir);
   if (args.openConfig) bot.openConfigFile();
-  else {
-    bot.load(() => { if (args.generateDocs) bot.generateDocs('COMMANDS.md'); });
-  }
+  else bot.load(() => { if (args.generateDocs) bot.generateDocs('COMMANDS.md'); });
 }
 
 module.exports = bot;

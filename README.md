@@ -188,6 +188,9 @@ Saves the current configuration data object to the config file. `callback` will 
 ###### `bot.saveConfigAndAck(message)`
 Saves the current configuration data object to the config file. Reacts to the message with a green check mark emoji if successful and sends an error message in the same channel if not.
 
+###### `bot.generateDocs(filename)`
+Saves documentation (usage/description) for all commands in all currently loaded modules to the specified file.
+
 ###### `bot.configHas(pathToProperty)`
 Returns true if config has a property at the specified path.
 
