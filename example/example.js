@@ -31,5 +31,5 @@ else {
   liora.addModuleSource(path.join(__dirname, 'modules'));
 
   // Start the bot
-  liora.load();
+  liora.load(() => {});
 }

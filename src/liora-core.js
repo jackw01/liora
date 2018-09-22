@@ -469,7 +469,7 @@ bot.onMessage = async function onMessage(msg) {
 // Section: Bot load and connect event handlers
 
 // Initialize and load the bot
-bot.load = function load() {
+bot.load = function load(callback) {
   // Set up some properties
   this.lastLoadTime = Date.now();
   this.config = {};
@@ -481,6 +481,7 @@ bot.load = function load() {
     this.config.activeModules.forEach((module) => { this.loadModule(module, () => {}); });
     this.log.info('Connecting...');
     this.client.login(this.config.discordToken);
+    callback();
   });
 };
 
@@ -597,6 +598,8 @@ if (!module.parent) {
     .describe('c', 'Config directory (defaults to ~/.liora-bot/)')
     .boolean('openConfig')
     .describe('openConfig', 'Open config.json in the default text editor')
+    .boolean('generateDoc')
+    .describe('generateDoc', 'Generate Markdown file containing command documenation.')
     .help('h')
     .alias('h', 'help')
     .epilog('Liora Discord bot copyright 2018 jackw01. Released under the MIT license.')
@@ -605,7 +608,29 @@ if (!module.parent) {
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
   if (args.configDir) bot.setConfigDirectory(args.configDir);
   if (args.openConfig) bot.openConfigFile();
-  else bot.load();
+  else {
+    bot.load(() => {
+      if (args.generateDoc) {
+        let docs = ''
+        let modCount = 0;
+        let cmdCount = 0;
+        const modules = Object.getOwnPropertyNames(bot.modules);
+        modules.forEach((mod) => {
+          modCount++;
+          docs += `## Module \`${mod}\`\n`;
+          bot.modules[mod].commands.forEach((cmd) => {
+            cmdCount++;
+            docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`<br>\n${cmd.description}\n\n`;
+          });
+        });
+        const out = `# Liora Command Documentation\n${modCount} modules, ${cmdCount} commands<br>\nGenerated ${new Date()}.\n\n${docs}`;
+        fs.writeFile('COMMANDS.md', out, 'utf8', (err) => {
+          if (err) bot.log.error(`Error saving command documentation: ${err.message}`);
+          else bot.log.info(chalk.green('Saved command documentation to COMMANDS.md.'));
+        });
+      }
+    });
+  }
 }
 
 module.exports = bot;

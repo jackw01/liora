@@ -310,7 +310,7 @@ module.exports.commands = [
   {
     name: 'translate',
     description: 'Translate something to the specified language.',
-    argumentNames: ['languageTo', '"text"'],
+    argumentNames: ['<languageTo>', '<text>'],
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
@@ -331,7 +331,7 @@ module.exports.commands = [
   {
     name: 'translatelast',
     description: 'Translate the last posted message on the current channel. Automatically detects the language of the last message.',
-    argumentNames: ['languageTo'],
+    argumentNames: ['<languageTo>'],
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {

@@ -47,7 +47,7 @@ module.exports.commands = [
   {
     name: 'bigtext',
     description: 'Generate large text with regional indicators.',
-    argumentNames: ['text'],
+    argumentNames: ['<text>'],
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg) {

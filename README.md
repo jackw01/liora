@@ -289,7 +289,7 @@ Disconnects from Discord and ends the process.
 - [x] default aliases
 - [x] display aliases in help
 - [x] openConfig command line arg
-- [ ] command docs generator
+- [x] command docs generator
 
 ### Commands for builtin modules
 - [x] load modules
@@ -333,7 +333,6 @@ Disconnects from Discord and ends the process.
 - [x] general purpose translate
 - [ ] imgur
 - [x] text with regional indicators
-- [ ] rotating motd
 - [x] reverse profile pic
 
 ## License
