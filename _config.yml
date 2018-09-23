@@ -1,2 +1,9 @@
 remote_theme: jackw01/summer-night-jekyll
 npm_url: github.com/jackw01
+nav_items:
+  - 1:
+    url: ./index
+    text: Readme
+  - 2:
+    url: ./commanddoc
+    text: Command Docs

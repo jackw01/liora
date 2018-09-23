@@ -1,4 +1,4 @@
-# Liora Discord Bot Command Documentation
+## Liora Discord Bot Command Documentation
 6 modules, 65 commands<br>
 Generated Fri Sep 21 2018 22:16:01 GMT-0700 (Pacific Daylight Time).
 
@@ -350,4 +350,3 @@ Magic 8 ball.
 `$fortune [all|computers|cookie|definitions|miscellaneous|people|platitudes|politics|science|wisdom]?`<br>
 Default permission level: `all`<br>
 Get a fortune.
-

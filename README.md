@@ -15,7 +15,7 @@ This guide assumes that you have created an application for your bot at https://
 
 Liora is built for ease of self-hosting for individual servers and not as a centrally hosted bot.
 
-**Documentation for all built-in commands is located in COMMANDS.md and automatically generated.**
+**Documentation for all built-in commands is located in [commanddoc.md](commanddoc) and automatically generated.**
 
 ### Standalone Usage
 Thanks to the simplicity of Node.js and npm, Liora is very easy to install and run for self-hosting.
@@ -271,77 +271,6 @@ Reloads all modules and config and reconnects to Discord.
 
 ###### `bot.shutdown()`
 Disconnects from Discord and ends the process.
-
-## Todo
-### Core
-- [x] login to discord
-- [x] config loader
-- [x] config schema
-- [x] logging
-- [x] run commands
-- [x] internal module loading
-- [x] external module loading
-- [x] sample bot with custom modules
-- [x] colored logging
-- [x] permissions by user
-- [x] permissions by role
-- [x] middleware support
-- [x] per-server settings
-- [x] use username instead of id
-- [x] use role instead of id
-- [x] command aliases
-- [x] automatic responses
-- [x] automatic responses regex and random choice
-- [x] error logging
-- [x] rate limit
-- [x] default aliases
-- [x] display aliases in help
-- [x] openConfig command line arg
-- [x] command docs generator
-
-### Commands for builtin modules
-- [x] load modules
-- [x] reload module
-- [x] reload all modules
-- [x] full reload and restart
-- [x] info
-- [x] help
-- [x] list
-- [x] get/set config
-- [x] set permission group
-- [x] set command group permission
-- [x] set command role permission
-- [x] nick utility
-- [x] role utility
-- [x] set nick
-- [x] youtube search
-- [x] youtube player
-- [x] youtube player on multiple servers
-- [x] youtube player queue and shuffle
-- [x] server info
-- [x] channel info
-- [x] role list
-- [x] user info
-- [x] role info
-- [x] weather
-- [x] urban dictionary
-- [x] xkcd
-- [x] get profile picture
-- [x] get server icon
-- [x] reddit image search
-- [x] reddit gif search
-- [x] reddit image by sub
-- [x] dice
-- [x] wikipedia
-- [x] 8 ball
-- [x] poll
-- [x] fortune
-- [x] translate last message
-- [x] reverse search last image
-- [x] general purpose translate
-- [ ] imgur
-- [x] text with regional indicators
-- [x] reverse profile pic
 
 ## License
 MIT

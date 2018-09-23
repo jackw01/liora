@@ -224,7 +224,7 @@ bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
     _.set(this.config, pathToProperty, defaultValue);
     return true;
   }
-  return false; 
+  return false;
 };
 
 // Delete a config property at the specified path
@@ -629,7 +629,7 @@ if (!module.parent) {
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
   if (args.configDir) bot.setConfigDirectory(args.configDir);
   if (args.openConfig) bot.openConfigFile();
-  else bot.load(() => { if (args.generateDocs) bot.generateDocs('COMMANDS.md'); });
+  else bot.load(() => { if (args.generateDocs) bot.generateDocs('commandddoc.md'); });
 }
 
 module.exports = bot;

@@ -33,6 +33,6 @@ else {
   // Start the bot
   liora.load(() => {
     // Generate documentation for all loaded modules
-    liora.generateDocs('COMMANDS.md');
+    liora.generateDocs('commanddoc.md');
   });
 }
