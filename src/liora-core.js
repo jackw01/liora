@@ -381,20 +381,21 @@ bot.sendInfo = function sendInfo(channel, title, description) {
 
 // Generate documentation
 bot.generateDocs = function generateDocs(file) {
+  let contents = '### Table of Contents\n';
   let docs = '';
   let modCount = 0;
   let cmdCount = 0;
   const modules = Object.getOwnPropertyNames(this.modules);
   modules.forEach((mod) => {
     modCount++;
+    contents += `* [${mod}](#module-${mod})\n`;
     docs += `### Module \`${mod}\`\n`;
     bot.modules[mod].commands.forEach((cmd) => {
       cmdCount++;
       docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`  \nDefault permission level: \`${cmd.permissionLevel}\`  \n${cmd.aliases.length ? `Default aliases: \`${cmd.aliases.join('\`, \`')}\`  \n` : ''}${cmd.description}\n\n`;
     });
   });
-  //docs = docs.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const out = `## Liora Discord Bot Command Documentation\n${modCount} modules, ${cmdCount} commands  \nGenerated ${new Date()}.\n\n${docs}`;
+  const out = `## Liora Discord Bot Command Documentation\n${modCount} modules, ${cmdCount} commands  \nGenerated ${new Date()}.\n\n${contents}\n${docs}`;
   fs.writeFile(file, out, 'utf8', (err) => {
     if (err) this.log.error(`Error saving command documentation: ${err.message}`);
     else this.log.info(chalk.green('Saved command documentation.'));

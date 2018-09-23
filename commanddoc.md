@@ -1,6 +1,14 @@
 ## Liora Discord Bot Command Documentation
 6 modules, 65 commands  
-Generated Sun Sep 23 2018 12:03:56 GMT-0700 (Pacific Daylight Time).
+Generated Sun Sep 23 2018 15:23:50 GMT-0700 (Pacific Daylight Time).
+
+### Table of Contents
+* [core](#module-core)
+* [utils](#module-utils)
+* [player](#module-player)
+* [search](#module-search)
+* [autorespond](#module-autorespond)
+* [fun](#module-fun)
 
 ### Module `core`
 #### info
