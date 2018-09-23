@@ -224,7 +224,7 @@ bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
     _.set(this.config, pathToProperty, defaultValue);
     return true;
   }
-  return false;
+  return false; 
 };
 
 // Delete a config property at the specified path
