@@ -390,13 +390,14 @@ bot.generateDocs = function generateDocs(file) {
     docs += `## Module \`${mod}\`\n`;
     bot.modules[mod].commands.forEach((cmd) => {
       cmdCount++;
-      docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`<br>\nDefault permission level: \`${cmd.permissionLevel}\`<br>\n${cmd.aliases.length ? `Default aliases: \`${cmd.aliases.join('\`, \`')}\`<br>\n` : ''}${cmd.description}\n\n`;
+      docs += `#### ${cmd.name}\n\`${bot.config.prefix}${cmd.name} ${cmd.argumentNames.join(' ')}\`  \nDefault permission level: \`${cmd.permissionLevel}\`  \n${cmd.aliases.length ? `Default aliases: \`${cmd.aliases.join('\`, \`')}\`  \n` : ''}${cmd.description}\n\n`;
     });
   });
+  docs = docs.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const out = `# Liora Discord Bot Command Documentation\n${modCount} modules, ${cmdCount} commands<br>\nGenerated ${new Date()}.\n\n${docs}`;
   fs.writeFile(file, out, 'utf8', (err) => {
     if (err) this.log.error(`Error saving command documentation: ${err.message}`);
-    else this.log.info(chalk.green('Saved command documentation to COMMANDS.md.'));
+    else this.log.info(chalk.green('Saved command documentation.'));
   });
 };
 
@@ -629,7 +630,7 @@ if (!module.parent) {
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
   if (args.configDir) bot.setConfigDirectory(args.configDir);
   if (args.openConfig) bot.openConfigFile();
-  else bot.load(() => { if (args.generateDocs) bot.generateDocs('commandddoc.md'); });
+  else bot.load(() => { if (args.generateDocs) bot.generateDocs('commanddoc.md'); });
 }
 
 module.exports = bot;

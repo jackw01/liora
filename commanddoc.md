@@ -1,352 +1,352 @@
-## Liora Discord Bot Command Documentation
+# Liora Discord Bot Command Documentation
 6 modules, 65 commands<br>
-Generated Fri Sep 21 2018 22:16:01 GMT-0700 (Pacific Daylight Time).
+Generated Sun Sep 23 2018 08:25:12 GMT-0700 (Pacific Daylight Time).
 
 ## Module `core`
 #### info
-`$info `<br>
-Default permission level: `all`<br>
+`$info `  
+Default permission level: `all`  
 Get info on the bot.
 
 #### help
-`$help <commandName>?`<br>
-Default permission level: `all`<br>
+`$help &lt;commandName&gt;?`  
+Default permission level: `all`  
 Get help on a command.
 
 #### list
-`$list <module>?`<br>
-Default permission level: `all`<br>
+`$list &lt;module&gt;?`  
+Default permission level: `all`  
 List commands.
 
 #### own
-`$own `<br>
-Default permission level: `all`<br>
+`$own `  
+Default permission level: `all`  
 Become the bot owner. This command can only be used once.
 
 #### getconfig
-`$getconfig <itemPath>`<br>
-Default permission level: `owner`<br>
-Default aliases: `cget`<br>
+`$getconfig &lt;itemPath&gt;`  
+Default permission level: `owner`  
+Default aliases: `cget`  
 Get a configuration item.
 
 #### setconfig
-`$setconfig <itemPath> <value>`<br>
-Default permission level: `owner`<br>
-Default aliases: `cset`<br>
+`$setconfig &lt;itemPath&gt; &lt;value&gt;`  
+Default permission level: `owner`  
+Default aliases: `cset`  
 Set a configuration item.
 
 #### kill
-`$kill `<br>
-Default permission level: `owner`<br>
-Default aliases: `shutdown`<br>
+`$kill `  
+Default permission level: `owner`  
+Default aliases: `shutdown`  
 Shutdown the bot.
 
 #### restart
-`$restart `<br>
-Default permission level: `owner`<br>
+`$restart `  
+Default permission level: `owner`  
 Restart the bot.
 
 #### reload
-`$reload `<br>
-Default permission level: `owner`<br>
+`$reload `  
+Default permission level: `owner`  
 Reload all modules.
 
 #### loadmodule
-`$loadmodule <moduleName>`<br>
-Default permission level: `owner`<br>
+`$loadmodule &lt;moduleName&gt;`  
+Default permission level: `owner`  
 Load a module.
 
 #### reloadmodule
-`$reloadmodule <moduleName>`<br>
-Default permission level: `owner`<br>
+`$reloadmodule &lt;moduleName&gt;`  
+Default permission level: `owner`  
 Reload a module.
 
 #### unloadmodule
-`$unloadmodule <moduleName>`<br>
-Default permission level: `owner`<br>
+`$unloadmodule &lt;moduleName&gt;`  
+Default permission level: `owner`  
 Unload a module.
 
 #### permadd
-`$permadd <user> <group>`<br>
-Default permission level: `owner`<br>
+`$permadd &lt;user&gt; &lt;group&gt;`  
+Default permission level: `owner`  
 Add a user (mention or name) to a permission group.
 
 #### permremove
-`$permremove <user> <group>`<br>
-Default permission level: `owner`<br>
+`$permremove &lt;user&gt; &lt;group&gt;`  
+Default permission level: `owner`  
 Remove a user (mention or name) from a permission group.
 
 #### permgroups
-`$permgroups `<br>
-Default permission level: `owner`<br>
+`$permgroups `  
+Default permission level: `owner`  
 List permission groups
 
 #### permlist
-`$permlist <group>`<br>
-Default permission level: `owner`<br>
+`$permlist &lt;group&gt;`  
+Default permission level: `owner`  
 List users in a permission group.
 
 #### addgroupoverride
-`$addgroupoverride <command> <group>`<br>
-Default permission level: `owner`<br>
+`$addgroupoverride &lt;command&gt; &lt;group&gt;`  
+Default permission level: `owner`  
 Add a group override for a command.
 
 #### removegroupoverride
-`$removegroupoverride <command>`<br>
-Default permission level: `owner`<br>
+`$removegroupoverride &lt;command&gt;`  
+Default permission level: `owner`  
 Remove a group override for a command.
 
 #### addroleoverride
-`$addroleoverride <command> <role>`<br>
-Default permission level: `owner`<br>
+`$addroleoverride &lt;command&gt; &lt;role&gt;`  
+Default permission level: `owner`  
 Add a role (mention or name) override for a command.
 
 #### removeroleoverride
-`$removeroleoverride <command>`<br>
-Default permission level: `owner`<br>
+`$removeroleoverride &lt;command&gt;`  
+Default permission level: `owner`  
 Remove a role override for a command.
 
 #### listoverrides
-`$listoverrides `<br>
-Default permission level: `all`<br>
+`$listoverrides `  
+Default permission level: `all`  
 List overrides.
 
 #### ping
-`$ping `<br>
-Default permission level: `all`<br>
+`$ping `  
+Default permission level: `all`  
 Ping.
 
 #### alias
-`$alias <alias> <command>`<br>
-Default permission level: `manager`<br>
+`$alias &lt;alias&gt; &lt;command&gt;`  
+Default permission level: `manager`  
 Define an alias for a command.
 
 #### removealias
-`$removealias <alias>`<br>
-Default permission level: `manager`<br>
+`$removealias &lt;alias&gt;`  
+Default permission level: `manager`  
 Remove an alias for a command.
 
 #### aliases
-`$aliases `<br>
-Default permission level: `all`<br>
+`$aliases `  
+Default permission level: `all`  
 List aliases.
 
 ## Module `utils`
 #### serverinfo
-`$serverinfo `<br>
-Default permission level: `all`<br>
+`$serverinfo `  
+Default permission level: `all`  
 Get info for the current server.
 
 #### userinfo
-`$userinfo <user>?`<br>
-Default permission level: `all`<br>
-Default aliases: `userid`<br>
+`$userinfo &lt;user&gt;?`  
+Default permission level: `all`  
+Default aliases: `userid`  
 Get info for a user mention, username, or nickname. If no user is mentioned, this command will use the user that triggered it.
 
 #### roleinfo
-`$roleinfo <role>`<br>
-Default permission level: `all`<br>
-Default aliases: `roleid`<br>
+`$roleinfo &lt;role&gt;`  
+Default permission level: `all`  
+Default aliases: `roleid`  
 Get the ID for a role mention or name
 
 #### channelinfo
-`$channelinfo <channel>`<br>
-Default permission level: `all`<br>
-Default aliases: `channelid`<br>
+`$channelinfo &lt;channel&gt;`  
+Default permission level: `all`  
+Default aliases: `channelid`  
 Get the ID for a channel mention or name
 
 #### servericon
-`$servericon `<br>
-Default permission level: `all`<br>
+`$servericon `  
+Default permission level: `all`  
 Get the icon for the current server.
 
 #### profilepic
-`$profilepic <user>?`<br>
-Default permission level: `all`<br>
-Default aliases: `avatar`, `pfp`<br>
+`$profilepic &lt;user&gt;?`  
+Default permission level: `all`  
+Default aliases: `avatar`, `pfp`  
 Get a profile picture for a user mention, username, or nickname. If no user is mentioned, this command will use the user that triggered it.
 
 #### setnick
-`$setnick <newNickname>`<br>
-Default permission level: `manager`<br>
+`$setnick &lt;newNickname&gt;`  
+Default permission level: `manager`  
 Set nickname.
 
 #### poll
-`$poll "question" "answer-1" "answer-n"`<br>
-Default permission level: `all`<br>
+`$poll "question" "answer-1" "answer-n"`  
+Default permission level: `all`  
 Create a poll on the current channel.
 
 #### polldata
-`$polldata `<br>
-Default permission level: `all`<br>
+`$polldata `  
+Default permission level: `all`  
 View poll data on the current channel without ending the poll.
 
 #### endpoll
-`$endpoll `<br>
-Default permission level: `all`<br>
+`$endpoll `  
+Default permission level: `all`  
 End the poll on the current channel.
 
 #### vote
-`$vote <choiceNumber>`<br>
-Default permission level: `all`<br>
+`$vote &lt;choiceNumber&gt;`  
+Default permission level: `all`  
 Vote in the current poll.
 
 ## Module `player`
 #### ytsearch
-`$ytsearch <query>`<br>
-Default permission level: `all`<br>
-Default aliases: `youtube`<br>
+`$ytsearch &lt;query&gt;`  
+Default permission level: `all`  
+Default aliases: `youtube`  
 Display YouTube videos for a search query.
 
 #### play
-`$play <query>`<br>
-Default permission level: `all`<br>
+`$play &lt;query&gt;`  
+Default permission level: `all`  
 Play a YouTube video based on a search query or URL.
 
 #### pause
-`$pause `<br>
-Default permission level: `all`<br>
+`$pause `  
+Default permission level: `all`  
 Pause the currently playing stream.
 
 #### resume
-`$resume `<br>
-Default permission level: `all`<br>
+`$resume `  
+Default permission level: `all`  
 Resume the currently playing stream.
 
 #### stop
-`$stop `<br>
-Default permission level: `all`<br>
+`$stop `  
+Default permission level: `all`  
 Stop playback and clear the queue.
 
 #### skip
-`$skip `<br>
-Default permission level: `all`<br>
+`$skip `  
+Default permission level: `all`  
 Skip the current stream in the queue.
 
 #### volume
-`$volume <volume>?`<br>
-Default permission level: `all`<br>
-Default aliases: `vol`<br>
+`$volume &lt;volume&gt;?`  
+Default permission level: `all`  
+Default aliases: `vol`  
 Set the volume. Value should be between 0 and 1. If no value is specified, displays the current volume.
 
 #### shuffle
-`$shuffle `<br>
-Default permission level: `all`<br>
+`$shuffle `  
+Default permission level: `all`  
 Shuffle the queue.
 
 #### nowplaying
-`$nowplaying `<br>
-Default permission level: `all`<br>
-Default aliases: `np`<br>
+`$nowplaying `  
+Default permission level: `all`  
+Default aliases: `np`  
 Display the currently playing video.
 
 #### queue
-`$queue `<br>
-Default permission level: `all`<br>
+`$queue `  
+Default permission level: `all`  
 Display the queue.
 
 ## Module `search`
 #### wikipedia
-`$wikipedia <query>`<br>
-Default permission level: `all`<br>
-Default aliases: `wiki`<br>
+`$wikipedia &lt;query&gt;`  
+Default permission level: `all`  
+Default aliases: `wiki`  
 Search Wikipedia.
 
 #### redditimgsearch
-`$redditimgsearch <query>`<br>
-Default permission level: `all`<br>
-Default aliases: `rimgsearch`<br>
+`$redditimgsearch &lt;query&gt;`  
+Default permission level: `all`  
+Default aliases: `rimgsearch`  
 Search imgur.com and i.redd.it image (not gif) links on Reddit and post one of the top results.
 
 #### redditgifsearch
-`$redditgifsearch <query>`<br>
-Default permission level: `all`<br>
-Default aliases: `rgifsearch`<br>
+`$redditgifsearch &lt;query&gt;`  
+Default permission level: `all`  
+Default aliases: `rgifsearch`  
 Search imgur.com, gfycat, and i.redd.it gif/v links on Reddit and post one of the top results.
 
 #### redditimg
-`$redditimg <subreddit> <hour|day|week|month|year|all>?`<br>
-Default permission level: `all`<br>
-Default aliases: `rimg`<br>
+`$redditimg &lt;subreddit&gt; &lt;hour|day|week|month|year|all&gt;?`  
+Default permission level: `all`  
+Default aliases: `rimg`  
 Get a image from the front page of a subreddit. Specify a time range to get an image from top posts.
 
 #### redditgif
-`$redditgif <subreddit> <hour|day|week|month|year|all>?`<br>
-Default permission level: `all`<br>
-Default aliases: `rgif`<br>
+`$redditgif &lt;subreddit&gt; &lt;hour|day|week|month|year|all&gt;?`  
+Default permission level: `all`  
+Default aliases: `rgif`  
 Get a gif or gifv from the front page of a subreddit.
 
 #### urban
-`$urban <query>`<br>
-Default permission level: `all`<br>
-Default aliases: `ud`<br>
+`$urban &lt;query&gt;`  
+Default permission level: `all`  
+Default aliases: `ud`  
 Search Urban Dictionary for a word.
 
 #### weather
-`$weather <cityName,countryCode>`<br>
-Default permission level: `all`<br>
+`$weather &lt;cityName,countryCode&gt;`  
+Default permission level: `all`  
 Get current weather at a location.
 
 #### xkcd
-`$xkcd <number>?`<br>
-Default permission level: `all`<br>
+`$xkcd &lt;number&gt;?`  
+Default permission level: `all`  
 Show an xkcd comic. Gets the latest comic by default. Specify a number or 'random' to get a specific or random comic.
 
 #### reverseimg
-`$reverseimg `<br>
-Default permission level: `all`<br>
+`$reverseimg `  
+Default permission level: `all`  
 Reverse image search the last posted image on the current channel or the image attached to the message with this command.
 
 #### reverseprofilepic
-`$reverseprofilepic <user>?`<br>
-Default permission level: `all`<br>
-Default aliases: `reverseavatar`, `reversepfp`<br>
+`$reverseprofilepic &lt;user&gt;?`  
+Default permission level: `all`  
+Default aliases: `reverseavatar`, `reversepfp`  
 Reverse image search the profile picture for a user mention, username, or nickname. If no user is mentioned, this command will use the user that triggered it.
 
 #### translate
-`$translate <languageTo> <text>`<br>
-Default permission level: `all`<br>
+`$translate &lt;languageTo&gt; &lt;text&gt;`  
+Default permission level: `all`  
 Translate something to the specified language.
 
 #### translatelast
-`$translatelast <languageTo>`<br>
-Default permission level: `all`<br>
+`$translatelast &lt;languageTo&gt;`  
+Default permission level: `all`  
 Translate the last posted message on the current channel. Automatically detects the language of the last message.
 
 ## Module `autorespond`
 #### addresponse
-`$addresponse <regex> <response>`<br>
-Default permission level: `manager`<br>
+`$addresponse &lt;regex&gt; &lt;response&gt;`  
+Default permission level: `manager`  
 Add a regular expression and response to the autoresponder list. If multiple responses are added for one regex, one will be randomly selected. Use in a direct message with the bot to create a global response.
 
 #### removeresponse
-`$removeresponse <regex> <index>`<br>
-Default permission level: `manager`<br>
+`$removeresponse &lt;regex&gt; &lt;index&gt;`  
+Default permission level: `manager`  
 Remove a response. Use in a direct message with the bot to remove a global response.
 
 #### listresponses
-`$listresponses `<br>
-Default permission level: `manager`<br>
+`$listresponses `  
+Default permission level: `manager`  
 List responses. Use in a direct message with the bot to list global responses.
 
 ## Module `fun`
 #### bigtext
-`$bigtext <text>`<br>
-Default permission level: `all`<br>
+`$bigtext &lt;text&gt;`  
+Default permission level: `all`  
 Generate large text with regional indicators.
 
 #### dice
-`$dice <rolls>? <sides>?`<br>
-Default permission level: `all`<br>
-Default aliases: `roll`<br>
+`$dice &lt;rolls&gt;? &lt;sides&gt;?`  
+Default permission level: `all`  
+Default aliases: `roll`  
 Roll dice. If no arguments are given, will default to 1 d6.
 
 #### 8ball
-`$8ball <question>?`<br>
-Default permission level: `all`<br>
+`$8ball &lt;question&gt;?`  
+Default permission level: `all`  
 Magic 8 ball.
 
 #### fortune
-`$fortune [all|computers|cookie|definitions|miscellaneous|people|platitudes|politics|science|wisdom]?`<br>
-Default permission level: `all`<br>
+`$fortune [all|computers|cookie|definitions|miscellaneous|people|platitudes|politics|science|wisdom]?`  
+Default permission level: `all`  
 Get a fortune.
