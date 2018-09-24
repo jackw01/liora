@@ -1,6 +1,6 @@
 ## Liora Discord Bot Command Documentation
-6 modules, 65 commands  
-Generated Sun Sep 23 2018 15:23:50 GMT-0700 (Pacific Daylight Time).
+6 modules, 66 commands  
+Generated Sun Sep 23 2018 19:22:42 GMT-0700 (Pacific Daylight Time).
 
 ### Table of Contents
 * [core](#module-core)
@@ -283,6 +283,11 @@ Get a image from the front page of a subreddit. Specify a time range to get an i
 Default permission level: `all`  
 Default aliases: `rgif`  
 Get a gif or gifv from the front page of a subreddit.
+
+#### imgur
+`$imgur <subreddit> <hour|day|week|month|year|all>?`  
+Default permission level: `all`  
+Get a recent image from a subreddit. Specify a time range to get an image from top posts.
 
 #### urban
 `$urban <query>`  

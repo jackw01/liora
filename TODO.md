@@ -64,6 +64,6 @@
 - [x] translate last message
 - [x] reverse search last image
 - [x] general purpose translate
-- [ ] imgur
+- [x] imgur
 - [x] text with regional indicators
 - [x] reverse profile pic

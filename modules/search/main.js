@@ -11,13 +11,15 @@ const openWeatherMapURL = 'http://api.openweathermap.org/data/2.5';
 const xkcdURL = 'https://xkcd.com';
 const wikipediaURL = 'https://en.wikipedia.org/w/api.php';
 const redditURL = 'https://www.reddit.com';
+const imgurURL = 'https://api.imgur.com/3';
 const googleImagesURL = 'https://images.google.com';
 
-const isGifRegex = /(.*(imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/;
-const isImageRegex = /.*(imgur\.com|i\.redd\.it).*/;
+const isGifRegex = /(.*(imgur\.com|i\.imgur\.com|i\.redd\.it).*(gifv|gif)$|.*gfycat\.com.*)/;
+const isImageRegex = /.*(imgur\.com|i\.imgur\.com|i\.redd\.it|i\.reddituploads\.com).*/;
 const gifExtensionRegex = /.*(gifv|gif)$/;
 
 const redditSearchCounter = {};
+const imgurSearchCounter = {};
 
 let lastMessageText;
 let lastMessageBuffer;
@@ -30,8 +32,12 @@ function showRedditResult(msg, bot, queryURL, queryString, filter) {
         const json = JSON.parse(body);
         const posts = json.data.children.filter(filter);
         if (posts.length) {
-          if (_.has(redditSearchCounter, queryString)) redditSearchCounter[queryString]++;
-          else redditSearchCounter[queryString] = 0;
+          if (_.has(redditSearchCounter, queryString)) {
+            redditSearchCounter[queryString]++;
+            setTimeout(() => {
+              redditSearchCounter[queryString] = 0;
+            }, 10 * 60 * 1000);
+          } else redditSearchCounter[queryString] = 0;
           const post = posts[redditSearchCounter[queryString] % (posts.length - 1)];
           const embed = new discord.RichEmbed()
             .setTitle(`Reddit image for ${queryString}`)
@@ -74,12 +80,18 @@ function redditSubPostHandler(msg, args, bot, gif) {
 }
 
 module.exports.init = async function init(bot) {
-  if (bot.configSetDefault('modules.utils.openWeatherMapKey', 'Replace with your OpenWeatherMap API Key')) {
+  if (bot.configSetDefault('modules.search.openWeatherMapKey', 'Replace with your OpenWeatherMap API Key')) {
     bot.saveConfig(() => {});
-    bot.log.modwarn('Utils: OpenWeatherMap API key not specified in config.json. Weather command will not work.');
+    bot.log.modwarn('Search: OpenWeatherMap API key not specified in config.json. Weather command disabled.');
+    module.exports.commands = module.exports.commands.filter(c => c.name !== 'weather');
   }
-  if (bot.configSetDefault('modules.utils.weatherImperialUnits', false)) {
+  if (bot.configSetDefault('modules.search.weatherImperialUnits', false)) {
     bot.saveConfig(() => {});
+  }
+  if (bot.configSetDefault('modules.search.imgurClientID', 'Replace with your Imgur Client ID')) {
+    bot.saveConfig(() => {});
+    bot.log.modwarn('Search: Imgur Client ID not specified in config.json. Imgur command disabled.');
+    module.exports.commands = module.exports.commands.filter(c => c.name !== 'imgur');
   }
 };
 
@@ -162,6 +174,57 @@ module.exports.commands = [
     },
   },
   {
+    name: 'imgur',
+    description: 'Get a recent image from Imgur, filtered by subreddit. Does not show images based on Reddit votes and does not provide a link to Reddit comments. Specify a time range to get an image from top posts.',
+    argumentNames: ['<subreddit>', '<hour|day|week|month|year|all>?'],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      const queryString = args.join(' ');
+      let sort = 'time';
+      let opt = '';
+      if (args.length > 1) {
+        if (['hour', 'day', 'week', 'month', 'year', 'all'].includes(args[args.length - 1])) {
+          sort = 'top';
+          opt = `/${args[args.length - 1]}`;
+        } else {
+          bot.sendError(msg.channel, 'Subreddit name must be one word. If you are specifying a time range, it must be hour, day, week, month, year, or all.');
+          return;
+        }
+      }
+      const opts = {
+        url: `${imgurURL}/gallery/r/${args[0]}/${sort}${opt}`,
+        headers: { Authorization: `Client-ID ${bot.config.modules.search.imgurClientID}` },
+      };
+      request(opts, (err, response, body) => {
+        if (!err) {
+          try {
+            const json = JSON.parse(body);
+            if (json.success && json.data && json.data.length) {
+              if (_.has(imgurSearchCounter, queryString)) {
+                imgurSearchCounter[queryString]++;
+                setTimeout(() => {
+                  imgurSearchCounter[queryString] = 0;
+                }, 10 * 60 * 1000);
+              } else imgurSearchCounter[queryString] = 0;
+              const post = json.data[imgurSearchCounter[queryString] % (json.data.length - 1)];
+              const embed = new discord.RichEmbed()
+                .setTitle(`Imgur image for /r/${queryString}`)
+                .setColor(bot.config.defaultColors.success)
+                .setDescription(post.title)
+                .setImage(post.link)
+                .setURL(post.link)
+                .setFooter(new Date(post.datetime * 1000));
+              msg.channel.send({ embed });
+            } else bot.sendError(msg.channel, 'No results found.');
+          } catch (error) {
+            bot.sendError(msg.channel, 'Error searching Imgur.', 'Error parsing results.');
+          }
+        } else bot.sendError(msg.channel, 'Error searching Imgur.', 'Request failed.');
+      });
+    },
+  },
+  {
     name: 'urban',
     description: 'Search Urban Dictionary for a word.',
     argumentNames: ['<query>'],
@@ -199,9 +262,9 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      const imperial = bot.config.modules.utils.weatherImperialUnits;
+      const imperial = bot.config.modules.search.weatherImperialUnits;
       const units = imperial ? 'imperial' : 'metric';
-      request(`${openWeatherMapURL}/weather?q=${args.join('%20')}&units=${units}&appid=${bot.config.modules.utils.openWeatherMapKey}`, (err, response, body) => {
+      request(`${openWeatherMapURL}/weather?q=${args.join('%20')}&units=${units}&appid=${bot.config.modules.search.openWeatherMapKey}`, (err, response, body) => {
         if (!err) {
           try {
             const json = JSON.parse(body);

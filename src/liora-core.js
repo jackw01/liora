@@ -224,6 +224,7 @@ bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
     _.set(this.config, pathToProperty, defaultValue);
     return true;
   }
+  if (_.get(this.config, pathToProperty) === defaultValue) return true;
   return false;
 };
 
