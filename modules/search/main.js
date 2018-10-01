@@ -81,15 +81,11 @@ function redditSubPostHandler(msg, args, bot, gif) {
 
 module.exports.init = async function init(bot) {
   if (bot.configSetDefault('modules.search.openWeatherMapKey', 'Replace with your OpenWeatherMap API Key')) {
-    bot.saveConfig(() => {});
     bot.log.modwarn('Search: OpenWeatherMap API key not specified in config.json. Weather command disabled.');
     module.exports.commands = module.exports.commands.filter(c => c.name !== 'weather');
   }
-  if (bot.configSetDefault('modules.search.weatherImperialUnits', false)) {
-    bot.saveConfig(() => {});
-  }
+  bot.configSetDefault('modules.search.weatherImperialUnits', false);
   if (bot.configSetDefault('modules.search.imgurClientID', 'Replace with your Imgur Client ID')) {
-    bot.saveConfig(() => {});
     bot.log.modwarn('Search: Imgur Client ID not specified in config.json. Imgur command disabled.');
     module.exports.commands = module.exports.commands.filter(c => c.name !== 'imgur');
   }

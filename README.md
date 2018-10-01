@@ -180,12 +180,6 @@ Adds a folder by absolute path as a source for modules.
 ###### `bot.load()`
 Initializes the bot and connects to Discord. This function should only be called once.
 
-###### `bot.saveConfig(callback)`
-Saves the current configuration data object to the config file. `callback` will be called with an error object if saving fails.
-
-###### `bot.saveConfigAndAck(message)`
-Saves the current configuration data object to the config file. Reacts to the message with a green check mark emoji if successful and sends an error message in the same channel if not.
-
 ###### `bot.generateDocs(filename)`
 Saves documentation (usage/description) for all commands in all currently loaded modules to the specified file.
 

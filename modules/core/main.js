@@ -126,7 +126,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (!bot.config.owner) {
         bot.configSet('owner', msg.author.id);
-        bot.saveConfigAndAck(msg);
+        msg.react('✅');
       }
     },
   },
@@ -152,7 +152,7 @@ module.exports.commands = [
         bot.sendError(msg.channel, 'This configuration item cannot be edited.');
       } else {
         bot.configSet(args[0], args.splice(1).join(' '));
-        bot.saveConfigAndAck(msg);
+        msg.react('✅');
         if (args[0] === 'defaultGame') bot.client.user.setActivity(bot.config.defaultGame);
       }
     },
@@ -218,10 +218,7 @@ module.exports.commands = [
               if (value.indexOf(args.join('')) === -1) {
                 value.push(args.join(''));
                 bot.configSet('activeModules', value);
-                bot.saveConfig((err) => {
-                  if (err) bot.sendError(msg.channel, 'Error saving config file', `${err.message}`);
-                  else bot.sendSuccess(msg.channel, `Module loaded in ${prettyMs(Date.now() - startTime)}`);
-                });
+                bot.sendSuccess(msg.channel, `Module loaded in ${prettyMs(Date.now() - startTime)}`);
               }
             }
           });
@@ -275,10 +272,7 @@ module.exports.commands = [
           if (value.indexOf(args.join('')) !== -1) {
             value.splice(value.indexOf(args.join('')), 1);
             bot.configSet('activeModules', value);
-            bot.saveConfig((err) => {
-              if (err) bot.sendError(msg.channel, 'Error saving config file', `${err.message}`);
-              else bot.sendSuccess(msg.channel, `Module unloaded in ${prettyMs(Date.now() - startTime)}`);
-            });
+            bot.sendSuccess(msg.channel, `Module unloaded in ${prettyMs(Date.now() - startTime)}`);
           }
         }
       });
@@ -304,8 +298,12 @@ module.exports.commands = [
 
         if (id) {
           if (!bot.config.groups[args[1]]) bot.configSet(`groups[${args[1]}]`, []);
-          if (!bot.config.groups[args[1]].includes(id)) bot.config.groups[args[1]].push(id);
-          bot.saveConfigAndAck(msg);
+          if (!bot.config.groups[args[1]].includes(id)) {
+            const newGroups = bot.config.groups[args[1]];
+            newGroups.push(id);
+            bot.configSet(`groups[${args[1]}]`, newGroups);
+            bot.sendSuccess(msg.channel, `Added user ${id} to group ${args[1]}.`);
+          }
         }
       } else bot.sendError(msg.channel, 'Spaces are not allowed in userstrings or group names.');
     },
@@ -330,8 +328,9 @@ module.exports.commands = [
 
         if (id) {
           if (bot.config.groups[args[1]]) {
-            _.remove(bot.config.groups[args[1]], i => i === id);
-            bot.saveConfigAndAck(msg);
+            const newGroups = bot.config.groups[args[1]].filter(i => i !== id);
+            bot.configSet(`groups[${args[1]}]`, newGroups);
+            bot.sendSuccess(msg.channel, `Removed user ${id} from group ${args[1]}.`);
           } else {
             bot.sendError(msg.channel, 'Group does not exist.');
           }
@@ -371,7 +370,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       bot.configSet(`commandPermissions[${args[0]}]`, args[1]);
-      bot.saveConfigAndAck(msg);
+      msg.react('✅');
     },
   },
   {
@@ -381,8 +380,11 @@ module.exports.commands = [
     permissionLevel: 'owner',
     aliases: [],
     async execute(args, msg, bot) {
-      if (bot.configUnset(`commandPermissions[${args[0]}]`)) bot.saveConfigAndAck(msg);
-      else bot.sendError(msg.channel, 'No override set for this command.');
+      if (!bot.configUnset(`commandPermissions[${args[0]}]`)) {
+        bot.sendError(msg.channel, 'No override set for this command.');
+      } else {
+        msg.react('✅');
+      }
     },
   },
   {
@@ -405,7 +407,7 @@ module.exports.commands = [
 
         if (id) {
           bot.configSet(`serverPermissions[${msg.guild.id}][${args[0]}]`, id);
-          bot.saveConfigAndAck(msg);
+          msg.react('✅');
         }
       } else bot.sendError(msg.channel, 'Spaces are not allowed in rolestrings or command names.');
     },
@@ -417,8 +419,11 @@ module.exports.commands = [
     permissionLevel: 'owner',
     aliases: [],
     async execute(args, msg, bot) {
-      if (bot.configUnset(`serverPermissions[${msg.guild.id}][${args[0]}]`)) bot.saveConfigAndAck(msg);
-      else bot.sendError(msg.channel, 'No role override set for this command on this server.');
+      if (!bot.configUnset(`serverPermissions[${msg.guild.id}][${args[0]}]`)) {
+        bot.sendError(msg.channel, 'No role override set for this command on this server.');
+      } else {
+        msg.react('✅');
+      }
     },
   },
   {
@@ -456,7 +461,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       bot.configSet(`commandAliases[${args[0]}]`, args[1]);
-      bot.saveConfigAndAck(msg);
+      msg.react('✅');
     },
   },
   {
@@ -466,8 +471,11 @@ module.exports.commands = [
     permissionLevel: 'manager',
     aliases: [],
     async execute(args, msg, bot) {
-      if (bot.configUnset(`commandAliases[${args[0]}]`)) bot.saveConfigAndAck(msg);
-      else bot.sendError(msg.channel, 'Alias does not exist.');
+      if (!bot.configUnset(`commandAliases[${args[0]}]`)) {
+        bot.sendError(msg.channel, 'Alias does not exist.');
+      } else {
+        msg.react('✅');
+      }
     },
   },
   {

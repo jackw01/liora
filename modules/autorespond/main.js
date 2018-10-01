@@ -29,7 +29,6 @@ module.exports.commands = [
       const value = bot.configGet(responsePath);
       value.push(args.splice(1).join(' '));
       bot.configSet(responsePath, value);
-      bot.saveConfigAndAck(msg);
     },
   },
   {
@@ -49,7 +48,6 @@ module.exports.commands = [
         const value = bot.configGet(responsePath);
         value.splice(args[1], 1);
         bot.configSet(responsePath, value);
-        bot.saveConfigAndAck(msg);
       }
     },
   },

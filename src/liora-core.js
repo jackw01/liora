@@ -119,13 +119,6 @@ bot.saveConfig = function saveConfig(callback) {
   });
 };
 
-bot.saveConfigAndAck = function saveConfigAndAck(msg) {
-  this.saveConfig((err) => {
-    if (err) bot.sendError(msg.channel, 'Error saving config file.', `${err.message}`);
-    else msg.react('✅');
-  });
-};
-
 // Open the config file in a text editor
 bot.openConfigFile = function openConfigFile() {
   bot.log.info('Opening config file in a text editor...');
@@ -215,13 +208,14 @@ bot.configGet = function configGet(pathToProperty, defaultValue) {
 // Set a config property at the specified path
 bot.configSet = function configSet(pathToProperty, value) {
   _.set(this.config, pathToProperty, value);
+  this.saveConfig(() => {});
 };
 
 // If no property is set at the path, set it to the default value and return true.
 // Otherwise returns false
 bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
   if (!_.has(this.config, pathToProperty)) {
-    _.set(this.config, pathToProperty, defaultValue);
+    this.configSet(pathToProperty, defaultValue);
     return true;
   }
   if (_.get(this.config, pathToProperty) === defaultValue) return true;
@@ -231,6 +225,7 @@ bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
 // Delete a config property at the specified path
 bot.configUnset = function configUnset(pathToProperty) {
   _.unset(this.config, pathToProperty);
+  this.saveConfig(() => {});
 };
 
 // Add source folder to search in when loading modules
@@ -521,7 +516,6 @@ bot.onConnect = async function onConnect() {
     this.configSetDefault(`serverPermissions[${server.id}]`, {});
     this.configSetDefault(`settings[${server.id}]`, {});
   });
-  this.saveConfig(() => {});
 
   // Init modules
   const moduleNames = Object.keys(this.modules);
