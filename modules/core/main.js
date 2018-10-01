@@ -302,7 +302,7 @@ module.exports.commands = [
             const newGroups = bot.config.groups[args[1]];
             newGroups.push(id);
             bot.configSet(`groups[${args[1]}]`, newGroups);
-            bot.sendSuccess(msg.channel, `Added user ${id} to group ${args[1]}.`);
+            bot.sendSuccess(msg.channel, `Added user \`${id}\` to group ${args[1]}.`);
           }
         }
       } else bot.sendError(msg.channel, 'Spaces are not allowed in userstrings or group names.');
@@ -330,7 +330,7 @@ module.exports.commands = [
           if (bot.config.groups[args[1]]) {
             const newGroups = bot.config.groups[args[1]].filter(i => i !== id);
             bot.configSet(`groups[${args[1]}]`, newGroups);
-            bot.sendSuccess(msg.channel, `Removed user ${id} from group ${args[1]}.`);
+            bot.sendSuccess(msg.channel, `Removed user \`${id}\` from group ${args[1]}.`);
           } else {
             bot.sendError(msg.channel, 'Group does not exist.');
           }

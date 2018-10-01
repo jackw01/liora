@@ -91,6 +91,7 @@ const configSchema = {
 const bot = {
   client: new discord.Client(),
   log: logger,
+  configWritesQueued: 0,
   moduleSources: [`${localModuleDirectory}`],
   userCooldowns: new Set(),
   userMessageCounters: {},
@@ -104,19 +105,6 @@ const bot = {
 bot.setConfigDirectory = function setConfigDirectory(configDir) {
   this.configDir = configDir;
   this.configFile = path.join(configDir, 'config.json');
-};
-
-// Save config to file
-bot.saveConfig = function saveConfig(callback) {
-  jsonfile.writeFile(this.configFile, bot.config, { spaces: 4, EOL: '\n' }, (err) => {
-    if (err) {
-      bot.log.error(chalk.red.bold(`Unable to save config.json: ${err.message}`));
-      bot.log.info(`Config data: ${JSON.stringify(bot.config, null, 4)}`);
-      callback(err);
-    } else {
-      callback();
-    }
-  });
 };
 
 // Open the config file in a text editor
@@ -194,6 +182,25 @@ bot.loadConfig = function loadConfig(callback) {
   }
 };
 
+// Write config to file - make sure only one write at a time
+bot.nextConfigWrite = function nextConfigWrite() {
+  if (this.configWritesQueued === 0) return;
+  this.configWritesQueued--;
+  jsonfile.writeFile(this.configFile, this.config, { spaces: 4, EOL: '\n' }, (err) => {
+    if (err) {
+      bot.log.error(chalk.red.bold(`Unable to write config.json: ${err.message}`));
+      bot.log.info(`Config data: ${JSON.stringify(bot.config, null, 4)}`);
+    } else {
+      bot.log.info('Config written successfully.');
+    }
+    bot.nextConfigWrite();
+  });
+};
+
+bot.queueConfigWrite = function queueConfigWrite() {
+  if (++this.configWritesQueued === 1) this.nextConfigWrite();
+};
+
 // Config manipulation
 // Return if the config has a property at the specified path
 bot.configHas = function configHas(pathToProperty) {
@@ -208,7 +215,13 @@ bot.configGet = function configGet(pathToProperty, defaultValue) {
 // Set a config property at the specified path
 bot.configSet = function configSet(pathToProperty, value) {
   _.set(this.config, pathToProperty, value);
-  this.saveConfig(() => {});
+  this.queueConfigWrite();
+};
+
+// Delete a config property at the specified path
+bot.configUnset = function configUnset(pathToProperty) {
+  _.unset(this.config, pathToProperty);
+  this.queueConfigWrite();
 };
 
 // If no property is set at the path, set it to the default value and return true.
@@ -220,12 +233,6 @@ bot.configSetDefault = function configSetDefault(pathToProperty, defaultValue) {
   }
   if (_.get(this.config, pathToProperty) === defaultValue) return true;
   return false;
-};
-
-// Delete a config property at the specified path
-bot.configUnset = function configUnset(pathToProperty) {
-  _.unset(this.config, pathToProperty);
-  this.saveConfig(() => {});
 };
 
 // Add source folder to search in when loading modules

@@ -23,7 +23,6 @@
 - [x] display aliases in help
 - [x] openConfig command line arg
 - [x] command docs generator
-- [x] don't use json for config
 
 ### Commands for builtin modules
 - [x] load modules
