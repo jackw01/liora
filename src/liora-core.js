@@ -542,12 +542,6 @@ bot.restart = function restart() {
   });
 };
 
-// Disconnect and end the process
-bot.shutdown = function shutdown() {
-  this.log.info('Shutting down...');
-  this.client.destroy().then(() => {});
-};
-
 // Section: Discord utility functions
 
 // Return a user's full username with discriminator

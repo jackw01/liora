@@ -56,14 +56,14 @@ liora.load(() => {
 });
 ```
 
-Liora's dynamic module loader allows you to load, unload, and reload modules from Discord commands without restarting the bot from the command line. This requires that all modules are in a standard format and are located inside folders that are set as module sources.
+Liora's dynamic module loader allows you to load, unload, and reload modules from Discord commands without restarting the bot from the command line. All modules must be in a standard format and located inside folders that are set as module sources.
 
 ### Module format
 **See `modules/liora-core-commands/main.js` for an example module.**
 
 Liora loads modules using the path `absolute-path-to-module-source/module-name/main.js`. This means that all modules must consist of a folder with the name of the module containing a `main.js` file.
 
-Modules can be a subfolder within your custom bot's Node.js package (recommended) or they can be individual Node.js modules with their own `package.json` file and `node_modules` folder (possible, but not recommended because of the redundant `node_modules` folders).
+Modules should be a subfolder within your custom bot's Node.js package and use that package's `node_modules` and `package.json`.
 
 #### Module main.js
 `module-name/main.js`
@@ -266,9 +266,6 @@ Either `group` or `role` may be empty strings. If both are specified, this funct
 
 ###### `bot.restart()`
 Reloads all modules and config and reconnects to Discord.
-
-###### `bot.shutdown()`
-Disconnects from Discord and ends the process.
 
 ## License
 MIT

@@ -158,17 +158,6 @@ module.exports.commands = [
     },
   },
   {
-    name: 'kill',
-    description: 'Shutdown the bot.',
-    argumentNames: [],
-    permissionLevel: 'owner',
-    aliases: ['shutdown'],
-    async execute(args, msg, bot) {
-      msg.react('✅');
-      bot.shutdown();
-    },
-  },
-  {
     name: 'restart',
     description: 'Restart the bot.',
     argumentNames: [],

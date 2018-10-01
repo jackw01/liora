@@ -2,7 +2,6 @@
 // Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
 
 const discord = require('discord.js');
-const _ = require('lodash');
 
 const pollState = {};
 
