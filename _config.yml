@@ -1,5 +1,5 @@
 remote_theme: jackw01/summer-night-jekyll
-npm_url: github.com/jackw01
+npm_url: https://www.npmjs.com/package/liora
 title: Liora
 nav_items:
   - 1:
