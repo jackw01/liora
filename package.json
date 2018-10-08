@@ -13,7 +13,15 @@
     "url": "https://github.com/jackw01/liora/issues"
   },
   "keywords": [
-    "discord"
+    "discord",
+    "discord.js",
+    "framework",
+    "discord-bot",
+    "liora",
+    "bot",
+    "chatbot",
+    "chat",
+    "discordapp"
   ],
   "preferGlobal": true,
   "bin": {
