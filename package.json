@@ -44,13 +44,13 @@
   ],
   "dependencies": {
     "chalk": "^2.4.1",
-    "command-exists": "^1.2.7",
+    "command-exists": "^1.2.8",
     "discord.js": "^11.4.2",
     "erlpack": "^0.1.2",
     "google-translate-api": "git+https://github.com/Adam-Clrk/google-translate-api.git",
     "jsonfile": "^4.0.0",
     "koa-compose": "^4.1.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
     "node-opus": "^0.3.0",
     "opn": "^5.4.0",
@@ -59,12 +59,12 @@
     "update-notifier": "^2.5.0",
     "uws": "^99.0.0",
     "valid-url": "^1.0.9",
-    "winston": "^3.0.0",
+    "winston": "^3.1.0",
     "yargs": "^12.0.2",
-    "ytdl-core": "^0.25.0"
+    "ytdl-core": "^0.27.0"
   },
   "devDependencies": {
-    "eslint": "^5.5.0",
+    "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0"
   }
