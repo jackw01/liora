@@ -1,6 +1,6 @@
 {
   "name": "liora",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Modular and extensible Node.js discord-bot",
   "homepage": "https://jackw01.github.io/liora/index",
   "author": "jackw01",
@@ -61,7 +61,7 @@
     "valid-url": "^1.0.9",
     "winston": "^3.1.0",
     "yargs": "^12.0.2",
-    "ytdl-core": "^0.27.0"
+    "ytdl-core": "^0.28.0"
   },
   "devDependencies": {
     "eslint": "^5.8.0",

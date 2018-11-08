@@ -60,7 +60,7 @@ function enqueueVideo(id, msg, bot) {
         .setDescription(`**[${info.title}](${url})**`)
         .addField('Channel', `[${info.author.name}](${info.author.channel_url})`, true)
         .addField('Duration', `${prettyMs(info.length_seconds * 1000)}`, true)
-        .addField('Views', info.view_count, true)
+        .addField('Views', info.player_response.videoDetails.viewCount, true)
         .addField('Position in queue', `${state[msg.guild.id].queue.length}`, true);
       msg.channel.send({ embed });
       if (!state[msg.guild.id].playing) playNextQueuedVideo(msg, bot);
