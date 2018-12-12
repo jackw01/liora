@@ -69,6 +69,7 @@ module.exports.commands = [
 
 module.exports.middleware = [
   (c, next) => {
+    if (c.message.author.bot) return;
     let responses;
     if (c.message.guild) {
       responses = Object.assign(Object.assign({}, c.bot.config.modules.autorespond.global),

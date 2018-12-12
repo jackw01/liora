@@ -337,7 +337,7 @@ module.exports.commands = [
         const embed = new discord.RichEmbed()
           .setTitle('Reverse image search for the last image on this channel')
           .setColor(bot.config.defaultColors.success)
-          .setURL(`${googleImagesURL}/searchbyimage?image_url=${lastImage.url}`)
+          .setDescription(`${googleImagesURL}/searchbyimage?image_url=${lastImage.url}`)
           .setThumbnail(lastImage.url);
         msg.channel.send({ embed });
       } else bot.sendError(msg.channel, 'Can\'t find an image.');
@@ -359,7 +359,7 @@ module.exports.commands = [
           const embed = new discord.RichEmbed()
             .setTitle(`Reverse image search of profile picture for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
-            .setURL(`${googleImagesURL}/searchbyimage?image_url=${user.avatarURL}`)
+            .setDescription(`${googleImagesURL}/searchbyimage?image_url=${user.avatarURL}`)
             .setThumbnail(user.avatarURL);
           msg.channel.send({ embed });
         } else bot.sendError(msg.channel, 'User not found.');
@@ -415,6 +415,7 @@ module.exports.commands = [
 module.exports.middleware = [
   (c, next) => {
     if (c.message.attachments.size) c.message.attachments.forEach((a) => { if (a.width) lastImage = a; });
+    else if (c.message.embeds.length) c.message.embeds.forEach((e) => { if (e.image) lastImage = e.image; });
     if (c.message.content) {
       lastMessageText = lastMessageBuffer;
       lastMessageBuffer = c.message.content;

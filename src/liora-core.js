@@ -481,14 +481,15 @@ const commandDispatcher = function commandDispatcher(c) {
 bot.onMessage = async function onMessage(msg) {
   const container = { message: msg, bot };
   // Load author check middleware first, then modules, then rate limiter and other command-related things
-  let middleware = [checkMessageAuthor];
+  let middleware = [];
   const moduleNames = Object.keys(this.modules);
   moduleNames.forEach((name) => {
     if (this.modules[name].middleware && this.modules[name].middleware.length > 0) {
       middleware = _.concat(middleware, this.modules[name].middleware);
     }
   });
-  middleware = _.concat(middleware, [blockHandler, commandDetector, rateLimiter, commandDispatcher]);
+  middleware = _.concat(middleware,
+    [checkMessageAuthor, blockHandler, commandDetector, rateLimiter, commandDispatcher]);
   compose(middleware)(container);
 };
 
