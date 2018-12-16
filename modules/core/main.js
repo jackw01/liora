@@ -151,7 +151,7 @@ module.exports.commands = [
       if (args[0] === 'owner' || args[0].includes('groups') || args[0].includes('Permissions')) {
         bot.sendError(msg.channel, 'This configuration item cannot be edited.');
       } else {
-        bot.configSet(args[0], args.splice(1).join(' '));
+        bot.configSet(args[0].replace('$GSET', `settings[${msg.guild.id}]`), args.splice(1).join(' '));
         msg.react('✅');
         if (args[0] === 'defaultGame') bot.client.user.setActivity(bot.config.defaultGame);
       }
