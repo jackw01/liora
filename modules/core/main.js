@@ -5,6 +5,10 @@ const discord = require('discord.js');
 const _ = require('lodash');
 const prettyMs = require('pretty-ms');
 
+function configSubst(msg, string) {
+  return string.replace('$GSET', `settings[${msg.guild.id}]`).replace('.$GID', `[${msg.guild.id}]`);
+}
+
 // Module init function - called after bot is connected and in servers
 // Use for initializing per-server module state information or similar things
 // Commented out here since it is empty
@@ -132,17 +136,17 @@ module.exports.commands = [
   },
   {
     name: 'getconfig',
-    description: 'Get a configuration item.',
+    description: 'Get a configuration item.  Substitutes $GID for GUILD_ID and $GSET for .settings[GUILD_ID].',
     argumentNames: ['<itemPath>'],
     permissionLevel: 'owner',
     aliases: ['cget'],
     async execute(args, msg, bot) {
-      bot.sendInfo(msg.channel, `Value for key ${args[0]}`, `${bot.configGet(args[0], 'undefined')}`);
+      bot.sendInfo(msg.channel, `Value for key ${args[0]}`, `${bot.configGet(configSubst(msg, args[0]), 'undefined')}`);
     },
   },
   {
     name: 'setconfig',
-    description: 'Set a configuration item.',
+    description: 'Set a configuration item. Substitutes $GID for GUILD_ID and $GSET for .settings[GUILD_ID].',
     argumentNames: ['<itemPath>', '<value>'],
     permissionLevel: 'owner',
     aliases: ['cset'],
@@ -151,7 +155,7 @@ module.exports.commands = [
       if (args[0] === 'owner' || args[0].includes('groups') || args[0].includes('Permissions')) {
         bot.sendError(msg.channel, 'This configuration item cannot be edited.');
       } else {
-        bot.configSet(args[0].replace('$GSET', `settings[${msg.guild.id}]`), args.splice(1).join(' '));
+        bot.configSet(configSubst(msg, args[0]), args.splice(1).join(' '));
         msg.react('✅');
         if (args[0] === 'defaultGame') bot.client.user.setActivity(bot.config.defaultGame);
       }
