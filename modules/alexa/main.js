@@ -9,9 +9,7 @@ const validUrl = require('valid-url');
 const prettyMs = require('pretty-ms');
 const stream = require('stream');
 const snowboy = require('snowboy');
-const fs = require('fs');
-const wav = require('wav');
-const ffmpeg = require("fluent-ffmpeg");
+const ffmpeg = require('fluent-ffmpeg');
 const process = require('process');
 
 class Silence extends stream.Readable {
@@ -21,17 +19,14 @@ class Silence extends stream.Readable {
 }
 
 const state = {};
-let listeningConnection;
-let voiceStream;
-let voiceConverter;
-let silenceDispatcher;
+const listeningState = {};
 
 const models = new snowboy.Models();
 
 models.add({
-  file: 'modules/alexa/computer.umdl',
+  file: 'modules/alexa/alexa.umdl',
   sensitivity: '0.6',
-  hotwords: 'computer',
+  hotwords: 'alexa',
 });
 
 const detector = new snowboy.Detector({
@@ -39,12 +34,6 @@ const detector = new snowboy.Detector({
   models,
   audioGain: 2.0,
   applyFrontend: true,
-});
-
-const outputFileStream = new wav.FileWriter('test.wav', {
-  sampleRate: 16000,
-  channels: 1,
-  bitDepth: 16,
 });
 
 function playNextQueuedVideo(msg, bot) {
@@ -134,11 +123,30 @@ module.exports.init = async function init(bot) {
     bot.log.modwarn('Player: hotword detection error');
   });
 
-  detector.on('hotword', (index, hotword, buffer) => {
-    bot.log.modinfo('Player: hotword detected');
-    silenceDispatcher.pause();
-    listeningConnection.playFile('modules/alexa/up.wav');
-    silenceDispatcher.resume();
+  detector.on('hotword', (index, hotword) => {
+    bot.log.modinfo(`Player: hotword detected (${index}, ${hotword})`);
+
+    ffmpeg(listeningState.voiceStream)
+      .inputFormat('s32le')
+      .audioFrequency(16000)
+      .audioChannels(1)
+      .audioCodec('pcm_s16le')
+      .format('s16le')
+      .on('error', bot.log.modwarn)
+      .pipe(request.post({
+        url: 'https://api.wit.ai/speech?v=20170307',
+        headers: {
+          Authorization: `Bearer ${bot.config.modules.player.witKey}`,
+          'Content-Type': 'audio/raw;encoding=signed-integer;bits=16;rate=16000;endian=little',
+        },
+      }, (err, response, body) => {
+        const json = JSON.parse(body);
+        bot.sendSuccess(listeningState.textChannel, `You said "${json['_text']}"`);
+      }));
+
+    listeningState.silenceDispatcher.pause();
+    listeningState.connection.playFile('modules/alexa/up.wav');
+    listeningState.silenceDispatcher.resume();
   });
 };
 
@@ -183,15 +191,16 @@ module.exports.commands = [
         state[msg.guild.id].voiceChannel = msg.member.voiceChannel;
         // Connect to voice
         state[msg.guild.id].voiceChannel.join().then((connection) => {
-          listeningConnection = connection;
-          silenceDispatcher = connection.playOpusStream(new Silence());
+          listeningState.connection = connection;
+          listeningState.textChannel = msg.channel;
+          listeningState.silenceDispatcher = connection.playOpusStream(new Silence());
           bot.log.modinfo('Player: Join');
           const receiver = connection.createReceiver();
           connection.on('speaking', (user, speaking) => {
             bot.log.modinfo(`Player: ${user.id} speaking: ${speaking}`);
             if (speaking) {
-              voiceStream = receiver.createPCMStream(msg.author);
-              voiceConverter = ffmpeg(voiceStream)
+              listeningState.voiceStream = receiver.createPCMStream(msg.author);
+              listeningState.voiceConverter = ffmpeg(listeningState.voiceStream)
                 .inputFormat('s32le')
                 .audioFrequency(16000)
                 .audioChannels(1)
