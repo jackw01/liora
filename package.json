@@ -47,21 +47,28 @@
     "command-exists": "^1.2.8",
     "discord.js": "^11.4.2",
     "erlpack": "^0.1.2",
+    "ffmpeg": "0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
     "google-translate-api": "git+https://github.com/Adam-Clrk/google-translate-api.git",
     "jsonfile": "^4.0.0",
     "koa-compose": "^4.1.0",
+    "lame": "^1.2.4",
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
     "node-opus": "^0.3.1",
     "opn": "^5.4.0",
     "pretty-ms": "^3.2.0",
     "request": "^2.88.0",
+    "safe-eval": "^0.4.1",
     "update-notifier": "^2.5.0",
     "uws": "^99.0.0",
     "valid-url": "^1.0.9",
     "winston": "^3.1.0",
     "yargs": "^12.0.5",
     "ytdl-core": "^0.28.2"
+  },
+  "optionalDependencies": {
+    "snowboy": "^1.3.1"
   },
   "devDependencies": {
     "eslint": "^5.10.0",
