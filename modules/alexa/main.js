@@ -12,6 +12,7 @@ const snowboy = require('snowboy');
 const fs = require('fs');
 const wav = require('wav');
 const ffmpeg = require("fluent-ffmpeg");
+const process = require('process');
 
 class Silence extends stream.Readable {
   _read() {
@@ -20,9 +21,25 @@ class Silence extends stream.Readable {
 }
 
 const state = {};
-let detector;
 let listeningConnection;
+let voiceStream;
+let voiceConverter;
 let silenceDispatcher;
+
+const models = new snowboy.Models();
+
+models.add({
+  file: 'modules/alexa/computer.umdl',
+  sensitivity: '0.6',
+  hotwords: 'computer',
+});
+
+const detector = new snowboy.Detector({
+  resource: 'modules/alexa/common.res',
+  models,
+  audioGain: 2.0,
+  applyFrontend: true,
+});
 
 const outputFileStream = new wav.FileWriter('test.wav', {
   sampleRate: 16000,
@@ -105,19 +122,12 @@ module.exports.init = async function init(bot) {
     };
   }
 
-  const models = new snowboy.Models();
-
-  models.add({
-    file: 'modules/alexa/computer.umdl',
-    sensitivity: '0.6',
-    hotwords: 'computer',
-  });
-
-  detector = new snowboy.Detector({
-    resource: 'modules/alexa/common.res',
-    models,
-    audioGain: 2.0,
-    applyFrontend: true,
+  process.on('SIGINT', () => {
+    bot.log.modwarn('Player: interrupting shutdown to leave voice channels');
+    bot.client.guilds.array().forEach((server) => {
+      if (state[server.id].voiceChannel) state[server.id].voiceChannel.leave();
+    });
+    process.exit();
   });
 
   detector.on('error', () => {
@@ -125,9 +135,10 @@ module.exports.init = async function init(bot) {
   });
 
   detector.on('hotword', (index, hotword, buffer) => {
-    bot.log.modinfo('hotword');
+    bot.log.modinfo('Player: hotword detected');
     silenceDispatcher.pause();
-    listeningConnection.playFile('modules/alexa/up.wav', { volume: 10 });
+    listeningConnection.playFile('modules/alexa/up.wav');
+    silenceDispatcher.resume();
   });
 };
 
@@ -175,20 +186,21 @@ module.exports.commands = [
           listeningConnection = connection;
           silenceDispatcher = connection.playOpusStream(new Silence());
           bot.log.modinfo('Player: Join');
+          const receiver = connection.createReceiver();
           connection.on('speaking', (user, speaking) => {
             bot.log.modinfo(`Player: ${user.id} speaking: ${speaking}`);
+            if (speaking) {
+              voiceStream = receiver.createPCMStream(msg.author);
+              voiceConverter = ffmpeg(voiceStream)
+                .inputFormat('s32le')
+                .audioFrequency(16000)
+                .audioChannels(1)
+                .audioCodec('pcm_s16le')
+                .format('s16le')
+                .on('error', bot.log.modwarn)
+                .pipe(detector, { end: false });
+            }
           });
-          const receiver = connection.createReceiver();
-          const voiceStream = receiver.createPCMStream(msg.author);
-          const converter = ffmpeg(voiceStream)
-            .inputFormat('s32le')
-            .audioFrequency(16000)
-            .audioChannels(1)
-            .audioCodec('pcm_s16le')
-            .format('s16le')
-            .on('error', bot.log.modwarn);
-          //converter.pipe(outputFileStream);
-          converter.pipe(detector);
         }).catch((err) => {
           bot.sendError(msg.channel, 'Error connecting to voice channel:', `${err}`);
         });
