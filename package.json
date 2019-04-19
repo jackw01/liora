@@ -43,6 +43,7 @@
     "sunos"
   ],
   "dependencies": {
+    "audio-mixer": "git+https://github.com/ConnorChristie/Audio-Mixer.git",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
     "discord.js": "^11.4.2",

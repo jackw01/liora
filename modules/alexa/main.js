@@ -9,8 +9,11 @@ const validUrl = require('valid-url');
 const prettyMs = require('pretty-ms');
 const stream = require('stream');
 const snowboy = require('snowboy');
-const ffmpeg = require('fluent-ffmpeg');
+const FFmpeg = require('fluent-ffmpeg');
 const process = require('process');
+const audioMixer = require('audio-mixer');
+const wav = require('wav');
+const fs = require('fs');
 
 class Silence extends stream.Readable {
   _read() {
@@ -27,13 +30,6 @@ models.add({
   file: 'modules/alexa/alexa.umdl',
   sensitivity: '0.6',
   hotwords: 'alexa',
-});
-
-const detector = new snowboy.Detector({
-  resource: 'modules/alexa/common.res',
-  models,
-  audioGain: 2.0,
-  applyFrontend: true,
 });
 
 function playNextQueuedVideo(msg, bot) {
@@ -99,17 +95,102 @@ module.exports.init = async function init(bot) {
     bot.log.modwarn('Player: YouTube API key not specified in config.json. YouTube search functionality will not work.');
   }
 
-  const servers = bot.client.guilds.array();
-  for (let i = 0; i < servers.length; i++) {
+  bot.client.guilds.array().forEach((server) => {
     // Initialize server-specific config
-    bot.configSetDefault(`modules.player.servers[${servers[i].id}]`, {
+    bot.configSetDefault(`modules.player.servers[${server.id}]`, {
       defaultVolume: 0.5, volumeLimit: 1,
     });
     // Initialize state variables
-    state[servers[i].id] = {
+    state[server.id] = {
       queue: [], stream: {}, dispatcher: {}, playing: false, paused: false,
     };
-  }
+
+    // Initialize listening
+    const det = new snowboy.Detector({
+      resource: 'modules/alexa/common.res',
+      models,
+      audioGain: 2.0,
+      applyFrontend: true,
+    });
+
+    det.on('error', () => {
+      bot.log.modwarn('Player: hotword detection error');
+    });
+
+    det.on('hotword', (index, hotword) => {
+      bot.log.modinfo(`Player: hotword detected (${index}, ${hotword})`);
+
+      const outputFileStream = new wav.FileWriter('test.wav', {
+        sampleRate: 16000,
+        channels: 1,
+        bitDepth: 16,
+      });
+
+      listeningState[server.id].mixer.pipe(outputFileStream);
+
+      /*listeningState[server.id].mixer.pipe(request.post({
+        url: 'https://api.wit.ai/speech?v=20170307',
+        headers: {
+          Authorization: `Bearer ${bot.config.modules.player.witKey}`,
+          'Content-Type': 'audio/raw;encoding=signed-integer;bits=16;rate=16000;endian=little',
+        },
+      }, (err, response, body) => {
+        console.log(err, response, body);
+        const json = JSON.parse(body);
+        bot.sendSuccess(listeningState[server.id].textChannel, `You said "${json['_text']}"`);
+      }));*/
+
+      /*const converter = FFmpeg(listeningState[server.id].mixer)
+        .on('error', bot.log.modwarn)
+        .on('codecData', bot.log.modwarn)
+        .pipe(request.post({
+          url: 'https://api.wit.ai/speech?v=20170307',
+          headers: {
+            Authorization: `Bearer ${bot.config.modules.player.witKey}`,
+            'Content-Type': 'audio/raw;encoding=signed-integer;bits=16;rate=16000;endian=little',
+          },
+        }, (err, response, body) => {
+          console.log(err, body);
+          const json = JSON.parse(body);
+          bot.sendSuccess(listeningState[server.id].textChannel, `You said "${json['_text']}"`);
+        }));*/
+
+      setTimeout(() => {
+        bot.log.modinfo('5s');
+        request.post({
+          url: 'https://api.wit.ai/speech?v=20170307',
+          headers: {
+            Authorization: `Bearer ${bot.config.modules.player.witKey}`,
+            'Content-Type': 'audio/wav',
+          },
+          encoding: null,
+          body: fs.createReadStream('test.wav'),
+        }, (err, response, body) => {
+          console.log(err, response, body);
+          const json = JSON.parse(body);
+          bot.sendSuccess(listeningState[server.id].textChannel, `You said "${json['_text']}"`);
+        });
+      }, 5000);
+
+      listeningState[server.id].silenceDispatcher.pause();
+      listeningState[server.id].connection.playFile('modules/alexa/up.wav');
+      listeningState[server.id].silenceDispatcher.resume();
+      bot.log.modinfo('resumed');
+    });
+
+    const mix = new audioMixer.Mixer({
+      channels: 1,
+      bitDepth: 16,
+      sampleRate: 16000,
+      clearInterval: 250,
+    });
+
+    mix.pipe(det);
+
+    listeningState[server.id] = {
+      textChannel: {}, connection: {}, silenceDispatcher: {}, detector: det, mixer: mix,
+    };
+  });
 
   process.on('SIGINT', () => {
     bot.log.modwarn('Player: interrupting shutdown to leave voice channels');
@@ -117,36 +198,6 @@ module.exports.init = async function init(bot) {
       if (state[server.id].voiceChannel) state[server.id].voiceChannel.leave();
     });
     process.exit();
-  });
-
-  detector.on('error', () => {
-    bot.log.modwarn('Player: hotword detection error');
-  });
-
-  detector.on('hotword', (index, hotword) => {
-    bot.log.modinfo(`Player: hotword detected (${index}, ${hotword})`);
-
-    ffmpeg(listeningState.voiceStream)
-      .inputFormat('s32le')
-      .audioFrequency(16000)
-      .audioChannels(1)
-      .audioCodec('pcm_s16le')
-      .format('s16le')
-      .on('error', bot.log.modwarn)
-      .pipe(request.post({
-        url: 'https://api.wit.ai/speech?v=20170307',
-        headers: {
-          Authorization: `Bearer ${bot.config.modules.player.witKey}`,
-          'Content-Type': 'audio/raw;encoding=signed-integer;bits=16;rate=16000;endian=little',
-        },
-      }, (err, response, body) => {
-        const json = JSON.parse(body);
-        bot.sendSuccess(listeningState.textChannel, `You said "${json['_text']}"`);
-      }));
-
-    listeningState.silenceDispatcher.pause();
-    listeningState.connection.playFile('modules/alexa/up.wav');
-    listeningState.silenceDispatcher.resume();
   });
 };
 
@@ -191,23 +242,32 @@ module.exports.commands = [
         state[msg.guild.id].voiceChannel = msg.member.voiceChannel;
         // Connect to voice
         state[msg.guild.id].voiceChannel.join().then((connection) => {
-          listeningState.connection = connection;
-          listeningState.textChannel = msg.channel;
-          listeningState.silenceDispatcher = connection.playOpusStream(new Silence());
+          listeningState[msg.guild.id].connection = connection;
+          listeningState[msg.guild.id].textChannel = msg.channel;
+          listeningState[msg.guild.id].silenceDispatcher = connection.playOpusStream(new Silence());
           bot.log.modinfo('Player: Join');
           const receiver = connection.createReceiver();
           connection.on('speaking', (user, speaking) => {
-            bot.log.modinfo(`Player: ${user.id} speaking: ${speaking}`);
             if (speaking) {
-              listeningState.voiceStream = receiver.createPCMStream(msg.author);
-              listeningState.voiceConverter = ffmpeg(listeningState.voiceStream)
-                .inputFormat('s32le')
-                .audioFrequency(16000)
-                .audioChannels(1)
-                .audioCodec('pcm_s16le')
-                .format('s16le')
-                .on('error', bot.log.modwarn)
-                .pipe(detector, { end: false });
+              if (!listeningState[msg.guild.id][user.id]) listeningState[msg.guild.id][user.id] = {};
+              listeningState[msg.guild.id][user.id].input = listeningState[msg.guild.id].mixer.input({
+                channels: 1,
+              });
+              listeningState[msg.guild.id][user.id].voiceStream = receiver.createPCMStream(user);
+              listeningState[msg.guild.id][user.id].voiceConverter =
+                FFmpeg(listeningState[msg.guild.id][user.id].voiceStream)
+                  .inputFormat('s32le')
+                  .audioFrequency(16000)
+                  .audioChannels(1)
+                  .audioCodec('pcm_s16le')
+                  .format('s16le')
+                  .on('error', bot.log.modwarn)
+                  .pipe(listeningState[msg.guild.id][user.id].input, { end: false });
+              bot.log.modinfo('speaking');
+                  //.pipe(listeningState[msg.guild.id].detector, { end: false });
+            } else if (listeningState[msg.guild.id][user.id]) {
+              listeningState[msg.guild.id].mixer.removeInput(listeningState[msg.guild.id][user.id].input);
+              bot.log.modinfo('end');
             }
           });
         }).catch((err) => {
