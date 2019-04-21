@@ -1,25 +1,27 @@
 // Liora - Modular and extensible Node.js Discord bot
 // Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
 
+const fs = require('fs');
+const process = require('process');
+const stream = require('stream');
 const discord = require('discord.js');
 const _ = require('lodash');
 const ytdl = require('ytdl-core');
 const request = require('request');
 const validUrl = require('valid-url');
 const prettyMs = require('pretty-ms');
-const stream = require('stream');
-const snowboy = require('snowboy');
 const FFmpeg = require('fluent-ffmpeg');
-const process = require('process');
 const audioMixer = require('audio-mixer');
 const wav = require('wav');
-const fs = require('fs');
+const snowboy = require('snowboy');
 
 class Silence extends stream.Readable {
   _read() {
     this.push(Buffer.from([0xF8, 0xFF, 0xFE]));
   }
 }
+
+const listenPeriod = 5000;
 
 const state = {};
 const listeningState = {};
@@ -32,29 +34,23 @@ models.add({
   hotwords: 'alexa',
 });
 
-function playNextQueuedVideo(msg, bot) {
+function playNextQueuedVideo(connection, msg, bot) {
   const { id } = msg.guild;
-  state[id].playing = true;
-  // Connect to voice
-  state[id].voiceChannel.join().then((connection) => {
-    state[id].nowPlaying = state[id].queue[0];
-    state[id].queue.shift();
-    state[id].stream = ytdl(state[id].nowPlaying.url, { filter: 'audioonly' });
-    state[id].dispatcher = connection.playStream(state[id].stream);
-    state[id].dispatcher.setVolumeLogarithmic(bot.config.modules.player.servers[id].defaultVolume);
-    // Set stream end event
-    state[id].dispatcher.once('end', () => {
-      if (state[id].queue.length > 0) {
-        playNextQueuedVideo(msg, bot);
-      } else {
-        delete state[id].nowPlaying;
-        state[id].playing = false;
-        state[id].paused = false;
-        state[id].voiceChannel.leave();
-      }
-    });
-  }).catch((err) => {
-    bot.sendError(msg.channel, 'Error connecting to voice channel:', `${err}`);
+  state[id].nowPlaying = state[id].queue[0];
+  state[id].queue.shift();
+  state[id].stream = ytdl(state[id].nowPlaying.url, { filter: 'audioonly' });
+  state[id].dispatcher = connection.playStream(state[id].stream);
+  state[id].dispatcher.setVolumeLogarithmic(bot.config.modules.player.servers[id].defaultVolume);
+  // Set stream end event
+  state[id].dispatcher.once('end', () => {
+    if (state[id].queue.length > 0) {
+      playNextQueuedVideo(msg, bot);
+    } else {
+      delete state[id].nowPlaying;
+      state[id].playing = false;
+      state[id].paused = false;
+      state[id].voiceChannel.leave();
+    }
   });
 }
 
@@ -85,9 +81,40 @@ function enqueueVideo(id, msg, bot) {
         .addField('Views', info.player_response.videoDetails.viewCount, true)
         .addField('Position in queue', `${state[msg.guild.id].queue.length}`, true);
       msg.channel.send({ embed });
-      if (!state[msg.guild.id].playing) playNextQueuedVideo(msg, bot);
+      if (!state[msg.guild.id].playing) {
+        state[msg.guild.id].playing = true;
+        // Connect to voice
+        if (state[msg.guild.id].connection) {
+          playNextQueuedVideo(state[msg.guild.id].connection, msg, bot);
+        } else {
+          state[msg.guild.id].voiceChannel.join().then((connection) => {
+            state[msg.guild.id].connection = connection;
+            playNextQueuedVideo(connection, msg, bot);
+          }).catch((voiceErr) => {
+            bot.sendError(msg.channel, 'Error connecting to voice channel:', `${voiceErr}`);
+          });
+        }
+      }
     }
   });
+}
+
+function handleVoiceCommand(text, server, bot) {
+  const words = text.split(' ').map(word => word.toLowerCase());
+  if (words[0] === 'play') {
+    const query = words.slice(1).join(' ');
+    const { textChannel } = listeningState[server.id];
+    request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(query)}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
+      const json = JSON.parse(body);
+      if ('error' in json) bot.sendError(textChannel, 'Error', `${json.error.errors[0].message}`);
+      else if (json.items.length === 0) bot.sendError(textChannel, 'No videos found.');
+      else {
+        enqueueVideo(json.items[0].id.videoId, listeningState[server.id].referenceMessage, bot);
+      }
+    });
+  } else if (['pause', 'resume', 'stop', 'skip', 'shuffle'].includes(words[0])) {
+    module.exports.commands.find(cmd => cmd.name === words[0]).execute([], {}, bot, server);
+  }
 }
 
 module.exports.init = async function init(bot) {
@@ -156,7 +183,6 @@ module.exports.init = async function init(bot) {
         }));*/
 
       setTimeout(() => {
-        bot.log.modinfo('5s');
         request.post({
           url: 'https://api.wit.ai/speech?v=20170307',
           headers: {
@@ -166,14 +192,21 @@ module.exports.init = async function init(bot) {
           encoding: null,
           body: fs.createReadStream('test.wav'),
         }, (err, response, body) => {
+          fs.unlinkSync('test.wav');
           console.log(err, response, body);
           const json = JSON.parse(body);
           bot.sendSuccess(listeningState[server.id].textChannel, `You said "${json['_text']}"`);
+          handleVoiceCommand(json['_text'], server, bot);
         });
-      }, 5000);
+      }, listenPeriod);
 
       listeningState[server.id].silenceDispatcher.pause();
-      listeningState[server.id].connection.playFile('modules/alexa/up.wav');
+      if (!state[server.id].playing) state[server.id].connection.playFile('modules/alexa/up.wav');
+      else { // Lower volume of bot while listening
+        const lastVolume = state[server.id].dispatcher.volumeLogarithmic;
+        state[server.id].dispatcher.setVolumeLogarithmic(0.05);
+        setTimeout(() => { state[server.id].dispatcher.setVolumeLogarithmic(lastVolume); }, listenPeriod);
+      }
       listeningState[server.id].silenceDispatcher.resume();
       bot.log.modinfo('resumed');
     });
@@ -233,7 +266,7 @@ module.exports.commands = [
   },
   {
     name: 'listen',
-    description: 'Start listening in a voice channel',
+    description: 'Start listening for voice commands in a voice channel',
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
@@ -242,7 +275,8 @@ module.exports.commands = [
         state[msg.guild.id].voiceChannel = msg.member.voiceChannel;
         // Connect to voice
         state[msg.guild.id].voiceChannel.join().then((connection) => {
-          listeningState[msg.guild.id].connection = connection;
+          state[msg.guild.id].connection = connection;
+          listeningState[msg.guild.id].referenceMessage = msg;
           listeningState[msg.guild.id].textChannel = msg.channel;
           listeningState[msg.guild.id].silenceDispatcher = connection.playOpusStream(new Silence());
           bot.log.modinfo('Player: Join');
@@ -263,11 +297,8 @@ module.exports.commands = [
                   .format('s16le')
                   .on('error', bot.log.modwarn)
                   .pipe(listeningState[msg.guild.id][user.id].input, { end: false });
-              bot.log.modinfo('speaking');
-                  //.pipe(listeningState[msg.guild.id].detector, { end: false });
             } else if (listeningState[msg.guild.id][user.id]) {
               listeningState[msg.guild.id].mixer.removeInput(listeningState[msg.guild.id][user.id].input);
-              bot.log.modinfo('end');
             }
           });
         }).catch((err) => {
@@ -312,13 +343,14 @@ module.exports.commands = [
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
-    async execute(args, msg, bot) {
-      if (msg.guild) {
-        if (state[msg.guild.id].playing) {
-          state[msg.guild.id].paused = true;
-          state[msg.guild.id].stream.pause();
-          state[msg.guild.id].dispatcher.pause();
-          msg.react('⏸️');
+    async execute(args, msg, bot, voiceServer = false) {
+      const server = voiceServer || msg.guild;
+      if (server) {
+        if (state[server.id].playing) {
+          state[server.id].paused = true;
+          state[server.id].stream.pause();
+          state[server.id].dispatcher.pause();
+          if (!voiceServer) msg.react('⏸️');
         }
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
@@ -329,13 +361,14 @@ module.exports.commands = [
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
-    async execute(args, msg, bot) {
-      if (msg.guild) {
-        if (state[msg.guild.id].playing) {
-          state[msg.guild.id].paused = false;
-          state[msg.guild.id].stream.resume();
-          state[msg.guild.id].dispatcher.resume();
-          msg.react('▶️');
+    async execute(args, msg, bot, voiceServer = false) {
+      const server = voiceServer || msg.guild;
+      if (server) {
+        if (state[server.id].playing) {
+          state[server.id].paused = false;
+          state[server.id].stream.resume();
+          state[server.id].dispatcher.resume();
+          if (!voiceServer) msg.react('▶️');
         }
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
@@ -346,14 +379,15 @@ module.exports.commands = [
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
-    async execute(args, msg, bot) {
-      if (msg.guild) {
-        state[msg.guild.id].queue = [];
-        state[msg.guild.id].dispatcher.end();
-        state[msg.guild.id].voiceChannel.leave();
-        state[msg.guild.id].playing = false;
-        state[msg.guild.id].paused = false;
-        msg.react('🛑');
+    async execute(args, msg, bot, voiceServer = false) {
+      const server = voiceServer || msg.guild;
+      if (server) {
+        state[server.id].queue = [];
+        state[server.id].dispatcher.end();
+        state[server.id].voiceChannel.leave();
+        state[server.id].playing = false;
+        state[server.id].paused = false;
+        if (!voiceServer) msg.react('🛑');
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
   },
@@ -363,10 +397,11 @@ module.exports.commands = [
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
-    async execute(args, msg, bot) {
-      if (msg.guild) {
-        state[msg.guild.id].dispatcher.end();
-        msg.react('⏩');
+    async execute(args, msg, bot, voiceServer = false) {
+      const server = voiceServer || msg.guild;
+      if (server) {
+        state[server.id].dispatcher.end();
+        if (!voiceServer) msg.react('⏩');
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
   },
@@ -393,10 +428,11 @@ module.exports.commands = [
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],
-    async execute(args, msg, bot) {
-      if (msg.guild) {
-        state[msg.guild.id].queue = _.shuffle(state[msg.guild.id].queue);
-        msg.react('🔀');
+    async execute(args, msg, bot, voiceServer = false) {
+      const server = voiceServer || msg.guild;
+      if (server) {
+        state[server.id].queue = _.shuffle(state[msg.guild.id].queue);
+        if (!voiceServer) msg.react('🔀');
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
   },
