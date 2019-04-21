@@ -21,7 +21,9 @@
     "bot",
     "chatbot",
     "chat",
-    "discordapp"
+    "discordapp",
+    "voice commands",
+    "speech recognition"
   ],
   "preferGlobal": true,
   "bin": {

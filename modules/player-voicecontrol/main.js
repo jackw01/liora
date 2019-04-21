@@ -15,24 +15,26 @@ const audioMixer = require('audio-mixer');
 const wav = require('wav');
 const snowboy = require('snowboy');
 
+// In order to receive audio, we need to play something
 class Silence extends stream.Readable {
   _read() {
     this.push(Buffer.from([0xF8, 0xFF, 0xFE]));
   }
 }
 
+// Listen for a fixed time period
 const listenPeriod = 5000;
 
-const state = {};
-const listeningState = {};
-
+// Set up hotword detection
 const models = new snowboy.Models();
-
 models.add({
-  file: 'modules/alexa/alexa.umdl',
+  file: 'modules/player-voicecontrol/alexa.umdl',
   sensitivity: '0.6',
   hotwords: 'alexa',
 });
+
+const state = {};
+const listeningState = {};
 
 function playNextQueuedVideo(connection, msg, bot) {
   const { id } = msg.guild;
@@ -134,7 +136,7 @@ module.exports.init = async function init(bot) {
 
     // Initialize listening
     const det = new snowboy.Detector({
-      resource: 'modules/alexa/common.res',
+      resource: 'modules/player-voicecontrol/common.res',
       models,
       audioGain: 2.0,
       applyFrontend: true,
@@ -182,6 +184,7 @@ module.exports.init = async function init(bot) {
           bot.sendSuccess(listeningState[server.id].textChannel, `You said "${json['_text']}"`);
         }));*/
 
+      // Since streaming has issues, send the saved .wav file to Wit.ai for speech to text
       setTimeout(() => {
         request.post({
           url: 'https://api.wit.ai/speech?v=20170307',
@@ -201,7 +204,7 @@ module.exports.init = async function init(bot) {
       }, listenPeriod);
 
       listeningState[server.id].silenceDispatcher.pause();
-      if (!state[server.id].playing) state[server.id].connection.playFile('modules/alexa/up.wav');
+      if (!state[server.id].playing) state[server.id].connection.playFile('modules/player-voicecontrol/up.wav');
       else { // Lower volume of bot while listening
         const lastVolume = state[server.id].dispatcher.volumeLogarithmic;
         state[server.id].dispatcher.setVolumeLogarithmic(0.05);
