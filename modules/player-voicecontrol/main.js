@@ -1,5 +1,5 @@
 // Liora - Modular and extensible Node.js Discord bot
-// Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
+// Copyright 2019 jackw01. Released under the MIT License (see LICENSE for details).
 
 const fs = require('fs');
 const process = require('process');
@@ -122,6 +122,10 @@ function handleVoiceCommand(text, server, bot) {
 module.exports.init = async function init(bot) {
   if (bot.configSetDefault('modules.player.youtubeKey', 'Replace with your YouTube API Key')) {
     bot.log.modwarn('Player: YouTube API key not specified in config.json. YouTube search functionality will not work.');
+  }
+
+  if (bot.configSetDefault('modules.player.witKey', 'Replace with your Wit.ai token')) {
+    bot.log.modwarn('Player: Wit.ai token not specified in config.json. Speech recognition functionality will not work.');
   }
 
   bot.client.guilds.array().forEach((server) => {
@@ -269,7 +273,7 @@ module.exports.commands = [
   },
   {
     name: 'listen',
-    description: 'Start listening for voice commands in a voice channel',
+    description: 'Start listening for voice commands in a voice channel. Available voice commands: play, pause, resume, stop, skip, shuffle. Say "alexa" in voice chat, wait for the sound, and say the command. To play a video, state the search query after saying "play".',
     argumentNames: [],
     permissionLevel: 'all',
     aliases: [],

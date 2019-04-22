@@ -1,14 +1,14 @@
 ## Liora Discord Bot Command Documentation
 6 modules, 66 commands  
-Generated Tue Sep 25 2018 22:45:18 GMT-0700 (Pacific Daylight Time).
+Generated Sun Apr 21 2019 14:20:06 GMT-0700 (DST).
 
 ### Table of Contents
 * [core](#module-core)
 * [utils](#module-utils)
-* [player](#module-player)
 * [search](#module-search)
 * [autorespond](#module-autorespond)
 * [fun](#module-fun)
+* [player-voicecontrol](#module-player-voicecontrol)
 
 ### Module `core`
 #### info
@@ -35,19 +35,13 @@ Become the bot owner. This command can only be used once.
 `$getconfig <itemPath>`  
 Default permission level: `owner`  
 Default aliases: `cget`  
-Get a configuration item.
+Get a configuration item.  Substitutes $GID for GUILD_ID and $GSET for .settings[GUILD_ID].
 
 #### setconfig
 `$setconfig <itemPath> <value>`  
 Default permission level: `owner`  
 Default aliases: `cset`  
-Set a configuration item.
-
-#### kill
-`$kill `  
-Default permission level: `owner`  
-Default aliases: `shutdown`  
-Shutdown the bot.
+Set a configuration item. Substitutes $GID for GUILD_ID and $GSET for .settings[GUILD_ID].
 
 #### restart
 `$restart `  
@@ -199,60 +193,6 @@ End the poll on the current channel.
 Default permission level: `all`  
 Vote in the current poll.
 
-### Module `player`
-#### ytsearch
-`$ytsearch <query>`  
-Default permission level: `all`  
-Default aliases: `youtube`  
-Display YouTube videos for a search query.
-
-#### play
-`$play <query>`  
-Default permission level: `all`  
-Play a YouTube video based on a search query or URL.
-
-#### pause
-`$pause `  
-Default permission level: `all`  
-Pause the currently playing stream.
-
-#### resume
-`$resume `  
-Default permission level: `all`  
-Resume the currently playing stream.
-
-#### stop
-`$stop `  
-Default permission level: `all`  
-Stop playback and clear the queue.
-
-#### skip
-`$skip `  
-Default permission level: `all`  
-Skip the current stream in the queue.
-
-#### volume
-`$volume <volume>?`  
-Default permission level: `all`  
-Default aliases: `vol`  
-Set the volume. Value should be between 0 and 1. If no value is specified, displays the current volume.
-
-#### shuffle
-`$shuffle `  
-Default permission level: `all`  
-Shuffle the queue.
-
-#### nowplaying
-`$nowplaying `  
-Default permission level: `all`  
-Default aliases: `np`  
-Display the currently playing video.
-
-#### queue
-`$queue `  
-Default permission level: `all`  
-Display the queue.
-
 ### Module `search`
 #### wikipedia
 `$wikipedia <query>`  
@@ -363,4 +303,63 @@ Magic 8 ball.
 `$fortune [all|computers|cookie|definitions|miscellaneous|people|platitudes|politics|science|wisdom]?`  
 Default permission level: `all`  
 Get a fortune.
+
+### Module `player-voicecontrol`
+#### ytsearch
+`$ytsearch <query>`  
+Default permission level: `all`  
+Default aliases: `youtube`  
+Display YouTube videos for a search query.
+
+#### listen
+`$listen `  
+Default permission level: `all`  
+Start listening for voice commands in a voice channel. Available voice commands: play, pause, resume, stop, skip, shuffle. Say "alexa" in voice chat, wait for the sound, and say the command. To play a video, state the search query after saying "play".
+
+#### play
+`$play <query>`  
+Default permission level: `all`  
+Play a YouTube video based on a search query or URL.
+
+#### pause
+`$pause `  
+Default permission level: `all`  
+Pause the currently playing stream.
+
+#### resume
+`$resume `  
+Default permission level: `all`  
+Resume the currently playing stream.
+
+#### stop
+`$stop `  
+Default permission level: `all`  
+Stop playback and clear the queue.
+
+#### skip
+`$skip `  
+Default permission level: `all`  
+Skip the current stream in the queue.
+
+#### volume
+`$volume <volume>?`  
+Default permission level: `all`  
+Default aliases: `vol`  
+Set the volume. Value should be between 0 and 1. If no value is specified, displays the current volume.
+
+#### shuffle
+`$shuffle `  
+Default permission level: `all`  
+Shuffle the queue.
+
+#### nowplaying
+`$nowplaying `  
+Default permission level: `all`  
+Default aliases: `np`  
+Display the currently playing video.
+
+#### queue
+`$queue `  
+Default permission level: `all`  
+Display the queue.
 
