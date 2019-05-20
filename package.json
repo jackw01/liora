@@ -1,7 +1,7 @@
 {
   "name": "liora",
-  "version": "1.0.4",
-  "description": "Modular and extensible Node.js discord-bot",
+  "version": "1.1.0",
+  "description": "Modular and extensible Node.js Discord bot with voice commands",
   "homepage": "https://jackw01.github.io/liora/index",
   "author": "jackw01",
   "license": "MIT",
@@ -45,7 +45,7 @@
     "sunos"
   ],
   "dependencies": {
-    "audio-mixer": "git+https://github.com/ConnorChristie/Audio-Mixer.git",
+    "audio-mixer": "git+https://github.com/jackw01/Audio-Mixer.git",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
     "discord.js": "^11.4.2",
@@ -64,7 +64,7 @@
     "request": "^2.88.0",
     "safe-eval": "^0.4.1",
     "update-notifier": "^2.5.0",
-    "uws": "^99.0.0",
+    "uws": "@discordjs/uws@^10.149.0",
     "valid-url": "^1.0.9",
     "wav": "^1.0.2",
     "winston": "^3.1.0",

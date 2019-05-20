@@ -60,7 +60,7 @@ const configSchema = {
   activeModules: {
     type: 'array',
     itemType: 'string',
-    default: ['liora-core', 'liora-utils', 'liora-autorespond', 'liora-player'],
+    default: ['core', 'utils', 'search', 'autorespond', 'fun', 'player'],
   },
   commandAliases: { type: 'object', default: {} },
   defaultColors: {

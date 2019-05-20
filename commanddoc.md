@@ -8,7 +8,7 @@ Generated Sun Apr 21 2019 14:20:06 GMT-0700 (DST).
 * [search](#module-search)
 * [autorespond](#module-autorespond)
 * [fun](#module-fun)
-* [player-voicecontrol](#module-player-voicecontrol)
+* [player](#module-player)
 
 ### Module `core`
 #### info
@@ -304,7 +304,7 @@ Magic 8 ball.
 Default permission level: `all`  
 Get a fortune.
 
-### Module `player-voicecontrol`
+### Module `player`
 #### ytsearch
 `$ytsearch <query>`  
 Default permission level: `all`  
@@ -314,7 +314,7 @@ Display YouTube videos for a search query.
 #### listen
 `$listen `  
 Default permission level: `all`  
-Start listening for voice commands in a voice channel. Available voice commands: play, pause, resume, stop, skip, shuffle. Say "alexa" in voice chat, wait for the sound, and say the command. To play a video, state the search query after saying "play".
+Start listening for voice commands in a voice channel. Available voice commands: play, pause, resume, stop, skip, shuffle. Say "alexa" in voice chat, wait for the sound, and say the command. To play a video, state the search query after saying "play". **Only available when the player-voicecontrol module is enabled**
 
 #### play
 `$play <query>`  
@@ -362,4 +362,3 @@ Display the currently playing video.
 `$queue `  
 Default permission level: `all`  
 Display the queue.
-
