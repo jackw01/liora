@@ -1,3 +1,5 @@
+# Liora 
+
 ## Is It a Bot or a Framework?
 Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for developing custom Discord bot functionality in Javascript without having to worry about dynamic module loading, handling commands, or parsing user/role/channel mentions in messages.
 
