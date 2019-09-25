@@ -2,8 +2,10 @@
 // Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
 
 const discord = require('discord.js');
+const prettyMs = require('pretty-ms');
 
 const pollState = {};
+const deletedMessages = {};
 
 function showPollData(bot, channel) {
   const embed = new discord.RichEmbed()
@@ -16,6 +18,16 @@ function showPollData(bot, channel) {
   });
   channel.send({ embed });
 }
+
+function onMessageDelete(msg) {
+  if (!deletedMessages[msg.channel.id]) deletedMessages[msg.channel.id] = [];
+  deletedMessages[msg.channel.id].unshift(msg);
+  deletedMessages[msg.channel.id].slice(0, 24); // Limit length for embed
+}
+
+module.exports.init = async function init(bot) {
+  bot.client.on('messageDelete', onMessageDelete);
+};
 
 module.exports.commands = [
   {
@@ -244,6 +256,25 @@ module.exports.commands = [
           } else bot.sendError(msg.channel, 'You have already voted on this poll.');
         } else bot.sendError(msg.channel, `Choice ${choice + 1} does not exist.`);
       } else bot.sendError(msg.channel, 'No poll is running on this channel.');
+    },
+  },
+  {
+    name: 'recall',
+    description: 'Recall the last 25 deleted messages in the current channel.',
+    argumentNames: [],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      if (deletedMessages[msg.channel.id]) {
+        const embed = new discord.RichEmbed()
+          .setTitle(`Deleted messages from ${msg.channel.name}`)
+          .setColor(bot.config.defaultColors.info)
+          .setFooter(`Use \`${bot.prefixForMessageContext(msg)}recallmsg <n>\` to view details for a specific message.`);
+        deletedMessages[msg.channel.id].forEach((delMsg, i) => {
+          embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
+        });
+        msg.channel.send({ embed });
+      } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
     },
   },
 ];
