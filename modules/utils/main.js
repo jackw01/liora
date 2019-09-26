@@ -277,4 +277,35 @@ module.exports.commands = [
       } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
     },
   },
+  {
+    name: 'snipe',
+    description: 'Recall the last deleted message in the current channel. If a user mention, username, or nickname is supplied, the last deleted message from that user will be shown.',
+    argumentNames: ['<user>?'],
+    permissionLevel: 'all',
+    aliases: [],
+    async execute(args, msg, bot) {
+      if (deletedMessages[msg.channel.id]) {
+        let delMsg;
+        if (args.length) {
+          if (msg.guild) {
+            const user = bot.util.parseUsername(args.join(' '), msg.guild);
+          } else bot.sendError(msg.channel, 'Must be in a server to use this command with a username.');
+        } else {
+          delMsg = deletedMessages[msg.channel.id][0];
+        }
+
+        const delMsg = deletedMessages[msg.channel.id][0];
+        const embed = new discord.RichEmbed()
+          .setTitle(`Deleted messages from ${bot.util.username(delMsg.author)}`)
+          .setColor(bot.config.defaultColors.info)
+          .setDescription(delMsg.content)
+          .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
+          .setTimestamp(delMsg.createdAt);
+        deletedMessages[msg.channel.id].forEach((delMsg, i) => {
+          embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
+        });
+        msg.channel.send({ embed });
+      } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
+    },
+  },
 ];
