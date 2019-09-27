@@ -22,7 +22,6 @@ function showPollData(bot, channel) {
 function onMessageDelete(msg) {
   if (!deletedMessages[msg.channel.id]) deletedMessages[msg.channel.id] = [];
   deletedMessages[msg.channel.id].unshift(msg);
-  deletedMessages[msg.channel.id].slice(0, 24); // Limit length for embed
 }
 
 module.exports.init = async function init(bot) {
@@ -270,7 +269,7 @@ module.exports.commands = [
           .setTitle(`Deleted messages from ${msg.channel.name}`)
           .setColor(bot.config.defaultColors.info)
           .setFooter(`Use \`${bot.prefixForMessageContext(msg)}recallmsg <n>\` to view details for a specific message.`);
-        deletedMessages[msg.channel.id].forEach((delMsg, i) => {
+        deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
         });
         msg.channel.send({ embed });
@@ -289,22 +288,21 @@ module.exports.commands = [
         if (args.length) {
           if (msg.guild) {
             const user = bot.util.parseUsername(args.join(' '), msg.guild);
+            deletedMessages[msg.channel.id].reverse.forEach((m) => {
+              if (m.author.id === user.id) delMsg = m;
+            });
           } else bot.sendError(msg.channel, 'Must be in a server to use this command with a username.');
-        } else {
-          delMsg = deletedMessages[msg.channel.id][0];
-        }
+        } else delMsg = deletedMessages[msg.channel.id][0];
 
-        const delMsg = deletedMessages[msg.channel.id][0];
-        const embed = new discord.RichEmbed()
-          .setTitle(`Deleted messages from ${bot.util.username(delMsg.author)}`)
-          .setColor(bot.config.defaultColors.info)
-          .setDescription(delMsg.content)
-          .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
-          .setTimestamp(delMsg.createdAt);
-        deletedMessages[msg.channel.id].forEach((delMsg, i) => {
-          embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
-        });
-        msg.channel.send({ embed });
+        if (delMsg) {
+          const embed = new discord.RichEmbed()
+            .setTitle(`Deleted message from ${bot.util.username(delMsg.author)}`)
+            .setColor(bot.config.defaultColors.info)
+            .setDescription(delMsg.content)
+            .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
+            .setTimestamp(delMsg.createdAt);
+          msg.channel.send({ embed });
+        } else bot.sendError(msg.channel, 'No deleted messages by this user found.');
       } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
     },
   },
