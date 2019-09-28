@@ -7,6 +7,7 @@ const prettyMs = require('pretty-ms');
 const pollState = {};
 const deletedMessages = {};
 const editedMessages = {};
+const editEvents = {};
 
 function showPollData(bot, channel) {
   const embed = new discord.RichEmbed()
@@ -28,11 +29,15 @@ function onMessageDelete(msg) {
 }
 
 function onMessageUpdate(oldMsg, newMsg) {
-  if (!editedMessages[newMsg.channel.id]) editedMessages[newMsg.channel.id] = [];
-  if (!editedMessages[newMsg.channel.id][newMsg.id]) {
-    editedMessages[newMsg.channel.id][newMsg.id] = [oldMsg];
+  if (oldMsg.content !== newMsg.content) {
+    if (!editedMessages[newMsg.channel.id]) editedMessages[newMsg.channel.id] = [];
+    if (!editEvents[newMsg.channel.id]) editEvents[newMsg.channel.id] = [];
+    if (!editedMessages[newMsg.channel.id][newMsg.id]) {
+      editedMessages[newMsg.channel.id][newMsg.id] = [oldMsg];
+    }
+    editedMessages[newMsg.channel.id][newMsg.id].unshift(newMsg);
+    editEvents[newMsg.channel.id].unshift({ oldMsg, newMsg });
   }
-  editedMessages[newMsg.channel.id][newMsg.id].unshift(newMsg);
 }
 
 function displayDeletedMessage(bot, delMsg) {
@@ -319,6 +324,24 @@ module.exports.commands = [
           displayDeletedMessage(bot, delMsg);
         } else bot.sendError(msg.channel, 'No deleted messages by this user found.');
       } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
+    },
+  },
+  {
+    name: 'recalledits',
+    description: 'Recall the old message versions from the last 25 message edits in the current channel.',
+    argumentNames: [],
+    permissionLevel: 'all',
+    aliases: ['edits'],
+    async execute(args, msg, bot) {
+      if (editEvents[msg.channel.id]) {
+        const embed = new discord.RichEmbed()
+          .setTitle(`Recent message edits from ${msg.channel.name}`)
+          .setColor(bot.config.defaultColors.neutral)
+        editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
+          embed.addField(`${i + 1}: ${bot.util.username(newMsg.author)}, edited ${prettyMs(Date.now() - newMsg.editedAt)} ago`, `**Previous message:** ${oldMsg.content}, **New message:** ${newMsg.content}`);
+        });
+        msg.channel.send({ embed });
+      } else bot.sendError(msg.channel, 'No edits from this channel.');
     },
   },
 ];
