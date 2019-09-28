@@ -20,8 +20,10 @@ function showPollData(bot, channel) {
 }
 
 function onMessageDelete(msg) {
+  const msg2 = msg;
+  msg2.deletedAt = Date.now();
   if (!deletedMessages[msg.channel.id]) deletedMessages[msg.channel.id] = [];
-  deletedMessages[msg.channel.id].unshift(msg);
+  deletedMessages[msg.channel.id].unshift(msg2);
 }
 
 module.exports.init = async function init(bot) {
@@ -267,7 +269,7 @@ module.exports.commands = [
       if (deletedMessages[msg.channel.id]) {
         const embed = new discord.RichEmbed()
           .setTitle(`Deleted messages from ${msg.channel.name}`)
-          .setColor(bot.config.defaultColors.info)
+          .setColor(bot.config.defaultColors.neutral)
           .setFooter(`Use \`${bot.prefixForMessageContext(msg)}recallmsg <n>\` to view details for a specific message.`);
         deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
@@ -296,9 +298,9 @@ module.exports.commands = [
 
         if (delMsg) {
           const embed = new discord.RichEmbed()
-            .setTitle(`Deleted message from ${bot.util.username(delMsg.author)}`)
-            .setColor(bot.config.defaultColors.info)
+            .setColor(bot.config.defaultColors.neutral)
             .setDescription(delMsg.content)
+            .setAuthor(bot.util.username(delMsg.author), delMsg.author.displayAvatarURL)
             .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
             .setTimestamp(delMsg.createdAt);
           msg.channel.send({ embed });
