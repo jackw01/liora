@@ -68,6 +68,5 @@
 - [x] text with regional indicators
 - [x] reverse profile pic
 - [x] recall deleted messages
-- [ ] message detail view
 - [x] snipe last deleted message
 - [ ] recall message history

@@ -6,6 +6,7 @@ const prettyMs = require('pretty-ms');
 
 const pollState = {};
 const deletedMessages = {};
+const editedMessages = {};
 
 function showPollData(bot, channel) {
   const embed = new discord.RichEmbed()
@@ -26,8 +27,27 @@ function onMessageDelete(msg) {
   deletedMessages[msg.channel.id].unshift(msg2);
 }
 
+function onMessageUpdate(oldMsg, newMsg) {
+  if (!editedMessages[newMsg.channel.id]) editedMessages[newMsg.channel.id] = [];
+  if (!editedMessages[newMsg.channel.id][newMsg.id]) {
+    editedMessages[newMsg.channel.id][newMsg.id] = [oldMsg];
+  }
+  editedMessages[newMsg.channel.id][newMsg.id].unshift(newMsg);
+}
+
+function displayDeletedMessage(bot, delMsg) {
+  const embed = new discord.RichEmbed()
+    .setColor(bot.config.defaultColors.neutral)
+    .setDescription(delMsg.content)
+    .setAuthor(bot.util.username(delMsg.author), delMsg.author.displayAvatarURL)
+    .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
+    .setTimestamp(delMsg.createdAt);
+  delMsg.channel.send({ embed });
+}
+
 module.exports.init = async function init(bot) {
   bot.client.on('messageDelete', onMessageDelete);
+  bot.client.on('messageUpdate', onMessageUpdate);
 };
 
 module.exports.commands = [
@@ -270,7 +290,6 @@ module.exports.commands = [
         const embed = new discord.RichEmbed()
           .setTitle(`Deleted messages from ${msg.channel.name}`)
           .setColor(bot.config.defaultColors.neutral)
-          .setFooter(`Use \`${bot.prefixForMessageContext(msg)}recallmsg <n>\` to view details for a specific message.`);
         deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
         });
@@ -290,20 +309,14 @@ module.exports.commands = [
         if (args.length) {
           if (msg.guild) {
             const user = bot.util.parseUsername(args.join(' '), msg.guild);
-            deletedMessages[msg.channel.id].reverse.forEach((m) => {
+            deletedMessages[msg.channel.id].reverse().forEach((m) => {
               if (m.author.id === user.id) delMsg = m;
             });
           } else bot.sendError(msg.channel, 'Must be in a server to use this command with a username.');
         } else delMsg = deletedMessages[msg.channel.id][0];
 
         if (delMsg) {
-          const embed = new discord.RichEmbed()
-            .setColor(bot.config.defaultColors.neutral)
-            .setDescription(delMsg.content)
-            .setAuthor(bot.util.username(delMsg.author), delMsg.author.displayAvatarURL)
-            .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
-            .setTimestamp(delMsg.createdAt);
-          msg.channel.send({ embed });
+          displayDeletedMessage(bot, delMsg);
         } else bot.sendError(msg.channel, 'No deleted messages by this user found.');
       } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
     },
