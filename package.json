@@ -1,6 +1,6 @@
 {
   "name": "liora",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Modular and extensible Node.js Discord bot with voice commands",
   "homepage": "https://jackw01.github.io/liora/index",
   "author": "jackw01",

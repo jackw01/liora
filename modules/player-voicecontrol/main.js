@@ -200,9 +200,10 @@ module.exports.init = async function init(bot) {
           body: fs.createReadStream('test.wav'),
         }, (err, response, body) => {
           fs.unlinkSync('test.wav');
-          console.log(err, response, body);
           const json = JSON.parse(body);
+          // eslint-disable-next-line dot-notation
           bot.sendSuccess(listeningState[server.id].textChannel, `You said "${json['_text']}"`);
+          // eslint-disable-next-line dot-notation
           handleVoiceCommand(json['_text'], server, bot);
         });
       }, listenPeriod);

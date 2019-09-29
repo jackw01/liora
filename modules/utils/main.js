@@ -48,8 +48,6 @@ function displayDeletedMessage(bot, delMsg) {
     .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
     .setTimestamp(delMsg.createdAt);
   let lastImage;
-  console.dir(delMsg.embeds);
-  console.dir(delMsg.attachments);
   if (delMsg.embeds.length) {
     delMsg.embeds.forEach((e) => { if (e.image) lastImage = e.image; });
   } else if (delMsg.attachments.size) {
@@ -303,7 +301,7 @@ module.exports.commands = [
       if (deletedMessages[msg.channel.id]) {
         const embed = new discord.RichEmbed()
           .setTitle(`Deleted messages from #${msg.channel.name}`)
-          .setColor(bot.config.defaultColors.neutral)
+          .setColor(bot.config.defaultColors.neutral);
         deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
         });
@@ -345,7 +343,7 @@ module.exports.commands = [
       if (editEvents[msg.channel.id]) {
         const embed = new discord.RichEmbed()
           .setTitle(`Recent message edits from #${msg.channel.name}`)
-          .setColor(bot.config.defaultColors.neutral)
+          .setColor(bot.config.defaultColors.neutral);
         editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(newMsg.author)}, edited ${prettyMs(Date.now() - newMsg.editedAt)} ago`, `**Previous message:** ${oldMsg.content}, **New message:** ${newMsg.content}`);
         });
