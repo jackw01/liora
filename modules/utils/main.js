@@ -303,7 +303,9 @@ module.exports.commands = [
           .setTitle(`Deleted messages from #${msg.channel.name}`)
           .setColor(bot.config.defaultColors.neutral);
         deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
-          embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
+          if (delMsg.content) {
+            embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
+          }
         });
         msg.channel.send({ embed });
       } else bot.sendError(msg.channel, 'No deleted messages from this channel.');
@@ -367,7 +369,7 @@ module.exports.commands = [
           .setAuthor(bot.util.username(eMsg.author), eMsg.author.displayAvatarURL)
           .setFooter(`Current message: ${eMsg.content}`);
         editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
-          if (newMsg.id === eMsg.id) embed.addField(`${i + 1}: from ${prettyMs(Date.now() - newMsg.editedAt)} ago`, oldMsg.content);
+          if (newMsg.id === eMsg.id) embed.addField(`${i + 1}: from ${prettyMs(Date.now() - newMsg.editedAt)} ago`, oldMsg.content || '[No text content]');
         });
         msg.channel.send({ embed });
       } else bot.sendError(msg.channel, 'No edits from this channel.');
