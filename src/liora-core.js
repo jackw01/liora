@@ -421,9 +421,12 @@ const blockHandler = function blockHandler(c, next) {
 const commandDetector = function commandDetector(c, next) {
   if (c.message.content.indexOf(bot.prefixForMessageContext(c.message)) === 0) {
     const argString = c.message.content.slice(bot.prefixForMessageContext(c.message).length).trim();
-    c.args = argString.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g).map(a => a.replace(/^['"]+|['"]$/g, ''));
-    c.command = c.args.shift().toLowerCase();
-    bot.log.debug(`Detected command ${c.command} with args ${c.args.join(', ')}`);
+    const matches = argString.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
+    if (matches) {
+      c.args = matches.map(a => a.replace(/^['"]+|['"]$/g, ''));
+      c.command = c.args.shift().toLowerCase();
+      bot.log.debug(`Detected command ${c.command} with args ${c.args.join(', ')}`);
+    }
     next();
   }
 };
