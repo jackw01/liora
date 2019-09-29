@@ -47,6 +47,15 @@ function displayDeletedMessage(bot, delMsg) {
     .setAuthor(bot.util.username(delMsg.author), delMsg.author.displayAvatarURL)
     .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
     .setTimestamp(delMsg.createdAt);
+  let lastImage;
+  console.dir(delMsg.embeds);
+  console.dir(delMsg.attachments);
+  if (delMsg.embeds.length) {
+    delMsg.embeds.forEach((e) => { if (e.image) lastImage = e.image; });
+  } else if (delMsg.attachments.size) {
+    delMsg.attachments.forEach((a) => { if (a.width) lastImage = a; });
+  }
+  if (lastImage) embed.setImage(lastImage.url);
   delMsg.channel.send({ embed });
 }
 
@@ -154,7 +163,7 @@ module.exports.commands = [
         if (result) {
           const channel = result[0];
           const embed = new discord.RichEmbed()
-            .setTitle(`Channel info for ${channel.name}`)
+            .setTitle(`Channel info for #${channel.name}`)
             .setColor(bot.config.defaultColors.success)
             .addField('ID', `\`${channel.id}\``, true)
             .addField('Type', channel.type, true)
@@ -293,7 +302,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (deletedMessages[msg.channel.id]) {
         const embed = new discord.RichEmbed()
-          .setTitle(`Deleted messages from ${msg.channel.name}`)
+          .setTitle(`Deleted messages from #${msg.channel.name}`)
           .setColor(bot.config.defaultColors.neutral)
         deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(delMsg.author)}, sent ${prettyMs(Date.now() - delMsg.createdAt)} ago`, delMsg.content);
@@ -335,10 +344,32 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (editEvents[msg.channel.id]) {
         const embed = new discord.RichEmbed()
-          .setTitle(`Recent message edits from ${msg.channel.name}`)
+          .setTitle(`Recent message edits from #${msg.channel.name}`)
           .setColor(bot.config.defaultColors.neutral)
         editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
           embed.addField(`${i + 1}: ${bot.util.username(newMsg.author)}, edited ${prettyMs(Date.now() - newMsg.editedAt)} ago`, `**Previous message:** ${oldMsg.content}, **New message:** ${newMsg.content}`);
+        });
+        msg.channel.send({ embed });
+      } else bot.sendError(msg.channel, 'No edits from this channel.');
+    },
+  },
+  {
+    name: 'lastedit',
+    description: 'Recall the old message versions from the last edited message in the current channel.',
+    argumentNames: [],
+    permissionLevel: 'all',
+    aliases: ['esnipe'],
+    async execute(args, msg, bot) {
+      if (editEvents[msg.channel.id]) {
+        const firstEdit = editEvents[msg.channel.id][0];
+        const eMsg = firstEdit.newMsg;
+        const embed = new discord.RichEmbed()
+          .setColor(bot.config.defaultColors.neutral)
+          .setDescription('Revisions of message from earliest to current')
+          .setAuthor(bot.util.username(eMsg.author), eMsg.author.displayAvatarURL)
+          .setFooter(`Current message: ${eMsg.content}`);
+        editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
+          if (newMsg.id === eMsg.id) embed.addField(`${i + 1}: from ${prettyMs(Date.now() - newMsg.editedAt)} ago`, oldMsg.content);
         });
         msg.channel.send({ embed });
       } else bot.sendError(msg.channel, 'No edits from this channel.');

@@ -62,5 +62,6 @@ typings/
 
 example/config.json
 config.json
+config*.json
 
 test.json

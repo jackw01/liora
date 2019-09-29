@@ -248,7 +248,7 @@ module.exports.commands = [
       if (msg.guild) {
         if (state[msg.guild.id].nowPlaying) {
           const embed = new discord.RichEmbed()
-            .setTitle(`Now Playing on ${state[msg.guild.id].voiceChannel.name}`)
+            .setTitle(`Now Playing on #${state[msg.guild.id].voiceChannel.name}`)
             .setColor(bot.config.defaultColors.neutral)
             .setThumbnail(state[msg.guild.id].nowPlaying.thumbnail)
             .setDescription(` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\nenqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)}\n`);
@@ -267,7 +267,7 @@ module.exports.commands = [
       if (msg.guild) {
         if (state[msg.guild.id].queue.length > 0) {
           const embed = new discord.RichEmbed()
-            .setTitle(`Queue for ${state[msg.guild.id].voiceChannel.name}`)
+            .setTitle(`Queue for #${state[msg.guild.id].voiceChannel.name}`)
             .setColor(bot.config.defaultColors.neutral)
             .addField('Now Playing:', ` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\n(enqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)})`);
           let totalDuration = state[msg.guild.id].nowPlaying.duration;

@@ -69,5 +69,5 @@
 - [x] reverse profile pic
 - [x] recall deleted messages
 - [x] snipe last deleted message
-- [ ] recall embeds
 - [x] recall message history
+- [ ] recall embeds
