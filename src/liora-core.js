@@ -625,7 +625,7 @@ if (!module.parent) {
     .describe('generateDocs', 'Generate Markdown file containing command documenation.')
     .help('h')
     .alias('h', 'help')
-    .epilog('Liora Discord bot copyright 2018 jackw01. Released under the MIT license.')
+    .epilog('Liora Discord bot copyright 2019 jackw01. Released under the MIT license.')
     .argv;
   updateNotifier({ pkg }).notify();
   bot.log.info(chalk.cyan('Liora is running in standalone mode'));
