@@ -46,8 +46,8 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       const embed = new discord.RichEmbed()
-        .setTitle('Liora v1.2.0')
-        .setDescription(`Use \`${bot.prefixForMessageContext(msg)}list\` to list commands.\nLiora is built with ❤️ by jackw01 and released under the MIT license.\n[https://github.com/jackw01/liora](https://github.com/jackw01/liora)`)
+        .setTitle('Liora v1.2.1')
+        .setDescription(`Use \`${bot.prefixForMessageContext(msg)}list\` to list commands.\nLiora is built with ❤️ by jackw01 and released under the MIT license.\n[https://jackw01.github.io/liora/index](https://jackw01.github.io/liora/index)`)
         .setColor(bot.config.defaultColors.neutral)
         .addField('Bot ID', bot.client.user.id, true)
         .addField('Owner ID', bot.config.owner, true)
