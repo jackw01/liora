@@ -39,7 +39,7 @@ function showRedditResult(msg, bot, queryURL, queryString, filter) {
             }, 10 * 60 * 1000);
           } else redditSearchCounter[queryString] = 0;
           const post = posts[redditSearchCounter[queryString] % (posts.length - 1)];
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Reddit image for ${queryString}`)
             .setColor(bot.config.defaultColors.success)
             .setDescription(post.data.title)
@@ -104,7 +104,7 @@ module.exports.commands = [
           try {
             const json = JSON.parse(body);
             if (json[1].length) {
-              const embed = new discord.RichEmbed()
+              const embed = new discord.MessageEmbed()
                 .setTitle(`Wikipedia Search: ${args.join(' ')}`)
                 .setColor(bot.config.defaultColors.success);
               for (let i = 0; i < json[1].length; i++) {
@@ -204,7 +204,7 @@ module.exports.commands = [
                 }, 10 * 60 * 1000);
               } else imgurSearchCounter[queryString] = 0;
               const post = json.data[imgurSearchCounter[queryString] % (json.data.length - 1)];
-              const embed = new discord.RichEmbed()
+              const embed = new discord.MessageEmbed()
                 .setTitle(`Imgur image for /r/${queryString}`)
                 .setColor(bot.config.defaultColors.success)
                 .setDescription(post.title)
@@ -237,7 +237,7 @@ module.exports.commands = [
               if (contents.length > 1990) {
                 contents = `${contents.substring(0, 1990)}...\n\nDefinition too long to display here.`;
               }
-              const embed = new discord.RichEmbed()
+              const embed = new discord.MessageEmbed()
                 .setTitle(`Urban Dictionary: ${args.join(' ')}`)
                 .setColor(bot.config.defaultColors.success)
                 .setURL(result.permalink)
@@ -265,7 +265,7 @@ module.exports.commands = [
           try {
             const json = JSON.parse(body);
             if (json.cod === 200) {
-              const embed = new discord.RichEmbed()
+              const embed = new discord.MessageEmbed()
                 .setTitle(`Weather in ${json.name}`)
                 .setColor(bot.config.defaultColors.success)
                 .addField('🌞 Conditions', json.weather[0].main, true)
@@ -292,7 +292,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       function postXkcd(data) {
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setTitle(`xkcd ${data.num}: ${data.safe_title} (${data.year}-${_.padStart(data.month, 2, 0)}-${_.padStart(data.day, 2, 0)})`)
           .setColor(bot.config.defaultColors.success)
           .setImage(data.img)
@@ -334,7 +334,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (lastImage) {
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setTitle('Reverse image search for the last image on this channel')
           .setColor(bot.config.defaultColors.success)
           .setDescription(`${googleImagesURL}/searchbyimage?image_url=${lastImage.url}`)
@@ -356,7 +356,7 @@ module.exports.commands = [
         else result = [msg.author];
         if (result) {
           const user = result[0];
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Reverse image search of profile picture for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
             .setDescription(`${googleImagesURL}/searchbyimage?image_url=${user.avatarURL}`)
@@ -375,7 +375,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (translate.languages.isSupported(args[0])) {
         translate(args.slice(1).join(' '), { to: args[0] }).then((res) => {
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle('Translation Result')
             .setColor(bot.config.defaultColors.success)
             .setDescription(res.text)
@@ -397,7 +397,7 @@ module.exports.commands = [
       if (lastMessageText) {
         if (translate.languages.isSupported(args[0])) {
           translate(lastMessageText, { to: args[0] }).then((res) => {
-            const embed = new discord.RichEmbed()
+            const embed = new discord.MessageEmbed()
               .setTitle('Translation Result')
               .setColor(bot.config.defaultColors.success)
               .setDescription(res.text)

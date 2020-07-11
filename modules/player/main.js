@@ -18,10 +18,10 @@ function playNextQueuedVideo(msg, bot) {
     state[id].nowPlaying = state[id].queue[0];
     state[id].queue.shift();
     state[id].stream = ytdl(state[id].nowPlaying.url, { filter: 'audioonly' });
-    state[id].dispatcher = connection.playStream(state[id].stream);
+    state[id].dispatcher = connection.play(state[id].stream);
     state[id].dispatcher.setVolumeLogarithmic(bot.config.modules.player.servers[id].defaultVolume);
     // Set stream end event
-    state[id].dispatcher.once('end', () => {
+    state[id].dispatcher.once('finish', () => {
       if (state[id].queue.length > 0) {
         playNextQueuedVideo(msg, bot);
       } else {
@@ -53,7 +53,7 @@ function enqueueVideo(id, msg, bot) {
       let message;
       if (!state[msg.guild.id].nowPlaying && state[msg.guild.id].queue.length === 1) message = 'Now Playing';
       else message = 'Added to the Queue';
-      const embed = new discord.RichEmbed()
+      const embed = new discord.MessageEmbed()
         .setTitle(message)
         .setColor(bot.config.defaultColors.success)
         .setThumbnail(info.thumbnail_url)
@@ -73,7 +73,7 @@ module.exports.init = async function init(bot) {
     bot.log.modwarn('Player: YouTube API key not specified in config.json. YouTube search functionality will not work.');
   }
 
-  const servers = bot.client.guilds.array();
+  const servers = bot.client.guilds.cache.array();
   for (let i = 0; i < servers.length; i++) {
     // Initialize server-specific config
     bot.configSetDefault(`modules.player.servers[${servers[i].id}]`, {
@@ -99,7 +99,7 @@ module.exports.commands = [
         if ('error' in json) bot.sendError(msg.channel, 'Error', `${json.error.errors[0].message}`);
         else if (json.items.length === 0) bot.sendError(msg.channel, 'No videos found.');
         else {
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle('Youtube Search Results')
             .setColor(bot.config.defaultColors.success)
             .setDescription(`Query: ${args.join(' ')}`);
@@ -187,7 +187,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (msg.guild) {
         state[msg.guild.id].queue = [];
-        state[msg.guild.id].dispatcher.end();
+        state[msg.guild.id].dispatcher.destroy();
         state[msg.guild.id].voiceChannel.leave();
         state[msg.guild.id].playing = false;
         state[msg.guild.id].paused = false;
@@ -203,7 +203,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (msg.guild) {
-        state[msg.guild.id].dispatcher.end();
+        state[msg.guild.id].dispatcher.destroy();
         msg.react('⏩');
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
@@ -247,7 +247,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (msg.guild) {
         if (state[msg.guild.id].nowPlaying) {
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Now Playing on #${state[msg.guild.id].voiceChannel.name}`)
             .setColor(bot.config.defaultColors.neutral)
             .setThumbnail(state[msg.guild.id].nowPlaying.thumbnail)
@@ -266,7 +266,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (msg.guild) {
         if (state[msg.guild.id].queue.length > 0) {
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Queue for #${state[msg.guild.id].voiceChannel.name}`)
             .setColor(bot.config.defaultColors.neutral)
             .addField('Now Playing:', ` **[${state[msg.guild.id].nowPlaying.title}](${state[msg.guild.id].nowPlaying.url})**\n(enqueued by ${bot.util.username(state[msg.guild.id].nowPlaying.user)})`);

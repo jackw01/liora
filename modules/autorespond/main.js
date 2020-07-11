@@ -1,13 +1,12 @@
 // Liora - Modular and extensible Node.js Discord bot
 // Copyright 2018 jackw01. Released under the MIT License (see LICENSE for details).
 
-const discord = require('discord.js');
 const _ = require('lodash');
 
 module.exports.init = async function init(bot) {
   bot.configSetDefault('modules.autorespond.global', {});
 
-  const servers = bot.client.guilds.array();
+  const servers = bot.client.guilds.cache.array();
   servers.forEach((server) => {
     bot.configSetDefault(`modules.autorespond.servers[${server.id}]`, {});
   });

@@ -340,7 +340,7 @@ bot.hasPermission = function hasPermission(member, user, group, role) {
   if (user.id === this.config.owner) return true;
   if (group === 'all') return true;
   if (Object.keys(this.config.groups).includes(group) && this.config.groups[group].includes(user.id)) return true;
-  if (member && member.roles.has(role)) return true;
+  if (member && member.roles.cache.has(role)) return true;
   return false;
 };
 
@@ -364,7 +364,7 @@ bot.getCommandNamed = function getCommandNamed(command, callback) {
 
 // Show emoji embed with args
 bot.sendEmojiEmbed = function sendEmojiEmbed(channel, emoji, color, title, description) {
-  const embed = new discord.RichEmbed()
+  const embed = new discord.MessageEmbed()
     .setTitle(`${emoji}   ${title}`)
     .setColor(color);
   if (description) embed.setDescription(description);
@@ -446,7 +446,7 @@ const rateLimiter = function rateLimiter(c, next) {
   if (++bot.userMessageCounters[c.message.author.id] < bot.config.defaultUserCooldown.messageCount) {
     next();
   } else if (bot.userMessageCounters[c.message.author.id] === bot.config.defaultUserCooldown.messageCount) {
-    const embed = new discord.RichEmbed()
+    const embed = new discord.MessageEmbed()
       .setTitle('⌛ Rate limit exceeded')
       .setDescription(`User ${bot.util.username(c.message.author)} blocked for ${prettyMs(bot.config.defaultUserCooldown.blockDurationMs)}`)
       .setColor(bot.config.defaultColors.error);
@@ -523,7 +523,7 @@ bot.onConnect = async function onConnect() {
   this.client.user.setActivity(this.config.defaultGame);
 
   // Update permissions config for servers
-  const servers = this.client.guilds.array();
+  const servers = this.client.guilds.cache.array();
   servers.forEach((server) => {
     this.log.info(`In server ${server.id}: ${server.name}`);
     this.configSetDefault(`serverPermissions[${server.id}]`, {});
@@ -566,7 +566,7 @@ bot.util.parseUsername = function parseUsername(userString, server) {
   const query = userString.toLowerCase();
   const userIds = query.match(/^<@!?(\d{17,19})>$/); // Is it a user mention?
   if (!userIds) {
-    const matchingMembers = server.members.filter((m) => {
+    const matchingMembers = server.members.cache.filter((m) => {
       const name = m.user.username.toLowerCase();
       const nick = m.nickname ? m.nickname.toLowerCase() : name;
       const discrim = m.user.discriminator;
@@ -574,7 +574,7 @@ bot.util.parseUsername = function parseUsername(userString, server) {
     }).array();
     return matchingMembers.length ? matchingMembers.map(m => m.user) : null;
   }
-  const u = server.members.get(userIds[1]);
+  const u = server.members.cache.get(userIds[1]);
   return u ? [u.user] : null;
 };
 
@@ -583,10 +583,10 @@ bot.util.parseRole = function parseRole(roleString, server) {
   const query = roleString.toLowerCase();
   const roleIds = query.match(/^<@&(\d{17,19})>$/); // Is it a role mention?
   if (!roleIds) {
-    const matchingRoles = server.roles.filter(r => r.name.toLowerCase().includes(query)).array();
+    const matchingRoles = server.roles.cache.filter(r => r.name.toLowerCase().includes(query)).array();
     return matchingRoles.length ? matchingRoles : null;
   }
-  const r = server.roles.get(roleIds[1]);
+  const r = server.roles.cache.get(roleIds[1]);
   return r ? [r] : null;
 };
 
@@ -595,10 +595,10 @@ bot.util.parseChannel = function parseChannel(channelString, server) {
   const query = channelString.toLowerCase();
   const channelIds = query.match(/^<#(\d{17,19})>$/); // Is it a channel mention?
   if (!channelIds) {
-    const matchingChannels = server.channels.filter(c => c.name.toLowerCase().includes(query)).array();
+    const matchingChannels = server.channels.cache.filter(c => c.name.toLowerCase().includes(query)).array();
     return matchingChannels.length ? matchingChannels : null;
   }
-  const c = server.channels.get(channelIds[1]);
+  const c = server.channels.cache.get(channelIds[1]);
   return c ? [c] : null;
 };
 

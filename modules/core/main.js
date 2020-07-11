@@ -45,13 +45,13 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      const embed = new discord.RichEmbed()
-        .setTitle('Liora v1.2.1')
+      const embed = new discord.MessageEmbed()
+        .setTitle('Liora v1.3.0')
         .setDescription(`Use \`${bot.prefixForMessageContext(msg)}list\` to list commands.\nLiora is built with ❤️ by jackw01 and released under the MIT license.\n[https://jackw01.github.io/liora/index](https://jackw01.github.io/liora/index)`)
         .setColor(bot.config.defaultColors.neutral)
         .addField('Bot ID', bot.client.user.id, true)
         .addField('Owner ID', bot.config.owner, true)
-        .addField('Channels', bot.client.channels.size, true)
+        .addField('Channels', bot.client.channels.cache.size, true)
         .addField('Client Uptime', prettyMs(bot.client.uptime), true)
         .addField('Bot Uptime', prettyMs(Date.now() - bot.firstLoadTime), true)
         .addField('Last Startup Time', prettyMs(bot.lastLoadDuration), true);
@@ -76,7 +76,7 @@ module.exports.commands = [
             customAliases.forEach((a) => {
               if (bot.config.commandAliases[a] === cmd.name) aliases += `\`${a}\` `;
             });
-            const embed = new discord.RichEmbed()
+            const embed = new discord.MessageEmbed()
               .setTitle(`Command Help: \`${cmd.name}\``)
               .setColor(bot.config.defaultColors.neutral)
               .setDescription(`Aliases: ${aliases}`)
@@ -95,7 +95,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (args.length === 0) {
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setTitle('Active modules:')
           .setColor(bot.config.defaultColors.neutral)
           .setDescription(`Use \`${bot.prefixForMessageContext(msg)}list <module>\` to view command usage and description for a module.`);
@@ -106,7 +106,7 @@ module.exports.commands = [
         });
         msg.channel.send({ embed });
       } else if (Object.getOwnPropertyNames(bot.modules).indexOf(args[0]) !== -1) {
-        let embed = new discord.RichEmbed()
+        let embed = new discord.MessageEmbed()
           .setTitle(`Commands in module \`${args[0]}\``)
           .setColor(bot.config.defaultColors.neutral);
         const modules = _.chunk(bot.modules[args[0]].commands, 25);
@@ -115,7 +115,7 @@ module.exports.commands = [
             embed.addField(`\`${bot.prefixForMessageContext(msg)}${cmd.name} ${cmd.argumentNames.join(' ')}\``, cmd.description);
           });
           msg.channel.send({ embed });
-          embed = new discord.RichEmbed()
+          embed = new discord.MessageEmbed()
             .setColor(bot.config.defaultColors.neutral);
         });
       } else bot.sendError(msg.channel, `Module \`${args[0]}\` not found.`);
@@ -437,7 +437,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      const embed = new discord.RichEmbed()
+      const embed = new discord.MessageEmbed()
         .setTitle('Overrides')
         .setColor(bot.config.defaultColors.neutral);
       embed.addField('Group overrides', `\`${JSON.stringify(bot.config.commandPermissions, null, 4)}\``);
@@ -489,7 +489,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      const embed = new discord.RichEmbed()
+      const embed = new discord.MessageEmbed()
         .setTitle('Aliases')
         .setColor(bot.config.defaultColors.neutral);
       let text = '';

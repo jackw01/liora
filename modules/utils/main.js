@@ -10,7 +10,7 @@ const editedMessages = {};
 const editEvents = {};
 
 function showPollData(bot, channel) {
-  const embed = new discord.RichEmbed()
+  const embed = new discord.MessageEmbed()
     .setTitle('Poll Results')
     .setColor(bot.config.defaultColors.success)
     .setDescription(`Question: ${pollState[channel.id].question}`);
@@ -41,10 +41,10 @@ function onMessageUpdate(oldMsg, newMsg) {
 }
 
 function displayDeletedMessage(bot, delMsg) {
-  const embed = new discord.RichEmbed()
+  const embed = new discord.MessageEmbed()
     .setColor(bot.config.defaultColors.neutral)
     .setDescription(delMsg.content)
-    .setAuthor(bot.util.username(delMsg.author), delMsg.author.displayAvatarURL)
+    .setAuthor(bot.util.username(delMsg.author), delMsg.author.displayAvatarURL())
     .setFooter(`Deleted ${prettyMs(Date.now() - delMsg.deletedAt)} ago`)
     .setTimestamp(delMsg.createdAt);
   let lastImage;
@@ -71,11 +71,11 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (msg.guild) {
-        const roles = msg.guild.roles.array();
-        const embed = new discord.RichEmbed()
+        const roles = msg.guild.roles.cache.array();
+        const embed = new discord.MessageEmbed()
           .setTitle(`Server info for ${msg.guild.name}`)
           .setColor(bot.config.defaultColors.neutral)
-          .setThumbnail(msg.guild.iconURL)
+          .setThumbnail(msg.guild.iconURL())
           .addField('ID', `\`${msg.guild.id}\``, true)
           .addField('Owner', bot.util.username(msg.guild.owner.user), true)
           .addField('Channels', msg.guild.channels.size, true)
@@ -101,18 +101,18 @@ module.exports.commands = [
         else result = [msg.author];
         if (result) {
           const user = result[0];
-          const member = msg.guild.members.get(user.id);
-          const embed = new discord.RichEmbed()
+          const member = msg.guild.members.cache.get(user.id);
+          const embed = new discord.MessageEmbed()
             .setTitle(`User info for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
             .setThumbnail(user.avatarURL)
-            .addField('ID', `\`${user.id}\``, true)
-            .addField('Nickname', member.nickname || 'None', true)
-            .addField('Status', user.presence.status, true)
-            .addField('Playing', user.presence.game || 'N/A', true)
-            .addField('Roles', member.roles.map(r => r.name).join(', '))
-            .addField('Joined', member.joinedAt)
-            .addField('Created', user.createdAt);
+            .addField("ID", `\`${user.id}\``, true)
+            .addField("Nickname", member.nickname || "None", true)
+            .addField("Status", user.presence.status, true)
+            .addField("Playing", user.presence.game || "N/A", true)
+            .addField("Roles", member.roles.cache.map((r) => r.name).join(", "))
+            .addField("Joined", member.joinedAt)
+            .addField("Created", user.createdAt);
           msg.channel.send({ embed });
         } else bot.sendError(msg.channel, 'User not found.');
       } else bot.sendError(msg.channel, 'Must be in a server to use this command.');
@@ -129,11 +129,11 @@ module.exports.commands = [
         const result = bot.util.parseRole(args.join(' '), msg.guild);
         if (result) {
           const role = result[0];
-          const members = role.members.array();
+          const members = role.members.cache.array();
           let membersString;
           if (members.length > 25) membersString = `${members.length} users in this role.`;
           else membersString = members.map(m => bot.util.username(m.user)).join(', ');
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Role info for ${role.name}`)
             .setColor(bot.config.defaultColors.success)
             .addField('ID', `\`${role.id}\``, true)
@@ -160,7 +160,7 @@ module.exports.commands = [
         const result = bot.util.parseChannel(args.join(' '), msg.guild);
         if (result) {
           const channel = result[0];
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Channel info for #${channel.name}`)
             .setColor(bot.config.defaultColors.success)
             .addField('ID', `\`${channel.id}\``, true)
@@ -179,11 +179,11 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (msg.guild) {
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setTitle(`Server icon for ${msg.guild.name}`)
           .setColor(bot.config.defaultColors.success)
-          .setImage(msg.guild.iconURL)
-          .setURL(msg.guild.iconURL);
+          .setImage(msg.guild.iconURL())
+          .setURL(msg.guild.iconURL());
         msg.channel.send({ embed });
       } else bot.sendError(msg.channel, 'Must be in a server to use this command.');
     },
@@ -201,7 +201,7 @@ module.exports.commands = [
         else result = [msg.author];
         if (result) {
           const user = result[0];
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(`Profile picture for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
             .setImage(user.avatarURL)
@@ -218,7 +218,7 @@ module.exports.commands = [
     permissionLevel: 'manager',
     aliases: [],
     async execute(args, msg, bot) {
-      msg.guild.members.get(bot.client.user.id).setNickname(args.join(' '));
+      msg.guild.members.cache.get(bot.client.user.id).setNickname(args.join(' '));
       msg.react('✅');
     },
   },
@@ -234,7 +234,7 @@ module.exports.commands = [
           pollState[msg.channel.id] = {
             question: args[0], args: [], votes: [], users: new Set(),
           };
-          const embed = new discord.RichEmbed()
+          const embed = new discord.MessageEmbed()
             .setTitle(args[0])
             .setColor(bot.config.defaultColors.success)
             .setDescription(`Use \`${bot.prefixForMessageContext(msg)}vote <choiceNumber>\` to vote.`);
@@ -282,11 +282,12 @@ module.exports.commands = [
       if (pollState[msg.channel.id]) {
         const choice = parseInt(args[0], 10) - 1;
         if (choice < pollState[msg.channel.id].votes.length) {
-          if (!pollState[msg.channel.id].users.has(msg.author.id)) {
+          if (!pollState[msg.channel.id].users.cache.has(msg.author.id)) {
             pollState[msg.channel.id].votes[choice]++;
             pollState[msg.channel.id].users.add(msg.author.id);
-            msg.react('✅');
-          } else bot.sendError(msg.channel, 'You have already voted on this poll.');
+            msg.react("✅");
+          } else
+            bot.sendError(msg.channel, "You have already voted on this poll.");
         } else bot.sendError(msg.channel, `Choice ${choice + 1} does not exist.`);
       } else bot.sendError(msg.channel, 'No poll is running on this channel.');
     },
@@ -299,7 +300,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (deletedMessages[msg.channel.id]) {
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setTitle(`Deleted messages from #${msg.channel.name}`)
           .setColor(bot.config.defaultColors.neutral);
         deletedMessages[msg.channel.id].slice(0, 24).forEach((delMsg, i) => {
@@ -343,7 +344,7 @@ module.exports.commands = [
     aliases: ['edits'],
     async execute(args, msg, bot) {
       if (editEvents[msg.channel.id]) {
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setTitle(`Recent message edits from #${msg.channel.name}`)
           .setColor(bot.config.defaultColors.neutral);
         editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
@@ -363,10 +364,10 @@ module.exports.commands = [
       if (editEvents[msg.channel.id]) {
         const firstEdit = editEvents[msg.channel.id][0];
         const eMsg = firstEdit.newMsg;
-        const embed = new discord.RichEmbed()
+        const embed = new discord.MessageEmbed()
           .setColor(bot.config.defaultColors.neutral)
           .setDescription('Revisions of message from earliest to current')
-          .setAuthor(bot.util.username(eMsg.author), eMsg.author.displayAvatarURL)
+          .setAuthor(bot.util.username(eMsg.author), eMsg.author.displayAvatarURL())
           .setFooter(`Current message: ${eMsg.content}`);
         editEvents[msg.channel.id].slice(0, 24).forEach(({ oldMsg, newMsg }, i) => {
           if (newMsg.id === eMsg.id) embed.addField(`${i + 1}: from ${prettyMs(Date.now() - newMsg.editedAt)} ago`, oldMsg.content || '[No text content]');

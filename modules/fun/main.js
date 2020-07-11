@@ -82,7 +82,7 @@ module.exports.commands = [
       }
       const out = [];
       for (let i = 0; i < rolls; i++) out.push(randomIntInRange(1, sides));
-      const embed = new discord.RichEmbed()
+      const embed = new discord.MessageEmbed()
         .setTitle('Dice Roll Result')
         .setColor(bot.config.defaultColors.success)
         .addField(`${rolls}d${sides}`, out.join(', '));
@@ -96,7 +96,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      const embed = new discord.RichEmbed()
+      const embed = new discord.MessageEmbed()
         .setTitle(`🎱 ${args.join(' ')}`)
         .setColor(bot.config.defaultColors.success)
         .setDescription(`${magic8Ball[randomIntInRange(0, magic8Ball.length - 1)]}`);
@@ -117,7 +117,7 @@ module.exports.commands = [
             bot.sendError(msg.channel, 'Error running fortune');
             bot.log.modwarn(`Fun: error running fortune command: ${err}, ${stderr}`);
           } else {
-            const embed = new discord.RichEmbed()
+            const embed = new discord.MessageEmbed()
               .setTitle('Fortune')
               .setColor(bot.config.defaultColors.success)
               .setDescription(stdout);

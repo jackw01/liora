@@ -12,7 +12,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      const embed = new discord.RichEmbed()
+      const embed = new discord.MessageEmbed()
         .setTitle('Test command')
         .setAuthor('jackw01', 'https://avatars3.githubusercontent.com/u/22643669?s=460&v=4')
         .setColor(bot.config.defaultColors.success)
