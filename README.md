@@ -1,5 +1,7 @@
 # Liora
 
+![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/liora)
+
 ## Is It a Bot or a Framework?
 Liora can be used as a standalone bot with all of the commands in its built-in modules. It can also be used as a framework for developing custom Discord bot functionality in Javascript without having to worry about dynamic module loading, handling commands, or parsing user/role/channel mentions in messages.
 
@@ -20,12 +22,6 @@ Thanks to the simplicity of Node.js and npm, Liora is very easy to install and r
 5. Run `liora` again to connect to Discord.
 
 An optional config directory can be specified with the `--configDir` option. The first time Liora is run, it will create a blank config file. In standalone mode, only built-in modules will be accessible.
-
-#### New: Voice commands usage
-
-Use the `loadModule` command to load the `player-voicecontrol` module. **Voice control functionality requires Linux. You must install `libatlas` using your distribution's package manager (`sudo apt-get install libatlas-base-dev` on Ubuntu/Debian).**
-
-Note: For long term use, use [forever](https://www.npmjs.com/package/forever) to keep the bot running if it ever crashes.
 
 ### Customizable Usage
 For developers who want to add their own functionality to their bot.

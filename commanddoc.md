@@ -333,11 +333,6 @@ Default permission level: `all`
 Default aliases: `youtube`
 Display YouTube videos for a search query.
 
-#### listen
-`$listen `
-Default permission level: `all`
-Start listening for voice commands in a voice channel. Available voice commands: play, pause, resume, stop, skip, shuffle. Say "alexa" in voice chat, wait for the sound, and say the command. To play a video, state the search query after saying "play". **Only available when the player-voicecontrol module is enabled**
-
 #### play
 `$play <query>`
 Default permission level: `all`
