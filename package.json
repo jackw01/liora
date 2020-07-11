@@ -1,7 +1,7 @@
 {
   "name": "liora",
   "version": "1.2.0",
-  "description": "Modular and extensible Node.js Discord bot with voice commands",
+  "description": "Modular and extensible Node.js Discord bot",
   "homepage": "https://jackw01.github.io/liora/index",
   "author": "jackw01",
   "license": "MIT",
@@ -21,9 +21,7 @@
     "bot",
     "chatbot",
     "chat",
-    "discordapp",
-    "voice commands",
-    "speech recognition"
+    "discordapp"
   ],
   "preferGlobal": true,
   "bin": {
@@ -45,34 +43,26 @@
     "sunos"
   ],
   "dependencies": {
-    "audio-mixer": "git+https://github.com/jackw01/Audio-Mixer.git",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
-    "discord.js": "^11.5.1",
+    "discord.js": "^12.2.0",
     "erlpack": "^0.1.2",
-    "ffmpeg": "0.0.4",
-    "fluent-ffmpeg": "^2.1.2",
     "google-translate-api": "git+https://github.com/Adam-Clrk/google-translate-api.git",
     "jsonfile": "^4.0.0",
     "koa-compose": "^4.1.0",
-    "lame": "^1.2.4",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "mkdirp": "^0.5.1",
-    "node-opus": "^0.3.1",
+    "@discordjs/opus": "^0.3.2",
     "opn": "^5.4.0",
     "pretty-ms": "^3.2.0",
     "request": "^2.88.0",
-    "safe-eval": "^0.4.1",
     "update-notifier": "^2.5.0",
     "valid-url": "^1.0.9",
-    "wav": "^1.0.2",
     "winston": "^3.1.0",
-    "yargs": "^12.0.5",
+    "yargs": "^15.4.1",
     "ytdl-core": "^0.29.5"
   },
-  "optionalDependencies": {
-    "snowboy": "^1.3.1"
-  },
+  "optionalDependencies": {},
   "devDependencies": {
     "eslint": "^5.10.0",
     "eslint-config-airbnb-base": "^13.1.0",
