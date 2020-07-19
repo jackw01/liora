@@ -94,7 +94,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: ['youtube'],
     async execute(args, msg, bot) {
-      request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(args.join(' '))}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
+      request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&order=viewCount&q=${encodeURIComponent(args.join(' '))}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
         const json = JSON.parse(body);
         if ('error' in json) bot.sendError(msg.channel, 'Error', `${json.error.errors[0].message}`);
         else if (json.items.length === 0) bot.sendError(msg.channel, 'No videos found.');
@@ -123,7 +123,7 @@ module.exports.commands = [
     permissionLevel: 'all',
     aliases: [],
     async execute(args, msg, bot) {
-      if (msg.guild && msg.member.voiceChannel) {
+      if (msg.guild && msg.member.voice.channel) {
         const query = args.join(' ');
         if (validUrl.isUri(query)) {
           // Pass in the id only so url can be converted to a standard format
@@ -131,12 +131,12 @@ module.exports.commands = [
           if (matches) enqueueVideo(matches[1], msg, bot);
           else bot.sendError(msg.channel, 'URL does not appear to be a YouTube URL.');
         } else {
-          request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=${encodeURIComponent(query)}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
+          request(`https://www.googleapis.com/youtube/v3/search?part=id&type=video&order=viewCount&q=${encodeURIComponent(query)}&key=${bot.config.modules.player.youtubeKey}`, (err, response, body) => {
             const json = JSON.parse(body);
             if ('error' in json) bot.sendError(msg.channel, 'Error', `${json.error.errors[0].message}`);
             else if (json.items.length === 0) bot.sendError(msg.channel, 'No videos found.');
             else {
-              state[msg.guild.id].voiceChannel = msg.member.voiceChannel;
+              state[msg.guild.id].voiceChannel = msg.member.voice.channel;
               enqueueVideo(json.items[0].id.videoId, msg, bot);
             }
           });
@@ -187,7 +187,7 @@ module.exports.commands = [
     async execute(args, msg, bot) {
       if (msg.guild) {
         state[msg.guild.id].queue = [];
-        state[msg.guild.id].dispatcher.destroy();
+        state[msg.guild.id].dispatcher.end();
         state[msg.guild.id].voiceChannel.leave();
         state[msg.guild.id].playing = false;
         state[msg.guild.id].paused = false;
@@ -203,7 +203,7 @@ module.exports.commands = [
     aliases: [],
     async execute(args, msg, bot) {
       if (msg.guild) {
-        state[msg.guild.id].dispatcher.destroy();
+        state[msg.guild.id].dispatcher.end();
         msg.react('⏩');
       } else bot.sendError(msg.channel, 'You must be in a server to use this command.');
     },
