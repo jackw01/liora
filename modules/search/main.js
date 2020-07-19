@@ -4,7 +4,6 @@
 const discord = require('discord.js');
 const _ = require('lodash');
 const request = require('request');
-const translate = require('google-translate-api');
 
 const urbanDictionaryURL = 'https://api.urbandictionary.com/v0';
 const openWeatherMapURL = 'http://api.openweathermap.org/data/2.5';
@@ -38,7 +37,7 @@ function showRedditResult(msg, bot, queryURL, queryString, filter) {
               redditSearchCounter[queryString] = 0;
             }, 10 * 60 * 1000);
           } else redditSearchCounter[queryString] = 0;
-          const post = posts[redditSearchCounter[queryString] % (posts.length - 1)];
+          const post = posts[redditSearchCounter[queryString] % Math.max(posts.length - 1, 1)];
           const embed = new discord.MessageEmbed()
             .setTitle(`Reddit image for ${queryString}`)
             .setColor(bot.config.defaultColors.success)
@@ -364,50 +363,6 @@ module.exports.commands = [
           msg.channel.send({ embed });
         } else bot.sendError(msg.channel, 'User not found.');
       } else bot.sendError(msg.channel, 'Must be in a server to use this command.');
-    },
-  },
-  {
-    name: 'translate',
-    description: 'Translate something to the specified language.',
-    argumentNames: ['<languageTo>', '<text>'],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (translate.languages.isSupported(args[0])) {
-        translate(args.slice(1).join(' '), { to: args[0] }).then((res) => {
-          const embed = new discord.MessageEmbed()
-            .setTitle('Translation Result')
-            .setColor(bot.config.defaultColors.success)
-            .setDescription(res.text)
-            .setFooter(`Detected language: ${res.from.language.iso}`);
-          msg.channel.send({ embed });
-        }).catch((err) => {
-          bot.sendError(msg.channel, `Error translating message: ${err.message}.`);
-        });
-      } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
-    },
-  },
-  {
-    name: 'translatelast',
-    description: 'Translate the last posted message on the current channel. Automatically detects the language of the last message.',
-    argumentNames: ['<languageTo>'],
-    permissionLevel: 'all',
-    aliases: [],
-    async execute(args, msg, bot) {
-      if (lastMessageText) {
-        if (translate.languages.isSupported(args[0])) {
-          translate(lastMessageText, { to: args[0] }).then((res) => {
-            const embed = new discord.MessageEmbed()
-              .setTitle('Translation Result')
-              .setColor(bot.config.defaultColors.success)
-              .setDescription(res.text)
-              .setFooter(`Detected language: ${res.from.language.iso}`);
-            msg.channel.send({ embed });
-          }).catch((err) => {
-            bot.sendError(msg.channel, `Error translating message: ${err.message}.`);
-          });
-        } else bot.sendError(msg.channel, `Language "${args[0]}" not recognized.`);
-      } else bot.sendError(msg.channel, 'Can\'t find a last message.');
     },
   },
 ];
