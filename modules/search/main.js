@@ -358,8 +358,8 @@ module.exports.commands = [
           const embed = new discord.MessageEmbed()
             .setTitle(`Reverse image search of profile picture for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
-            .setDescription(`${googleImagesURL}/searchbyimage?image_url=${user.avatarURL}`)
-            .setThumbnail(user.avatarURL);
+            .setDescription(`${googleImagesURL}/searchbyimage?image_url=${user.avatarURL()}`)
+            .setThumbnail(user.avatarURL());
           msg.channel.send({ embed });
         } else bot.sendError(msg.channel, 'User not found.');
       } else bot.sendError(msg.channel, 'Must be in a server to use this command.');

@@ -78,9 +78,9 @@ module.exports.commands = [
           .setThumbnail(msg.guild.iconURL())
           .addField('ID', `\`${msg.guild.id}\``, true)
           .addField('Owner', bot.util.username(msg.guild.owner.user), true)
-          .addField('Channels', msg.guild.channels.size, true)
+          .addField('Channels', msg.guild.channels.cache.size, true)
           .addField('Verified', msg.guild.verified, true)
-          .addField('Custom Emojis', `${msg.guild.emojis.size}`, true)
+          .addField('Custom Emojis', `${msg.guild.emojis.cache.size}`, true)
           .addField('Roles', `${roles.length}: ${roles.map(r => r.name).join(', ')}`)
           .addField('Joined', msg.guild.joinedAt)
           .addField('Created', msg.guild.createdAt);
@@ -105,14 +105,14 @@ module.exports.commands = [
           const embed = new discord.MessageEmbed()
             .setTitle(`User info for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
-            .setThumbnail(user.avatarURL)
-            .addField("ID", `\`${user.id}\``, true)
-            .addField("Nickname", member.nickname || "None", true)
-            .addField("Status", user.presence.status, true)
-            .addField("Playing", user.presence.game || "N/A", true)
-            .addField("Roles", member.roles.cache.map((r) => r.name).join(", "))
-            .addField("Joined", member.joinedAt)
-            .addField("Created", user.createdAt);
+            .setThumbnail(user.avatarURL())
+            .addField('ID', `\`${user.id}\``, true)
+            .addField('Nickname', member.nickname || 'None', true)
+            .addField('Status', user.presence.status, true)
+            .addField('Playing', user.presence.game || 'N/A', true)
+            .addField('Roles', member.roles.cache.map(r => r.name).join(', '))
+            .addField('Joined', member.joinedAt)
+            .addField('Created', user.createdAt);
           msg.channel.send({ embed });
         } else bot.sendError(msg.channel, 'User not found.');
       } else bot.sendError(msg.channel, 'Must be in a server to use this command.');
@@ -129,7 +129,7 @@ module.exports.commands = [
         const result = bot.util.parseRole(args.join(' '), msg.guild);
         if (result) {
           const role = result[0];
-          const members = role.members.cache.array();
+          const members = role.members.array();
           let membersString;
           if (members.length > 25) membersString = `${members.length} users in this role.`;
           else membersString = members.map(m => bot.util.username(m.user)).join(', ');
@@ -138,7 +138,7 @@ module.exports.commands = [
             .setColor(bot.config.defaultColors.success)
             .addField('ID', `\`${role.id}\``, true)
             .addField('Color', `\`${role.hexColor}\``, true)
-            .addField('Position', role.calculatedPosition, true)
+            .addField('Position', role.position, true)
             .addField('Mentionable', role.mentionable, true)
             .addField('Hoisted', role.hoist, true)
             .addField('Managed', role.managed, true)
@@ -204,8 +204,8 @@ module.exports.commands = [
           const embed = new discord.MessageEmbed()
             .setTitle(`Profile picture for ${bot.util.username(user)}`)
             .setColor(bot.config.defaultColors.success)
-            .setImage(user.avatarURL)
-            .setURL(user.avatarURL);
+            .setImage(user.avatarURL())
+            .setURL(user.avatarURL());
           msg.channel.send({ embed });
         } else bot.sendError(msg.channel, 'User not found.');
       } else bot.sendError(msg.channel, 'Must be in a server to use this command.');
@@ -285,9 +285,8 @@ module.exports.commands = [
           if (!pollState[msg.channel.id].users.cache.has(msg.author.id)) {
             pollState[msg.channel.id].votes[choice]++;
             pollState[msg.channel.id].users.add(msg.author.id);
-            msg.react("✅");
-          } else
-            bot.sendError(msg.channel, "You have already voted on this poll.");
+            msg.react('✅');
+          } else bot.sendError(msg.channel, 'You have already voted on this poll.');
         } else bot.sendError(msg.channel, `Choice ${choice + 1} does not exist.`);
       } else bot.sendError(msg.channel, 'No poll is running on this channel.');
     },
