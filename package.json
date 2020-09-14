@@ -1,6 +1,6 @@
 {
   "name": "liora",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Modular and extensible Node.js Discord bot",
   "homepage": "https://jackw01.github.io/liora/index",
   "author": "jackw01",
@@ -43,6 +43,7 @@
     "sunos"
   ],
   "dependencies": {
+    "@discordjs/opus": "^0.3.2",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
     "discord.js": "^12.2.0",
@@ -51,14 +52,13 @@
     "koa-compose": "^4.1.0",
     "lodash": "^4.17.19",
     "mkdirp": "^0.5.1",
-    "@discordjs/opus": "^0.3.2",
     "opn": "^5.4.0",
     "pretty-ms": "^3.2.0",
     "request": "^2.88.0",
     "update-notifier": "^4.1.0",
     "valid-url": "^1.0.9",
     "winston": "^3.1.0",
-    "yargs": "^15.4.1",
+    "yargs": "^16.0.3",
     "ytdl-core": "^3.1.2"
   },
   "optionalDependencies": {},
