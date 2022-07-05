@@ -43,7 +43,7 @@
     "sunos"
   ],
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
+    "@discordjs/opus": "^0.8.0",
     "chalk": "^2.4.1",
     "command-exists": "^1.2.8",
     "discord.js": "^12.2.0",
